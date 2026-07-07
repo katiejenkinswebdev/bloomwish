@@ -10,6 +10,7 @@ import { Spark } from '@/components/spark';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
+import { FreeTierLimits } from '@/config/branding';
 import { Spacing } from '@/constants/theme';
 import { fetchDreams } from '@/features/dreams/api';
 import { DreamDetailSheet } from '@/features/dreams/components/dream-detail-sheet';
@@ -20,6 +21,8 @@ import {
 } from '@/features/dreams/health';
 import { fetchSignCounts } from '@/features/dreams/signs';
 import { fetchTrophies } from '@/features/harvest/api';
+import { syncNotifications } from '@/features/notifications/scheduler';
+import { fetchProfile, profileQueryKey } from '@/features/profile/api';
 import { maybeGrantReward, type GrantedReward } from '@/features/rewards/api';
 import { DelightMoment } from '@/features/rewards/components/delight-moment';
 import { seasonalTouch } from '@/features/rewards/season';
@@ -45,6 +48,7 @@ export default function GardenScreen() {
   });
   const signCountsQuery = useQuery({ queryKey: ['sign-counts'], queryFn: fetchSignCounts });
   const trophiesQuery = useQuery({ queryKey: ['trophies'], queryFn: fetchTrophies });
+  const profileQuery = useQuery({ queryKey: profileQueryKey, queryFn: fetchProfile });
 
   useEffect(() => {
     if (hasRolledThisLaunch) return;
@@ -54,6 +58,17 @@ export default function GardenScreen() {
       .catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Keep local notifications aligned with reality: daily reminder at the
+  // chosen time, gentle wilting alerts, occasional delight notes.
+  useEffect(() => {
+    if (!dreamsQuery.data || profileQuery.data === undefined) return;
+    syncNotifications({
+      profile: profileQuery.data,
+      dreams: dreamsQuery.data,
+      decayConfig: configQuery.data,
+    });
+  }, [dreamsQuery.data, profileQuery.data, configQuery.data]);
 
   const dreams = dreamsQuery.data ?? [];
   const signCounts = signCountsQuery.data ?? {};
@@ -131,7 +146,14 @@ export default function GardenScreen() {
 
       <Button
         label="Plant a dream"
-        onPress={() => router.push('/create-dream')}
+        onPress={() => {
+          // Free tier: one active dream slot; more slots live in Full Bloom.
+          if (!isFullBloom && dreams.length >= FreeTierLimits.activeDreamSlots) {
+            router.push('/paywall');
+          } else {
+            router.push('/create-dream');
+          }
+        }}
         style={styles.plantButton}
       />
 

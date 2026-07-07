@@ -35,7 +35,7 @@ Sign in with Apple, Google Sign-In, and speech recognition require a **developme
    - Copy the project URL + anon key into `.env`
 2. **Google Sign-In** — create iOS + Web OAuth client IDs at [console.cloud.google.com](https://console.cloud.google.com/apis/credentials); put both in `.env`. The Web client ID also goes into the Supabase Google provider config.
 3. **Sign in with Apple** — enable the capability for `com.bloomwish.app` in the Apple Developer portal; configure the Apple provider in Supabase.
-4. **RevenueCat** (Phase 7) — create the app, products (`monthly`, `annual`, `founding_lifetime`), and the `full_bloom` entitlement; put SDK keys in `.env`.
+4. **RevenueCat** — create the app, products (`monthly` $23.99/mo, `annual` $149.99/yr with a 7-day trial, `founding_lifetime` $199 for the launch window), attach all three to the `full_bloom` entitlement and a default offering with packages named `monthly`/`annual`/`founding_lifetime` (or the `$rc_*` defaults); put the public SDK keys in `.env`. Then wire the webhook: deploy with `npx supabase functions deploy revenuecat-webhook --no-verify-jwt`, run `npx supabase secrets set REVENUECAT_WEBHOOK_SECRET=<random>`, and add a RevenueCat webhook pointing at that function URL with the same value in the Authorization header.
 5. **Edge Function secrets** (Phase 2+): `supabase secrets set ANTHROPIC_API_KEY=… ELEVENLABS_API_KEY=… ELEVENLABS_VOICE_ID=…`
 
 ## Project layout

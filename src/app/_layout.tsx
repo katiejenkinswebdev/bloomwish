@@ -6,6 +6,7 @@ import { QueryClientProvider, useQuery } from '@tanstack/react-query';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { fetchProfile, profileQueryKey } from '@/features/profile/api';
+import { endPurchasesSession, initializePurchases } from '@/features/purchases/purchases';
 import { queryClient } from '@/lib/query-client';
 import {
   useAuthStore,
@@ -22,6 +23,15 @@ function RootNavigator() {
   const isPasswordRecovery = useIsPasswordRecovery();
 
   const isSignedIn = !!session && !isPasswordRecovery;
+  const userId = session?.user.id;
+
+  useEffect(() => {
+    if (userId) {
+      initializePurchases(userId);
+    } else {
+      endPurchasesSession();
+    }
+  }, [userId]);
 
   const profileQuery = useQuery({
     queryKey: profileQueryKey,

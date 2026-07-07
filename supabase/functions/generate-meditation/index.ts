@@ -225,11 +225,16 @@ Deno.serve(async (req) => {
     return new Response('Dream not found or has no scene yet', { status: 404 });
   }
 
-  // Entitlement. TODO(phase 7): read Full Bloom status from the entitlements
-  // table maintained by the RevenueCat webhook. Until then everyone is on the
-  // free tier: exactly one personalized meditation, on the starter dream,
-  // framed as a gift.
-  const isFullBloom = false;
+  // Entitlement, maintained by the revenuecat-webhook function. Free tier:
+  // exactly one personalized meditation, on the starter dream, as a gift.
+  const { data: entitlement } = await callerClient
+    .from('entitlements')
+    .select('is_full_bloom, expires_at')
+    .eq('user_id', user.id)
+    .maybeSingle();
+  const isFullBloom =
+    !!entitlement?.is_full_bloom &&
+    (!entitlement.expires_at || new Date(entitlement.expires_at).getTime() > Date.now());
   if (!isFullBloom) {
     if (!dream.is_starter_dream) {
       return new Response(JSON.stringify({ error: 'full_bloom_required' }), {

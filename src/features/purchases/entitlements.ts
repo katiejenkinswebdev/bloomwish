@@ -1,10 +1,10 @@
+import { usePurchasesStore } from '@/features/purchases/purchases';
+
 /**
- * Entitlement checks for Full Bloom gating.
- *
- * TODO(phase 7): replace with RevenueCat — check the `full_bloom` entitlement
- * on the CustomerInfo object and subscribe to updates. Until then everyone is
- * on the free Seedling tier, and gates route to the paywall.
+ * Whether the signed-in user holds the Full Bloom entitlement, live from
+ * RevenueCat (kept current by the customer-info listener). Server-side gates
+ * check the entitlements table instead — never this.
  */
 export function useIsFullBloom(): boolean {
-  return false;
+  return usePurchasesStore((state) => state.isFullBloom);
 }
