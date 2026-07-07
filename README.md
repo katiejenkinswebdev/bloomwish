@@ -27,7 +27,8 @@ Sign in with Apple, Google Sign-In, and speech recognition require a **developme
 
 1. **Supabase** — create a project at [supabase.com](https://supabase.com/dashboard), then:
    - Apply the schema: `npx supabase db push` (or paste `supabase/migrations/*.sql` into the SQL editor)
-   - Deploy functions: `npx supabase functions deploy delete-account`
+   - Deploy functions: `npx supabase functions deploy delete-account dream-coach`
+   - Set the AI secret: `npx supabase secrets set ANTHROPIC_API_KEY=sk-ant-…`
    - In Auth → URL Configuration, add redirect URLs: `bloomwish://reset-password` and `bloomwish://verify-email`
    - Enable Apple and Google providers in Auth → Providers
    - Copy the project URL + anon key into `.env`

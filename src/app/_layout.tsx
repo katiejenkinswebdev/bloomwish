@@ -38,6 +38,8 @@ export default function RootLayout() {
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Protected guard={isSignedIn}>
             <Stack.Screen name="(app)" />
+            <Stack.Screen name="create-dream" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="paywall" options={{ presentation: 'modal' }} />
           </Stack.Protected>
           <Stack.Protected guard={!isSignedIn}>
             <Stack.Screen name="(auth)" />
