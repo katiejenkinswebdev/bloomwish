@@ -11,8 +11,6 @@ import { BrandPalette } from '@/constants/brand-palette';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
-const PAGE_WIDTH = Dimensions.get('window').width;
-
 const INTRO_PAGES = [
   {
     key: 'plant',
@@ -34,41 +32,61 @@ const INTRO_PAGES = [
 export default function OnboardingIntroScreen() {
   const theme = useTheme();
   const listRef = useRef<FlatList>(null);
+  // Measured at layout so browser resizes and split screens stay correct.
+  const [pageWidth, setPageWidth] = useState(() => Dimensions.get('window').width);
   const [pageIndex, setPageIndex] = useState(0);
   const isLastPage = pageIndex === INTRO_PAGES.length - 1;
+
+  // The button drives the index directly — scroll events (which never fire
+  // as "momentum" on web) only keep the dots in sync during manual swipes.
+  const goToPage = (index: number) => {
+    setPageIndex(index);
+    listRef.current?.scrollToIndex({ index, animated: true });
+  };
 
   const handleNext = () => {
     if (isLastPage) {
       router.push('/onboarding/quiz');
     } else {
-      listRef.current?.scrollToIndex({ index: pageIndex + 1, animated: true });
+      goToPage(pageIndex + 1);
     }
   };
 
   return (
     <Screen padded={false}>
-      <FlatList
-        ref={listRef}
-        data={INTRO_PAGES}
-        keyExtractor={(page) => page.key}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        onMomentumScrollEnd={(e) =>
-          setPageIndex(Math.round(e.nativeEvent.contentOffset.x / PAGE_WIDTH))
-        }
-        renderItem={({ item }) => (
-          <View style={[styles.page, { width: PAGE_WIDTH }]}>
-            <Spark size={36} />
-            <ThemedText type="title" style={styles.centered}>
-              {item.title}
-            </ThemedText>
-            <ThemedText themeColor="textSecondary" style={styles.centered}>
-              {item.body}
-            </ThemedText>
-          </View>
-        )}
-      />
+      <View
+        style={styles.pagerArea}
+        onLayout={(e) => setPageWidth(e.nativeEvent.layout.width)}>
+        <FlatList
+          ref={listRef}
+          data={INTRO_PAGES}
+          keyExtractor={(page) => page.key}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          getItemLayout={(_, index) => ({
+            length: pageWidth,
+            offset: pageWidth * index,
+            index,
+          })}
+          onScroll={(e) => {
+            const index = Math.round(e.nativeEvent.contentOffset.x / pageWidth);
+            if (index >= 0 && index < INTRO_PAGES.length) setPageIndex(index);
+          }}
+          scrollEventThrottle={64}
+          renderItem={({ item }) => (
+            <View style={[styles.page, { width: pageWidth }]}>
+              <Spark size={36} />
+              <ThemedText type="title" style={styles.centered}>
+                {item.title}
+              </ThemedText>
+              <ThemedText themeColor="textSecondary" style={styles.centered}>
+                {item.body}
+              </ThemedText>
+            </View>
+          )}
+        />
+      </View>
 
       <View style={styles.footer}>
         <View style={styles.dots}>
@@ -91,6 +109,9 @@ export default function OnboardingIntroScreen() {
 }
 
 const styles = StyleSheet.create({
+  pagerArea: {
+    flex: 1,
+  },
   page: {
     flex: 1,
     justifyContent: 'center',
