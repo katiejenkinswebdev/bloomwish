@@ -59,6 +59,7 @@ export type SessionRow = {
   activity_id: string | null;
   duration_seconds: number | null;
   health_boost: number;
+  reflection: string | null;
   completed_at: string;
 }
 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, Image, ScrollView, StyleSheet, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -65,9 +65,6 @@ export function DreamDetailSheet({ dream, effectiveHealth, onClose }: DreamDetai
       setPhotoUri(result.assets[0].uri);
     }
   };
-
-  const comingInNextPhase = () =>
-    Alert.alert('Almost ready', 'Watering and feeding arrive in the next build.');
 
   const handleClose = () => {
     setIsAddingSign(false);
@@ -165,8 +162,22 @@ export function DreamDetailSheet({ dream, effectiveHealth, onClose }: DreamDetai
                 </Card>
               ) : (
                 <View style={styles.actions}>
-                  <Button label="Water" variant="secondary" onPress={comingInNextPhase} />
-                  <Button label="Feed" variant="secondary" onPress={comingInNextPhase} />
+                  <Button
+                    label="Water"
+                    variant="secondary"
+                    onPress={() => {
+                      handleClose();
+                      router.push({ pathname: '/water', params: { dreamId: dream.id } });
+                    }}
+                  />
+                  <Button
+                    label="Feed"
+                    variant="secondary"
+                    onPress={() => {
+                      handleClose();
+                      router.push({ pathname: '/feed', params: { dreamId: dream.id } });
+                    }}
+                  />
                   <Button label="Add a Sign" onPress={() => setIsAddingSign(true)} />
                 </View>
               )}
