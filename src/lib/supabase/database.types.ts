@@ -123,6 +123,12 @@ export type FeedbackRow = {
   created_at: string;
 }
 
+export type AppConfigRow = {
+  key: string;
+  value: Record<string, unknown>;
+  updated_at: string;
+};
+
 export type NotificationPrefsRow = {
   user_id: string;
   daily_reminder_time: string | null;
@@ -147,6 +153,7 @@ export interface Database {
       trophies: Table<TrophyRow, 'user_id' | 'dream_id' | 'dream_title'>;
       feedback: Table<FeedbackRow, 'type' | 'message'>;
       notification_prefs: Table<NotificationPrefsRow, 'user_id'>;
+      app_config: Table<AppConfigRow, 'key' | 'value'>;
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase/client';
-import type { Database } from '@/lib/supabase/database.types';
-
-type DreamRow = Database['public']['Tables']['dreams']['Row'];
+import { queryClient } from '@/lib/query-client';
+import { fetchProfile, profileQueryKey } from '@/features/profile/api';
+import type { DreamRow, UserProfileRow } from '@/lib/supabase/database.types';
 
 export interface CoachQuestions {
   questions: string[];
@@ -29,14 +29,40 @@ async function invokeCoach<T>(body: object): Promise<T> {
   return data as T;
 }
 
-export const fetchDeepeningQuestions = (dreamText: string) =>
-  invokeCoach<CoachQuestions>({ action: 'questions', dreamText });
+/** Quiz answers shape the coach's questions and scene — see dream-coach fn. */
+async function coachProfileContext() {
+  const profile = await queryClient.ensureQueryData<UserProfileRow | null>({
+    queryKey: profileQueryKey,
+    queryFn: fetchProfile,
+  });
+  if (!profile) return undefined;
+  return {
+    displayName: profile.display_name ?? undefined,
+    experienceLevel: profile.experience_level ?? undefined,
+    tonePreference: profile.tone_preference ?? undefined,
+    firstCategory: profile.first_manifestation_category ?? undefined,
+  };
+}
 
-export const generateScene = (
+export const fetchDeepeningQuestions = async (dreamText: string) =>
+  invokeCoach<CoachQuestions>({
+    action: 'questions',
+    dreamText,
+    profile: await coachProfileContext(),
+  });
+
+export const generateScene = async (
   dreamText: string,
   answers: QAPair[],
   tweak?: { previousScene: string; tweakInstruction: string }
-) => invokeCoach<CoachScene>({ action: 'scene', dreamText, answers, ...tweak });
+) =>
+  invokeCoach<CoachScene>({
+    action: 'scene',
+    dreamText,
+    answers,
+    profile: await coachProfileContext(),
+    ...tweak,
+  });
 
 export const scoreScene = (sceneText: string) =>
   invokeCoach<CoachScore>({ action: 'score', sceneText });
