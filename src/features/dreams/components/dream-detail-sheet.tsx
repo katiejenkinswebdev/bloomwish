@@ -74,7 +74,11 @@ export function DreamDetailSheet({ dream, effectiveHealth, onClose }: DreamDetai
           ) : (
             <>
               <View style={styles.seedRow}>
-                <VividnessSeed score={dream.vividness_score ?? 0} size={72} />
+                <VividnessSeed
+                  score={dream.vividness_score ?? 0}
+                  size={72}
+                  plant={{ state: dream.state, health: effectiveHealth ?? dream.health }}
+                />
               </View>
 
               {dream.scene_text ? (

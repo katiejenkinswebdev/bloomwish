@@ -9,20 +9,24 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 
+import { PlantGlyph } from '@/components/plant-glyph';
 import { Spark } from '@/components/spark';
 import { BrandPalette } from '@/constants/brand-palette';
+import type { DreamHealth, DreamState } from '@/lib/supabase/database.types';
 
 export interface VividnessSeedProps {
   /** 0–100. Drives the glow's size and warmth — shown as a glow, never a cold number. */
   score: number;
   size?: number;
+  /** When set, the glow surrounds the dream's actual plant instead of the seed. */
+  plant?: { state: DreamState; health: DreamHealth };
 }
 
 /**
  * The dream seed with the vividness glow: a soft gold halo that grows with
  * the scene's sensory and emotional depth, crowned by the Wishing Seed spark.
  */
-export function VividnessSeed({ score, size = 120 }: VividnessSeedProps) {
+export function VividnessSeed({ score, size = 120, plant }: VividnessSeedProps) {
   const reducedMotion = useReducedMotion();
   const pulse = useSharedValue(0);
 
@@ -60,16 +64,25 @@ export function VividnessSeed({ score, size = 120 }: VividnessSeedProps) {
           },
         ]}
       />
-      <View
-        style={{
-          width: seedWidth,
-          height: seedHeight,
-          borderRadius: seedWidth / 2,
-          backgroundColor: BrandPalette.warmBrown,
-          transform: [{ rotate: '8deg' }],
-        }}
-      />
-      <Spark size={size * 0.22} style={[styles.spark, { top: size * 0.28, right: size * 0.42 }]} />
+      {plant ? (
+        <PlantGlyph state={plant.state} health={plant.health} size={size * 1.1} />
+      ) : (
+        <>
+          <View
+            style={{
+              width: seedWidth,
+              height: seedHeight,
+              borderRadius: seedWidth / 2,
+              backgroundColor: BrandPalette.warmBrown,
+              transform: [{ rotate: '8deg' }],
+            }}
+          />
+          <Spark
+            size={size * 0.22}
+            style={[styles.spark, { top: size * 0.28, right: size * 0.42 }]}
+          />
+        </>
+      )}
     </View>
   );
 }
