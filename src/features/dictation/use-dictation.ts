@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
+import { Platform } from 'react-native';
 import {
   ExpoSpeechRecognitionModule,
   useSpeechRecognitionEvent,
@@ -52,6 +53,14 @@ export function useDictation(onFinalTranscript: (text: string) => void): Dictati
 
   const start = useCallback(async () => {
     setError(null);
+    if (!ExpoSpeechRecognitionModule.isRecognitionAvailable()) {
+      setError(
+        Platform.OS === 'web'
+          ? 'This browser can’t dictate — open the preview in Google Chrome, or just type.'
+          : 'Speech recognition isn’t available on this device.'
+      );
+      return;
+    }
     const permissions = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
     if (!permissions.granted) {
       setError('Microphone access is needed to dictate. You can enable it in Settings.');
@@ -64,8 +73,9 @@ export function useDictation(onFinalTranscript: (text: string) => void): Dictati
       lang: 'en-US',
       interimResults: true,
       continuous: true,
-      // Keep audio on-device; only transcripts are used.
-      requiresOnDeviceRecognition: true,
+      // Native: keep audio on-device; only transcripts are used. On web the
+      // browser's own speech service handles audio, so the flag doesn't apply.
+      requiresOnDeviceRecognition: Platform.OS !== 'web',
     });
   }, []);
 
