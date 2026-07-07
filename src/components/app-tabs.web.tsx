@@ -11,14 +11,12 @@ function TabGlyph({ emoji }: { emoji: string }) {
   return <ThemedText style={{ fontSize: 18 }}>{emoji}</ThemedText>;
 }
 
+const GardenGlyph = () => <TabGlyph emoji="🌱" />;
+const GreenhouseGlyph = () => <TabGlyph emoji="🏆" />;
+const ProfileGlyph = () => <TabGlyph emoji="🙂" />;
+
 export default function AppTabs() {
   const theme = useTheme();
-
-  const glyph = (emoji: string) => {
-    const render = () => <TabGlyph emoji={emoji} />;
-    render.displayName = `TabGlyph(${emoji})`;
-    return render;
-  };
 
   return (
     <Tabs
@@ -31,9 +29,12 @@ export default function AppTabs() {
           borderTopColor: theme.border,
         },
       }}>
-      <Tabs.Screen name="index" options={{ title: 'Garden', tabBarIcon: glyph('🌱') }} />
-      <Tabs.Screen name="greenhouse" options={{ title: 'Greenhouse', tabBarIcon: glyph('🏆') }} />
-      <Tabs.Screen name="profile" options={{ title: 'Profile', tabBarIcon: glyph('🙂') }} />
+      <Tabs.Screen name="index" options={{ title: 'Garden', tabBarIcon: GardenGlyph }} />
+      <Tabs.Screen
+        name="greenhouse"
+        options={{ title: 'Greenhouse', tabBarIcon: GreenhouseGlyph }}
+      />
+      <Tabs.Screen name="profile" options={{ title: 'Profile', tabBarIcon: ProfileGlyph }} />
     </Tabs>
   );
 }
