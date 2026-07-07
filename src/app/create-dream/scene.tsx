@@ -107,6 +107,16 @@ export default function SceneScreen() {
           disabled={regenerateMutation.isPending}
           onPress={() => router.push('/create-dream/planting')}
         />
+
+        <Button
+          label="Edit my answers"
+          variant="ghost"
+          disabled={regenerateMutation.isPending}
+          onPress={() => {
+            useDreamDraftStore.getState().popAnswerForEditing();
+            router.back();
+          }}
+        />
       </ScrollView>
     </Screen>
   );

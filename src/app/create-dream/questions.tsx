@@ -16,14 +16,28 @@ import { useDreamDraftStore } from '@/store/dream-draft-store';
 export default function DeepeningQuestionsScreen() {
   const questions = useDreamDraftStore((s) => s.questions);
   const answers = useDreamDraftStore((s) => s.answers);
+  const editingAnswerText = useDreamDraftStore((s) => s.editingAnswerText);
   const [answerText, setAnswerText] = useState('');
+
+  // An answer staged for editing (stepping back from a later question or the
+  // scene screen) pre-fills the field until the user types.
+  const effectiveAnswer = answerText !== '' ? answerText : editingAnswerText;
+
+  const updateAnswer = (text: string) => {
+    if (editingAnswerText) useDreamDraftStore.getState().consumeEditingAnswerText();
+    setAnswerText(text);
+  };
 
   const currentIndex = answers.length;
   const currentQuestion = questions[currentIndex];
   const isLastQuestion = currentIndex === questions.length - 1;
 
   const dictation = useDictation((finalText) => {
-    setAnswerText((current) => (current ? `${current} ${finalText}` : finalText));
+    const staged = useDreamDraftStore.getState().consumeEditingAnswerText();
+    setAnswerText((current) => {
+      const base = current || staged;
+      return base ? `${base} ${finalText}` : finalText;
+    });
   });
 
   const sceneMutation = useMutation({
@@ -42,13 +56,25 @@ export default function DeepeningQuestionsScreen() {
   });
 
   const handleNext = () => {
-    useDreamDraftStore.getState().addAnswer({
+    const store = useDreamDraftStore.getState();
+    if (editingAnswerText) store.consumeEditingAnswerText();
+    store.addAnswer({
       question: currentQuestion,
-      answer: answerText.trim(),
+      answer: effectiveAnswer.trim(),
     });
     setAnswerText('');
     if (isLastQuestion) {
       sceneMutation.mutate();
+    }
+  };
+
+  const handleBack = () => {
+    if (currentIndex === 0) {
+      // Back to the dream description (its text is kept on that screen).
+      router.back();
+    } else {
+      setAnswerText('');
+      useDreamDraftStore.getState().popAnswerForEditing();
     }
   };
 
@@ -95,8 +121,12 @@ export default function DeepeningQuestionsScreen() {
 
           <TextField
             label="Your answer"
-            value={dictation.isListening && dictation.transcript ? dictation.transcript : answerText}
-            onChangeText={setAnswerText}
+            value={
+              dictation.isListening && dictation.transcript
+                ? dictation.transcript
+                : effectiveAnswer
+            }
+            onChangeText={updateAnswer}
             multiline
             numberOfLines={4}
             style={styles.answerInput}
@@ -111,9 +141,15 @@ export default function DeepeningQuestionsScreen() {
 
           <Button
             label={isLastQuestion ? 'See your dream' : 'Next'}
-            disabled={answerText.trim().length < 2 || dictation.isListening}
+            disabled={effectiveAnswer.trim().length < 2 || dictation.isListening}
             onPress={handleNext}
             style={styles.nextButton}
+          />
+          <Button
+            label={currentIndex === 0 ? 'Back to my dream' : 'Edit previous answer'}
+            variant="ghost"
+            disabled={dictation.isListening}
+            onPress={handleBack}
           />
         </ScrollView>
       </KeyboardAvoidingView>

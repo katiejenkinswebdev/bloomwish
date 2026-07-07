@@ -86,6 +86,9 @@ export default function PlantingCeremonyScreen() {
   const handleEnterGarden = () => {
     useDreamDraftStore.getState().reset();
     router.dismissAll();
+    // On web dismissAll only pops the nested create-dream stack; make sure we
+    // actually land on the garden before presenting the paywall.
+    router.navigate('/');
     // The emotional peak: show the Full Bloom paywall once, always dismissable.
     router.push('/paywall');
   };
