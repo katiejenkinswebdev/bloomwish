@@ -2,7 +2,7 @@ import { StyleSheet, type ViewProps } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { MaxContentWidth, Spacing } from '@/constants/theme';
 
 export type ScreenProps = ViewProps & {
   scrollable?: boolean;
@@ -12,7 +12,7 @@ export type ScreenProps = ViewProps & {
 export function Screen({ style, padded = true, children, ...rest }: ScreenProps) {
   return (
     <ThemedView style={styles.fill}>
-      <SafeAreaView style={[styles.fill, padded && styles.padded, style]} {...rest}>
+      <SafeAreaView style={[styles.fill, styles.column, padded && styles.padded, style]} {...rest}>
         {children}
       </SafeAreaView>
     </ThemedView>
@@ -22,6 +22,11 @@ export function Screen({ style, padded = true, children, ...rest }: ScreenProps)
 const styles = StyleSheet.create({
   fill: {
     flex: 1,
+  },
+  column: {
+    width: '100%',
+    maxWidth: MaxContentWidth,
+    alignSelf: 'center',
   },
   padded: {
     paddingHorizontal: Spacing.four,
