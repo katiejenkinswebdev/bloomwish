@@ -22,6 +22,11 @@ import { Branding } from '@/config/branding';
 import { Spacing } from '@/constants/theme';
 import type { DreamState } from '@/lib/supabase/database.types';
 
+// Horizontal spread of the rain, centered over the plant (px from box center).
+const DROPLET_OFFSETS = [-30, -12, 6, 24, 40];
+const PLANT_BOX_WIDTH = 140;
+const DROPLET_WIDTH = 8;
+
 function Droplet({ index }: { index: number }) {
   const reducedMotion = useReducedMotion();
   const fall = useSharedValue(0);
@@ -29,22 +34,21 @@ function Droplet({ index }: { index: number }) {
   useEffect(() => {
     if (reducedMotion) return;
     fall.value = withDelay(
-      index * 300,
-      withRepeat(withTiming(1, { duration: 1100, easing: Easing.in(Easing.quad) }), 3, false)
+      index * 260,
+      // Gentle rain for as long as the moment is on screen.
+      withRepeat(withTiming(1, { duration: 1100, easing: Easing.in(Easing.quad) }), -1, false)
     );
   }, [fall, index, reducedMotion]);
 
   const style = useAnimatedStyle(() => ({
     opacity: reducedMotion ? 0 : fall.value < 0.05 ? 0 : 1 - fall.value * 0.7,
-    transform: [{ translateY: fall.value * 90 }],
+    transform: [{ translateY: fall.value * 110 }],
   }));
 
-  return (
-    <Animated.View
-      style={[styles.droplet, { left: 30 + ((index * 37) % 60) }, style]}
-      pointerEvents="none"
-    />
-  );
+  const left =
+    PLANT_BOX_WIDTH / 2 - DROPLET_WIDTH / 2 + DROPLET_OFFSETS[index % DROPLET_OFFSETS.length];
+
+  return <Animated.View style={[styles.droplet, { left }, style]} pointerEvents="none" />;
 }
 
 export interface SessionCompleteProps {
@@ -89,7 +93,7 @@ export function SessionComplete({
     <View style={styles.container}>
       <View style={styles.plantArea}>
         <View style={styles.plantBox}>
-          {[0, 1, 2, 3].map((i) => (
+          {[0, 1, 2, 3, 4].map((i) => (
             <Droplet key={i} index={i} />
           ))}
           <PlantGlyph state={plantState} health="thriving" size={120} />
@@ -137,7 +141,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   plantBox: {
-    width: 140,
+    width: PLANT_BOX_WIDTH,
     height: 180,
     alignItems: 'center',
     justifyContent: 'flex-end',
