@@ -1,20 +1,17 @@
 import { useState } from 'react';
-import { Image, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
-import * as ImagePicker from 'expo-image-picker';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 
-import { DictationButton } from '@/components/dictation-button';
 import { Spark } from '@/components/spark';
 import { ThemedText } from '@/components/themed-text';
 import { VividnessSeed } from '@/components/vividness-seed';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Sheet } from '@/components/ui/sheet';
-import { TextField } from '@/components/ui/text-field';
 import { Spacing } from '@/constants/theme';
-import { useDictation } from '@/features/dictation/use-dictation';
-import { addSign, fetchSessions, fetchSigns } from '@/features/dreams/signs';
+import { AddSignForm } from '@/features/dreams/components/add-sign-form';
+import { fetchSessions, fetchSigns } from '@/features/dreams/signs';
 import type { DreamHealth, DreamRow } from '@/lib/supabase/database.types';
 
 export interface DreamDetailSheetProps {
@@ -24,14 +21,7 @@ export interface DreamDetailSheetProps {
 }
 
 export function DreamDetailSheet({ dream, effectiveHealth, onClose }: DreamDetailSheetProps) {
-  const queryClient = useQueryClient();
   const [isAddingSign, setIsAddingSign] = useState(false);
-  const [signText, setSignText] = useState('');
-  const [photoUri, setPhotoUri] = useState<string | undefined>();
-
-  const dictation = useDictation((finalText) => {
-    setSignText((current) => (current ? `${current} ${finalText}` : finalText));
-  });
 
   const signsQuery = useQuery({
     queryKey: ['signs', dream?.id],
@@ -45,31 +35,8 @@ export function DreamDetailSheet({ dream, effectiveHealth, onClose }: DreamDetai
     enabled: !!dream,
   });
 
-  const addSignMutation = useMutation({
-    mutationFn: () => addSign({ dreamId: dream!.id, text: signText.trim(), photoUri }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['signs', dream?.id] });
-      queryClient.invalidateQueries({ queryKey: ['dreams'] });
-      setSignText('');
-      setPhotoUri(undefined);
-      setIsAddingSign(false);
-    },
-  });
-
-  const pickPhoto = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: 'images',
-      quality: 0.7,
-    });
-    if (!result.canceled && result.assets[0]) {
-      setPhotoUri(result.assets[0].uri);
-    }
-  };
-
   const handleClose = () => {
     setIsAddingSign(false);
-    setSignText('');
-    setPhotoUri(undefined);
     onClose();
   };
 
@@ -95,41 +62,11 @@ export function DreamDetailSheet({ dream, effectiveHealth, onClose }: DreamDetai
           {isAddingSign ? (
             <>
               <ThemedText type="smallBold">Signs it’s growing</ThemedText>
-              <TextField
-                label="What did you notice?"
-                value={
-                  dictation.isListening && dictation.transcript ? dictation.transcript : signText
-                }
-                onChangeText={setSignText}
-                multiline
-                placeholder="A synchronicity, a small win, a nudge from the world…"
-                editable={!dictation.isListening}
-                errorText={dictation.error ?? undefined}
+              <AddSignForm
+                dreamId={dream.id}
+                onSaved={() => setIsAddingSign(false)}
+                onCancel={() => setIsAddingSign(false)}
               />
-              <View style={styles.signActions}>
-                <DictationButton
-                  isListening={dictation.isListening}
-                  onPress={() => (dictation.isListening ? dictation.stop() : dictation.start())}
-                />
-                <Button
-                  label={photoUri ? 'Change photo' : 'Add photo'}
-                  variant="secondary"
-                  onPress={pickPhoto}
-                />
-              </View>
-              {photoUri ? <Image source={{ uri: photoUri }} style={styles.photoPreview} /> : null}
-              {addSignMutation.error ? (
-                <ThemedText themeColor="danger">
-                  Couldn’t save your sign. Please try again.
-                </ThemedText>
-              ) : null}
-              <Button
-                label="Save this sign"
-                loading={addSignMutation.isPending}
-                disabled={signText.trim().length < 2 || dictation.isListening}
-                onPress={() => addSignMutation.mutate()}
-              />
-              <Button label="Cancel" variant="ghost" onPress={() => setIsAddingSign(false)} />
             </>
           ) : (
             <>

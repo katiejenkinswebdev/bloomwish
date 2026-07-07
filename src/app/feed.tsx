@@ -62,7 +62,9 @@ export default function FeedScreen() {
           stateAdvanced={result.stateAdvanced}
           dreamId={dreamId}
           onDone={() => router.back()}
-          onLogSign={() => router.back()}
+          onLogSign={() =>
+            router.replace({ pathname: '/add-sign', params: { dreamId: dreamId! } })
+          }
         />
       </Screen>
     );
