@@ -1,56 +1,67 @@
-# Welcome to your Expo app 👋
+# Bloomwish
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A manifestation and visualization app: plant a wish, grow a dream. Users capture personal dreams as seeds in an animated garden, nurture them through visualization sessions, log real-world Signs of progress, and harvest dreams that come true.
 
-## Get started
+> **Naming:** the app name is pending final trademark clearance. All naming, tier names, and the tagline live in [src/config/branding.ts](src/config/branding.ts) — a rename is a one-line change. Never hardcode the name in copy.
 
-1. Install dependencies
+## Stack
 
-   ```bash
-   npm install
-   ```
+- **App:** React Native + Expo SDK 57, TypeScript, Expo Router (file-based routing under `src/app/`)
+- **Backend:** Supabase (Postgres + RLS, Auth, Storage, Edge Functions)
+- **State:** Zustand (app state) + TanStack Query (server state)
+- **Animations:** Reanimated 4 + Lottie
+- **Payments:** RevenueCat
+- **AI:** Anthropic API (text) + ElevenLabs (voice) — called **only** from Supabase Edge Functions, never from the client
 
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Getting started
 
 ```bash
-npm run reset-project
+npm install
+cp .env.example .env   # fill in real values (see below)
+npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Sign in with Apple, Google Sign-In, and speech recognition require a **development build** (`npx expo run:ios` / `run:android`) — they won't work in Expo Go.
 
-### Other setup steps
+## Backend setup (one-time)
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+1. **Supabase** — create a project at [supabase.com](https://supabase.com/dashboard), then:
+   - Apply the schema: `npx supabase db push` (or paste `supabase/migrations/*.sql` into the SQL editor)
+   - Deploy functions: `npx supabase functions deploy delete-account`
+   - In Auth → URL Configuration, add redirect URLs: `bloomwish://reset-password` and `bloomwish://verify-email`
+   - Enable Apple and Google providers in Auth → Providers
+   - Copy the project URL + anon key into `.env`
+2. **Google Sign-In** — create iOS + Web OAuth client IDs at [console.cloud.google.com](https://console.cloud.google.com/apis/credentials); put both in `.env`. The Web client ID also goes into the Supabase Google provider config.
+3. **Sign in with Apple** — enable the capability for `com.bloomwish.app` in the Apple Developer portal; configure the Apple provider in Supabase.
+4. **RevenueCat** (Phase 7) — create the app, products (`monthly`, `annual`, `founding_lifetime`), and the `full_bloom` entitlement; put SDK keys in `.env`.
+5. **Edge Function secrets** (Phase 2+): `supabase secrets set ANTHROPIC_API_KEY=… ELEVENLABS_API_KEY=… ELEVENLABS_VOICE_ID=…`
 
-## Learn more
+## Project layout
 
-To learn more about developing your project with Expo, look at the following resources:
+```
+src/
+  app/            Expo Router routes
+    (auth)/       sign-in, sign-up, forgot/reset password, verify email
+    (app)/        signed-in tabs: Garden, Greenhouse, Profile
+  components/     design system (ui/) + themed primitives
+  config/         branding.ts — single source of truth for naming/tiers
+  constants/      theme tokens + brand palette
+  features/       feature modules (auth/, …)
+  lib/            supabase client, query client
+  store/          zustand stores
+supabase/
+  migrations/     SQL schema (all tables RLS-protected)
+  functions/      Edge Functions (delete-account, …)
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Checks
 
-## Join the community
+```bash
+npx tsc --noEmit   # typecheck
+npx expo lint      # lint
+npx expo-doctor    # project health
+```
 
-Join our community of developers creating universal apps.
+## Ethical design ground rules
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+No fake urgency or artificial scarcity. No shame-based notifications. Plants never permanently die (dormancy is always reversible). The free tier is genuinely useful. Cancellation is easy and never hidden. Pricing is transparent before any purchase sheet. Variable rewards are cosmetic delight only. All copy frames the app as visualization/mindfulness/wellbeing — no medical claims, no manifestation guarantees.

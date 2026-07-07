@@ -1,0 +1,127 @@
+import { useState } from 'react';
+import { StyleSheet } from 'react-native';
+
+import { ThemedText } from '@/components/themed-text';
+import { Button } from '@/components/ui/button';
+import { Screen } from '@/components/ui/screen';
+import { Sheet } from '@/components/ui/sheet';
+import { TextField } from '@/components/ui/text-field';
+import { Spacing } from '@/constants/theme';
+import { brandedAuthErrorMessage, deleteAccount, signOut } from '@/features/auth/api';
+import { useUser } from '@/store/auth-store';
+
+const DELETE_CONFIRMATION_WORD = 'DELETE';
+
+export default function ProfileScreen() {
+  const user = useUser();
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const [isDeleteSheetVisible, setIsDeleteSheetVisible] = useState(false);
+  const [confirmationInput, setConfirmationInput] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSignOut = async () => {
+    setIsSigningOut(true);
+    try {
+      await signOut();
+    } catch (err) {
+      setError(brandedAuthErrorMessage(err));
+    } finally {
+      setIsSigningOut(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true);
+    setError(null);
+    try {
+      await deleteAccount();
+      // Root layout's Stack.Protected guard redirects to the auth group
+      // automatically once the session clears.
+    } catch (err) {
+      setError(brandedAuthErrorMessage(err));
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  return (
+    <Screen>
+      <ThemedText type="title">Profile</ThemedText>
+      <ThemedText themeColor="textSecondary" style={styles.email}>
+        {user?.email}
+      </ThemedText>
+
+      {error ? (
+        <ThemedText themeColor="danger" style={styles.error}>
+          {error}
+        </ThemedText>
+      ) : null}
+
+      <Button
+        label="Sign out"
+        variant="secondary"
+        loading={isSigningOut}
+        onPress={handleSignOut}
+        style={styles.signOutButton}
+      />
+
+      <Button
+        label="Delete account"
+        variant="danger"
+        onPress={() => setIsDeleteSheetVisible(true)}
+        style={styles.deleteButton}
+      />
+
+      <Sheet
+        visible={isDeleteSheetVisible}
+        onClose={() => {
+          setIsDeleteSheetVisible(false);
+          setConfirmationInput('');
+        }}>
+        <ThemedText type="subtitle">Delete your account?</ThemedText>
+        <ThemedText themeColor="textSecondary">
+          This permanently deletes your dreams, sessions, signs, meditations, and every trophy
+          you&apos;ve earned. This can&apos;t be undone.
+        </ThemedText>
+        <TextField
+          label={`Type ${DELETE_CONFIRMATION_WORD} to confirm`}
+          value={confirmationInput}
+          onChangeText={setConfirmationInput}
+          autoCapitalize="characters"
+          autoCorrect={false}
+        />
+        <Button
+          label="Permanently delete my account"
+          variant="danger"
+          disabled={confirmationInput !== DELETE_CONFIRMATION_WORD}
+          loading={isDeleting}
+          onPress={handleDeleteAccount}
+        />
+        <Button
+          label="Cancel"
+          variant="ghost"
+          onPress={() => {
+            setIsDeleteSheetVisible(false);
+            setConfirmationInput('');
+          }}
+        />
+      </Sheet>
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  email: {
+    marginBottom: Spacing.four,
+  },
+  error: {
+    marginBottom: Spacing.three,
+  },
+  signOutButton: {
+    marginTop: Spacing.four,
+  },
+  deleteButton: {
+    marginTop: Spacing.three,
+  },
+});

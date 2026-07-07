@@ -7,20 +7,32 @@ import '@/global.css';
 
 import { Platform } from 'react-native';
 
+import { BrandPalette } from '@/constants/brand-palette';
+
 export const Colors = {
   light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
+    text: BrandPalette.plum,
+    background: BrandPalette.cream,
+    backgroundElement: '#F3E9DA',
+    backgroundSelected: '#EADCC6',
+    textSecondary: '#7A6B7F',
+    primary: BrandPalette.deepGreen,
+    primarySoft: BrandPalette.sage,
+    accent: BrandPalette.gold,
+    danger: '#C1554A',
+    border: '#E6D8C4',
   },
   dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
+    text: BrandPalette.cream,
+    background: '#241C29',
+    backgroundElement: '#302840',
+    backgroundSelected: '#3B3050',
+    textSecondary: '#C7B9CC',
+    primary: BrandPalette.sage,
+    primarySoft: BrandPalette.deepGreen,
+    accent: BrandPalette.gold,
+    danger: '#E08B7D',
+    border: '#463A54',
   },
 } as const;
 

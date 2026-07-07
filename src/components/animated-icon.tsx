@@ -140,7 +140,8 @@ const styles = StyleSheet.create({
   },
   splashOverlay: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: '#208AEF',
+    // TODO(phase 8): swap for the Wishing Seed mark once the brand asset is generated.
+    backgroundColor: '#FBF3E7',
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 1000,
