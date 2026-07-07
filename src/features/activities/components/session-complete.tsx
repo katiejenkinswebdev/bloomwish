@@ -53,6 +53,8 @@ export interface SessionCompleteProps {
   onDone: () => void;
   onLogSign?: () => void;
   dreamId?: string;
+  /** Points granted after the daily cap — 0 means the garden is full for today. */
+  grantedBoost?: number;
 }
 
 /**
@@ -65,6 +67,7 @@ export function SessionComplete({
   onDone,
   onLogSign,
   dreamId,
+  grantedBoost,
 }: SessionCompleteProps) {
   const isFullBloom = useIsFullBloom();
   const [reward, setReward] = useState<GrantedReward | null>(null);
@@ -85,15 +88,24 @@ export function SessionComplete({
   return (
     <View style={styles.container}>
       <View style={styles.plantArea}>
-        {[0, 1, 2, 3].map((i) => (
-          <Droplet key={i} index={i} />
-        ))}
-        <PlantGlyph state={plantState} health="thriving" size={120} />
+        <View style={styles.plantBox}>
+          {[0, 1, 2, 3].map((i) => (
+            <Droplet key={i} index={i} />
+          ))}
+          <PlantGlyph state={plantState} health="thriving" size={120} />
+        </View>
       </View>
 
       {stateAdvanced ? (
         <ThemedText type="smallBold" themeColor="accent" style={styles.centered}>
           ✦ Your plant just grew ✦
+        </ThemedText>
+      ) : null}
+
+      {grantedBoost === 0 ? (
+        <ThemedText type="small" themeColor="textSecondary" style={styles.centered}>
+          Your garden has soaked up all it can hold today — it will grow from tomorrow’s
+          tending. Every session still counts for you. 🌙
         </ThemedText>
       ) : null}
 
@@ -123,7 +135,11 @@ const styles = StyleSheet.create({
   },
   plantArea: {
     alignItems: 'center',
+  },
+  plantBox: {
+    width: 140,
     height: 180,
+    alignItems: 'center',
     justifyContent: 'flex-end',
   },
   droplet: {
