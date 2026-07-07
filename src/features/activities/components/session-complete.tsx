@@ -16,6 +16,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { PlantGlyph } from '@/components/plant-glyph';
+import { Spark } from '@/components/spark';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
 import { Branding } from '@/config/branding';
@@ -51,6 +52,34 @@ function Droplet({ index }: { index: number }) {
   return <Animated.View style={[styles.droplet, { left }, style]} pointerEvents="none" />;
 }
 
+function NourishMote({ index }: { index: number }) {
+  const reducedMotion = useReducedMotion();
+  const rise = useSharedValue(0);
+
+  useEffect(() => {
+    if (reducedMotion) return;
+    rise.value = withDelay(
+      index * 320,
+      // Golden nourishment drifting up through the plant while the moment is on screen.
+      withRepeat(withTiming(1, { duration: 1600, easing: Easing.out(Easing.quad) }), -1, false)
+    );
+  }, [rise, index, reducedMotion]);
+
+  const style = useAnimatedStyle(() => ({
+    opacity: reducedMotion ? 0 : rise.value < 0.06 ? 0 : 1 - rise.value * 0.85,
+    transform: [{ translateY: rise.value * -120 }, { scale: 0.7 + rise.value * 0.5 }],
+  }));
+
+  const left =
+    PLANT_BOX_WIDTH / 2 - 6 + DROPLET_OFFSETS[index % DROPLET_OFFSETS.length];
+
+  return (
+    <Animated.View style={[styles.mote, { left }, style]} pointerEvents="none">
+      <Spark size={12} />
+    </Animated.View>
+  );
+}
+
 export interface SessionCompleteProps {
   plantState: DreamState;
   stateAdvanced: boolean;
@@ -59,6 +88,8 @@ export interface SessionCompleteProps {
   dreamId?: string;
   /** Points granted after the daily cap — 0 means the garden is full for today. */
   grantedBoost?: number;
+  /** Water rains down; feed sends golden nourishment up through the plant. */
+  variant?: 'water' | 'feed';
 }
 
 /**
@@ -72,6 +103,7 @@ export function SessionComplete({
   onLogSign,
   dreamId,
   grantedBoost,
+  variant = 'water',
 }: SessionCompleteProps) {
   const isFullBloom = useIsFullBloom();
   const [reward, setReward] = useState<GrantedReward | null>(null);
@@ -93,9 +125,9 @@ export function SessionComplete({
     <View style={styles.container}>
       <View style={styles.plantArea}>
         <View style={styles.plantBox}>
-          {[0, 1, 2, 3, 4].map((i) => (
-            <Droplet key={i} index={i} />
-          ))}
+          {[0, 1, 2, 3, 4].map((i) =>
+            variant === 'feed' ? <NourishMote key={i} index={i} /> : <Droplet key={i} index={i} />
+          )}
           <PlantGlyph state={plantState} health="thriving" size={120} />
         </View>
       </View>
@@ -145,6 +177,10 @@ const styles = StyleSheet.create({
     height: 180,
     alignItems: 'center',
     justifyContent: 'flex-end',
+  },
+  mote: {
+    position: 'absolute',
+    bottom: 24,
   },
   droplet: {
     position: 'absolute',

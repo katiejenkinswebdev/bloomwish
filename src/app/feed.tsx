@@ -60,6 +60,7 @@ export default function FeedScreen() {
     return (
       <Screen>
         <SessionComplete
+          variant="feed"
           plantState={result.newState}
           stateAdvanced={result.stateAdvanced}
           grantedBoost={result.grantedBoost}
