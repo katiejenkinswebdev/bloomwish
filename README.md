@@ -27,8 +27,9 @@ Sign in with Apple, Google Sign-In, and speech recognition require a **developme
 
 1. **Supabase** — create a project at [supabase.com](https://supabase.com/dashboard), then:
    - Apply the schema: `npx supabase db push` (or paste `supabase/migrations/*.sql` into the SQL editor)
-   - Deploy functions: `npx supabase functions deploy delete-account dream-coach`
-   - Set the AI secret: `npx supabase secrets set ANTHROPIC_API_KEY=sk-ant-…`
+   - Deploy functions: `npx supabase functions deploy delete-account dream-coach generate-meditation`
+   - Set the AI secrets: `npx supabase secrets set ANTHROPIC_API_KEY=sk-ant-… ELEVENLABS_API_KEY=… ELEVENLABS_VOICE_ID=…` (the voice ID is the founder's cloned voice in ElevenLabs)
+   - Optional: upload `ambient-bed.wav` (16 kHz mono 16-bit PCM WAV) to the `meditation-assets` bucket — it's mixed softly under personalized meditations; without it they render voice-only
    - In Auth → URL Configuration, add redirect URLs: `bloomwish://reset-password` and `bloomwish://verify-email`
    - Enable Apple and Google providers in Auth → Providers
    - Copy the project URL + anon key into `.env`

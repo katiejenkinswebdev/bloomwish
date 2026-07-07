@@ -46,6 +46,7 @@ function RootNavigator() {
           <Stack.Screen name="revive" options={{ presentation: 'modal' }} />
           <Stack.Screen name="water" options={{ presentation: 'modal' }} />
           <Stack.Screen name="feed" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="meditation" options={{ presentation: 'modal' }} />
         </Stack.Protected>
         <Stack.Protected guard={needsOnboarding}>
           <Stack.Screen name="onboarding" />

@@ -179,6 +179,14 @@ export function DreamDetailSheet({ dream, effectiveHealth, onClose }: DreamDetai
                     }}
                   />
                   <Button label="Add a Sign" onPress={() => setIsAddingSign(true)} />
+                  <Button
+                    label="Personalized meditation ✦"
+                    variant="secondary"
+                    onPress={() => {
+                      handleClose();
+                      router.push({ pathname: '/meditation', params: { dreamId: dream.id } });
+                    }}
+                  />
                 </View>
               )}
 
