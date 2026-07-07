@@ -187,6 +187,14 @@ export function DreamDetailSheet({ dream, effectiveHealth, onClose }: DreamDetai
                       router.push({ pathname: '/meditation', params: { dreamId: dream.id } });
                     }}
                   />
+                  <Button
+                    label="It came true — harvest 🌾"
+                    variant="ghost"
+                    onPress={() => {
+                      handleClose();
+                      router.push({ pathname: '/harvest', params: { dreamId: dream.id } });
+                    }}
+                  />
                 </View>
               )}
 

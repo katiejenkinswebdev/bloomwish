@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
+
+import { maybeGrantReward, type GrantedReward } from '@/features/rewards/api';
+import { DelightMoment } from '@/features/rewards/components/delight-moment';
+import { useIsFullBloom } from '@/features/purchases/entitlements';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -48,6 +52,7 @@ export interface SessionCompleteProps {
   stateAdvanced: boolean;
   onDone: () => void;
   onLogSign?: () => void;
+  dreamId?: string;
 }
 
 /**
@@ -59,9 +64,18 @@ export function SessionComplete({
   stateAdvanced,
   onDone,
   onLogSign,
+  dreamId,
 }: SessionCompleteProps) {
+  const isFullBloom = useIsFullBloom();
+  const [reward, setReward] = useState<GrantedReward | null>(null);
+
   useEffect(() => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    maybeGrantReward('session_complete', { includeLegendary: isFullBloom, dreamId })
+      .then(setReward)
+      .catch(() => {});
+    // Roll exactly once per completion.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Gentle, occasional — not every time (spec: "prompt gently … occasionally").
@@ -95,6 +109,8 @@ export function SessionComplete({
       ) : null}
 
       <Button label="Done" onPress={onDone} />
+
+      <DelightMoment reward={reward} onClose={() => setReward(null)} />
     </View>
   );
 }

@@ -145,6 +145,7 @@ export default function WaterScreen() {
         <SessionComplete
           plantState={result.newState}
           stateAdvanced={result.stateAdvanced}
+          dreamId={dreamId}
           onDone={() => router.back()}
           onLogSign={() => router.back()}
         />

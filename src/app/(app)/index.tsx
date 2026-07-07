@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 
+import { Butterfly } from '@/components/butterfly';
 import { Fireflies } from '@/components/fireflies';
 import { PlantGlyph } from '@/components/plant-glyph';
 import { Spark } from '@/components/spark';
@@ -18,12 +19,23 @@ import {
   healthConfigQueryKey,
 } from '@/features/dreams/health';
 import { fetchSignCounts } from '@/features/dreams/signs';
+import { fetchTrophies } from '@/features/harvest/api';
+import { maybeGrantReward, type GrantedReward } from '@/features/rewards/api';
+import { DelightMoment } from '@/features/rewards/components/delight-moment';
+import { seasonalTouch } from '@/features/rewards/season';
+import { useIsFullBloom } from '@/features/purchases/entitlements';
 import type { DreamRow } from '@/lib/supabase/database.types';
 
 const PLANT_AREA = 132;
 
+// One app-open delight roll per launch, not per navigation.
+let hasRolledThisLaunch = false;
+
 export default function GardenScreen() {
   const [selectedDream, setSelectedDream] = useState<DreamRow | null>(null);
+  const [reward, setReward] = useState<GrantedReward | null>(null);
+  const isFullBloom = useIsFullBloom();
+  const [season] = useState(() => seasonalTouch());
 
   const dreamsQuery = useQuery({ queryKey: ['dreams'], queryFn: fetchDreams });
   const configQuery = useQuery({
@@ -32,9 +44,20 @@ export default function GardenScreen() {
     staleTime: 1000 * 60 * 60,
   });
   const signCountsQuery = useQuery({ queryKey: ['sign-counts'], queryFn: fetchSignCounts });
+  const trophiesQuery = useQuery({ queryKey: ['trophies'], queryFn: fetchTrophies });
+
+  useEffect(() => {
+    if (hasRolledThisLaunch) return;
+    hasRolledThisLaunch = true;
+    maybeGrantReward('app_open', { includeLegendary: isFullBloom })
+      .then(setReward)
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const dreams = dreamsQuery.data ?? [];
   const signCounts = signCountsQuery.data ?? {};
+  const trophies = trophiesQuery.data ?? [];
   const healthFor = (dream: DreamRow) => deriveHealth(dream, configQuery.data);
 
   return (
@@ -42,7 +65,16 @@ export default function GardenScreen() {
       <View style={styles.header}>
         <ThemedText type="title">Your garden</ThemedText>
         <Spark size={20} />
+        <ThemedText accessibilityLabel={season.greeting}>{season.glyph}</ThemedText>
       </View>
+
+      {trophies.length > 0 ? (
+        <View style={styles.trophyButterflies} pointerEvents="none">
+          {trophies.slice(0, 6).map((trophy, index) => (
+            <Butterfly key={trophy.id} size={18} index={index} />
+          ))}
+        </View>
+      ) : null}
 
       {dreams.length === 0 ? (
         <View style={styles.empty}>
@@ -74,6 +106,26 @@ export default function GardenScreen() {
               </ThemedText>
             </Pressable>
           ))}
+
+          {trophies.length > 0 ? (
+            <View style={styles.gardenPath}>
+              <ThemedText type="small" themeColor="textSecondary" style={styles.pathLabel}>
+                The garden path
+              </ThemedText>
+              <View style={styles.plaqueRow}>
+                {trophies.map((trophy) => (
+                  <View key={trophy.id} style={styles.pathPlaque}>
+                    <ThemedText type="small" numberOfLines={1} style={styles.pathPlaqueText}>
+                      {trophy.dream_title}
+                    </ThemedText>
+                    <ThemedText type="small" style={styles.pathPlaqueText}>
+                      {new Date(trophy.harvested_at).toLocaleDateString()}
+                    </ThemedText>
+                  </View>
+                ))}
+              </View>
+            </View>
+          ) : null}
         </ScrollView>
       )}
 
@@ -88,6 +140,8 @@ export default function GardenScreen() {
         effectiveHealth={selectedDream ? healthFor(selectedDream) : null}
         onClose={() => setSelectedDream(null)}
       />
+
+      <DelightMoment reward={reward} onClose={() => setReward(null)} />
     </Screen>
   );
 }
@@ -132,5 +186,38 @@ const styles = StyleSheet.create({
   },
   plantButton: {
     marginBottom: Spacing.five,
+  },
+  trophyButterflies: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: Spacing.three,
+    paddingVertical: Spacing.two,
+  },
+  gardenPath: {
+    width: '100%',
+    gap: Spacing.two,
+    paddingTop: Spacing.four,
+  },
+  pathLabel: {
+    textAlign: 'center',
+  },
+  plaqueRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: Spacing.two,
+  },
+  pathPlaque: {
+    backgroundColor: '#8B8680',
+    borderColor: '#6F6A64',
+    borderWidth: 1,
+    borderRadius: Spacing.one,
+    paddingVertical: Spacing.one,
+    paddingHorizontal: Spacing.two,
+    maxWidth: 150,
+    alignItems: 'center',
+  },
+  pathPlaqueText: {
+    color: '#F5F2EC',
   },
 });
