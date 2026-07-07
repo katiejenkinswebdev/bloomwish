@@ -168,6 +168,7 @@ export default function MeditationScreen() {
   }
 
   if (audioUrl) {
+    const isDemo = meditation?.script?.startsWith('[Demo');
     return (
       <Screen style={styles.container}>
         <Player
@@ -178,6 +179,14 @@ export default function MeditationScreen() {
             if (finishMutation.isIdle) finishMutation.mutate();
           }}
         />
+        {isDemo ? (
+          <Card>
+            <ThemedText type="small" themeColor="textSecondary">
+              Preview build: this plays a gentle placeholder tone. With the voice keys connected,
+              you’ll hear your own dream narrated in the founder’s voice.
+            </ThemedText>
+          </Card>
+        ) : null}
       </Screen>
     );
   }

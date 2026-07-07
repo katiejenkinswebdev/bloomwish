@@ -308,14 +308,21 @@ Deno.serve(async (req) => {
   const generate = async () => {
     try {
       // Local-preview fallback: without AI keys (never true in production),
-      // produce a canned script and silent audio so the flow stays testable.
+      // produce a canned script and a soft breathing tone (audible, so
+      // playback is verifiable) instead of the narrated meditation.
       if (!Deno.env.get('ANTHROPIC_API_KEY') || !Deno.env.get('ELEVENLABS_API_KEY')) {
         const seconds = durationMinutes * 60;
-        const silence = new Int16Array(seconds * SAMPLE_RATE);
+        const tone = new Int16Array(seconds * SAMPLE_RATE);
+        for (let i = 0; i < tone.length; i++) {
+          const t = i / SAMPLE_RATE;
+          // 174 Hz hum swelling on an 8-second breath cycle, gentle volume.
+          const envelope = 0.5 * (1 - Math.cos((2 * Math.PI * t) / 8));
+          tone[i] = Math.round(Math.sin(2 * Math.PI * 174 * t) * envelope * 0.12 * 32767);
+        }
         const path = `${user.id}/${dreamId}/${durationMinutes}m-demo-${Date.now()}.wav`;
         const { error: uploadError } = await adminClient.storage
           .from('meditations')
-          .upload(path, wavFromPcm(silence, SAMPLE_RATE), { contentType: 'audio/wav' });
+          .upload(path, wavFromPcm(tone, SAMPLE_RATE), { contentType: 'audio/wav' });
         if (uploadError) throw uploadError;
         await adminClient
           .from('meditations')

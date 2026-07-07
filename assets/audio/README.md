@@ -1,6 +1,6 @@
 # Audio assets — TODO for the founder
 
-Every `.wav` in this folder is a **silent placeholder**. Replace each with a
+Every `.wav` in this folder is an **audible placeholder tone**. Replace each with a
 real recording (same filename, or update `src/features/activities/tracks.ts`),
 ideally `.m4a`/AAC for size. Seated meditations only for MVP.
 
