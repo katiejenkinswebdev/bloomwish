@@ -147,9 +147,10 @@ export default function WaterScreen() {
           stateAdvanced={result.stateAdvanced}
           dreamId={dreamId}
           onDone={() => router.back()}
-          onLogSign={() =>
-            router.replace({ pathname: '/add-sign', params: { dreamId: dreamId! } })
-          }
+          onLogSign={() => {
+            router.back();
+            router.push({ pathname: '/add-sign', params: { dreamId: dreamId! } });
+          }}
         />
       </Screen>
     );

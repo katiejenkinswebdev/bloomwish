@@ -38,10 +38,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.4)',
   },
   sheetWrapper: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
+    ...StyleSheet.absoluteFill,
+    justifyContent: 'flex-end',
   },
   sheet: {
     borderTopLeftRadius: Spacing.four,
@@ -51,6 +49,7 @@ const styles = StyleSheet.create({
     padding: Spacing.four,
     gap: Spacing.three,
     maxHeight: '85%',
+    overflow: 'hidden',
   },
   grabber: {
     alignSelf: 'center',

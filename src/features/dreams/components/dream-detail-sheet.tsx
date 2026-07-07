@@ -45,7 +45,10 @@ export function DreamDetailSheet({ dream, effectiveHealth, onClose }: DreamDetai
   return (
     <Sheet visible={!!dream} onClose={handleClose}>
       {dream ? (
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled">
           <ThemedText type="subtitle">{dream.title}</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
             Planted{' '}
@@ -181,6 +184,9 @@ export function DreamDetailSheet({ dream, effectiveHealth, onClose }: DreamDetai
 }
 
 const styles = StyleSheet.create({
+  scroll: {
+    flexShrink: 1,
+  },
   content: {
     gap: Spacing.three,
     paddingBottom: Spacing.five,

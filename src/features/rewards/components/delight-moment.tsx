@@ -17,6 +17,7 @@ export interface DelightMomentProps {
 
 /** A surprise moment of delight — cosmetic, encouraging, never required. */
 export function DelightMoment({ reward, onClose }: DelightMomentProps) {
+  if (!reward) return null;
   return (
     <Sheet visible={!!reward} onClose={onClose}>
       {reward ? (
