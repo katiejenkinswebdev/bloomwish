@@ -307,6 +307,29 @@ Deno.serve(async (req) => {
 
   const generate = async () => {
     try {
+      // Local-preview fallback: without AI keys (never true in production),
+      // produce a canned script and silent audio so the flow stays testable.
+      if (!Deno.env.get('ANTHROPIC_API_KEY') || !Deno.env.get('ELEVENLABS_API_KEY')) {
+        const seconds = durationMinutes * 60;
+        const silence = new Int16Array(seconds * SAMPLE_RATE);
+        const path = `${user.id}/${dreamId}/${durationMinutes}m-demo-${Date.now()}.wav`;
+        const { error: uploadError } = await adminClient.storage
+          .from('meditations')
+          .upload(path, wavFromPcm(silence, SAMPLE_RATE), { contentType: 'audio/wav' });
+        if (uploadError) throw uploadError;
+        await adminClient
+          .from('meditations')
+          .update({
+            status: 'ready',
+            audio_url: path,
+            script:
+              '[Demo meditation — connect Anthropic and ElevenLabs keys to grow the real one.]',
+            generated_at: new Date().toISOString(),
+          })
+          .eq('id', pendingRow.id);
+        return;
+      }
+
       const anthropic = new Anthropic({ apiKey: Deno.env.get('ANTHROPIC_API_KEY') });
       const scriptResponse = await anthropic.messages.create({
         model: MODEL,

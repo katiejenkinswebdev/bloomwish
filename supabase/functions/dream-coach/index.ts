@@ -141,8 +141,33 @@ Deno.serve(async (req) => {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  const anthropic = new Anthropic({ apiKey: Deno.env.get('ANTHROPIC_API_KEY') });
   const body = (await req.json()) as CoachRequest;
+
+  // Local-preview fallback: with no ANTHROPIC_API_KEY configured (never true
+  // in production), return canned coach responses so the flow stays testable.
+  if (!Deno.env.get('ANTHROPIC_API_KEY')) {
+    const demo =
+      body.action === 'questions'
+        ? {
+            questions: [
+              'When you picture this dream real, what is the first thing you see around you?',
+              'What sounds are with you in that moment?',
+              'Who is there with you — or is this moment yours alone?',
+              'What does it feel like in your body when you realize it has happened?',
+            ],
+          }
+        : body.action === 'scene'
+          ? {
+              sceneText:
+                'You are standing right inside the moment you described — it has happened. [Demo scene: connect an Anthropic API key to hear the real coach.] The light is warm, and everything you told me about is here: the sights, the sounds, the people. You take a slow breath and feel it settle in your chest — the quiet, certain feeling of a wish that has bloomed. Stay here a moment. Let it be real.',
+            }
+          : { score: 78, missing: [], encouragement: 'A demo score — but your dream is lovely.' };
+    return new Response(JSON.stringify(demo), {
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  const anthropic = new Anthropic({ apiKey: Deno.env.get('ANTHROPIC_API_KEY') });
 
   let prompt: string;
   let schema: object;
