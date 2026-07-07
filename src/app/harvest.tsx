@@ -31,6 +31,7 @@ export default function HarvestScreen() {
       setTrophy(awarded);
       queryClient.invalidateQueries({ queryKey: ['dreams'] });
       queryClient.invalidateQueries({ queryKey: ['trophies'] });
+      queryClient.invalidateQueries({ queryKey: ['harvested-dreams'] });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     },
   });
@@ -79,7 +80,13 @@ export default function HarvestScreen() {
           </Animated.View>
         </View>
 
-        <Button label="Visit the greenhouse" onPress={() => router.replace('/(app)/greenhouse')} />
+        <Button
+          label="Visit the greenhouse"
+          onPress={() => {
+            router.back();
+            router.navigate('/(app)/greenhouse');
+          }}
+        />
         <Button label="Back to the garden" variant="ghost" onPress={() => router.back()} />
       </Screen>
     );
