@@ -5,6 +5,28 @@ import {
   useSpeechRecognitionEvent,
 } from 'expo-speech-recognition';
 
+/** Actionable copy per speech error code — codes come from the platform's
+ * speech engine (Web Speech API in browsers, native recognizers on device). */
+function dictationErrorMessage(code: string, message?: string): string {
+  switch (code) {
+    case 'not-allowed':
+    case 'service-not-allowed':
+      return Platform.OS === 'web'
+        ? 'The browser blocked the microphone or speech service. Click the mic/lock icon in the address bar to allow it, and check System Settings → Privacy & Security → Microphone for your browser.'
+        : 'Microphone or speech access is blocked. You can enable it in Settings.';
+    case 'network':
+      return 'The speech service couldn’t be reached — it needs an internet connection. Try again in a moment, or just type.';
+    case 'audio-capture':
+      return 'No working microphone was found. Check your input device, or just type.';
+    case 'language-not-supported':
+      return 'This language isn’t supported for dictation here. Typing works everywhere.';
+    case 'no-speech':
+      return 'Didn’t catch anything — try speaking a little sooner after tapping the mic.';
+    default:
+      return message || `Dictation hit a snag (${code}). Typing always works.`;
+  }
+}
+
 export interface DictationState {
   isListening: boolean;
   /** Live transcript, including interim (not-yet-final) words. */
@@ -46,9 +68,9 @@ export function useDictation(onFinalTranscript: (text: string) => void): Dictati
 
   useSpeechRecognitionEvent('error', (event) => {
     setIsListening(false);
-    if (event.error !== 'aborted') {
-      setError(event.message || 'Dictation isn’t available right now.');
-    }
+    if (event.error === 'aborted') return;
+    console.warn('[dictation] error event:', event.error, event.message);
+    setError(dictationErrorMessage(event.error, event.message));
   });
 
   const start = useCallback(async () => {
