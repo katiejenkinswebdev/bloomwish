@@ -1,11 +1,14 @@
 import { useState } from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { router } from 'expo-router';
+import * as WebBrowser from 'expo-web-browser';
 
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
 import { Sheet } from '@/components/ui/sheet';
 import { TextField } from '@/components/ui/text-field';
+import { Branding } from '@/config/branding';
 import { Spacing } from '@/constants/theme';
 import { brandedAuthErrorMessage, deleteAccount, signOut } from '@/features/auth/api';
 import { useUser } from '@/store/auth-store';
@@ -57,6 +60,25 @@ export default function ProfileScreen() {
           {error}
         </ThemedText>
       ) : null}
+
+      <Button
+        label="Share feedback"
+        variant="secondary"
+        onPress={() => router.push('/feedback')}
+      />
+
+      <View style={styles.legalLinks}>
+        <ThemedText
+          type="linkPrimary"
+          onPress={() => WebBrowser.openBrowserAsync(Branding.termsUrl)}>
+          Terms
+        </ThemedText>
+        <ThemedText
+          type="linkPrimary"
+          onPress={() => WebBrowser.openBrowserAsync(Branding.privacyPolicyUrl)}>
+          Privacy policy
+        </ThemedText>
+      </View>
 
       <Button
         label="Sign out"
@@ -120,6 +142,11 @@ const styles = StyleSheet.create({
   },
   signOutButton: {
     marginTop: Spacing.four,
+  },
+  legalLinks: {
+    flexDirection: 'row',
+    gap: Spacing.four,
+    marginTop: Spacing.three,
   },
   deleteButton: {
     marginTop: Spacing.three,

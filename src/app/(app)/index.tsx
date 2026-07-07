@@ -27,6 +27,7 @@ import { maybeGrantReward, type GrantedReward } from '@/features/rewards/api';
 import { DelightMoment } from '@/features/rewards/components/delight-moment';
 import { seasonalTouch } from '@/features/rewards/season';
 import { useIsFullBloom } from '@/features/purchases/entitlements';
+import { computeGardenWidgetState, syncWidgets } from '@/features/widget/widget-state';
 import type { DreamRow } from '@/lib/supabase/database.types';
 
 const PLANT_AREA = 132;
@@ -59,8 +60,7 @@ export default function GardenScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Keep local notifications aligned with reality: daily reminder at the
-  // chosen time, gentle wilting alerts, occasional delight notes.
+  // Keep local notifications and home-screen widgets aligned with reality.
   useEffect(() => {
     if (!dreamsQuery.data || profileQuery.data === undefined) return;
     syncNotifications({
@@ -68,6 +68,7 @@ export default function GardenScreen() {
       dreams: dreamsQuery.data,
       decayConfig: configQuery.data,
     });
+    syncWidgets(computeGardenWidgetState(dreamsQuery.data, configQuery.data));
   }, [dreamsQuery.data, profileQuery.data, configQuery.data]);
 
   const dreams = dreamsQuery.data ?? [];

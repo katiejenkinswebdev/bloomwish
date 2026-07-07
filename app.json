@@ -9,9 +9,14 @@
     "userInterfaceStyle": "automatic",
     "backgroundColor": "#FBF3E7",
     "ios": {
-      "icon": "./assets/expo.icon",
       "bundleIdentifier": "com.bloomwish.app",
+      "appleTeamId": "REPLACE_WITH_APPLE_TEAM_ID",
       "usesAppleSignIn": true,
+      "entitlements": {
+        "com.apple.security.application-groups": [
+          "group.com.bloomwish.app"
+        ]
+      },
       "infoPlist": {
         "NSMicrophoneUsageDescription": "Bloomwish uses your microphone so you can dictate your dream instead of typing. Audio is transcribed on-device and never uploaded or stored.",
         "NSSpeechRecognitionUsageDescription": "Bloomwish uses on-device speech recognition to turn your spoken words into text for your dream. Only the transcript is kept."
@@ -20,7 +25,7 @@
     "android": {
       "package": "com.bloomwish.app",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#3E7C59",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -41,15 +46,40 @@
         {
           "backgroundColor": "#FBF3E7",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "imageWidth": 160
         }
       ],
       "expo-secure-store",
       "expo-apple-authentication",
-      "expo-notifications",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/notification-icon.png",
+          "color": "#3E7C59"
+        }
+      ],
       "@react-native-google-signin/google-signin",
       "expo-speech-recognition",
-      "expo-audio"
+      "expo-audio",
+      "@bacons/apple-targets",
+      [
+        "react-native-android-widget",
+        {
+          "widgets": [
+            {
+              "name": "GardenWidget",
+              "label": "Garden",
+              "description": "Your garden at a glance — and the dream that needs you most.",
+              "minWidth": "160dp",
+              "minHeight": "80dp",
+              "targetCellWidth": 3,
+              "targetCellHeight": 1,
+              "updatePeriodMillis": 1800000
+            }
+          ]
+        }
+      ],
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true,

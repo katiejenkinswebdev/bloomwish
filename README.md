@@ -56,6 +56,13 @@ supabase/
   functions/      Edge Functions (delete-account, …)
 ```
 
+## Widgets & release
+
+- iOS widget lives in [targets/widget/](targets/widget/) (WidgetKit via `@bacons/apple-targets`); it needs the real Apple Team ID in `app.json` (`ios.appleTeamId`) and the `group.com.bloomwish.app` app group registered in the developer portal.
+- The Android widget is defined in JS ([src/features/widget/garden-widget.tsx](src/features/widget/garden-widget.tsx)) via `react-native-android-widget`.
+- Brand assets regenerate with `node scripts/generate-brand-assets.mjs`.
+- Release checklist (EAS, privacy labels, data safety, go-live steps): [docs/store-readiness.md](docs/store-readiness.md).
+
 ## Checks
 
 ```bash
