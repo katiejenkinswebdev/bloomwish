@@ -15,15 +15,20 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 const isNative = Platform.OS === 'ios' || Platform.OS === 'android';
+// True in a real browser; false during Node static prerendering, where
+// there's no window/localStorage and nothing may be persisted.
+const isBrowser = typeof window !== 'undefined';
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
-    // On web (including Node static prerendering, where `window` doesn't
-    // exist) sessions are not persisted — the app ships iOS/Android only.
+    // Native: encrypted SecureStore-backed persistence. Browser: supabase-js'
+    // default localStorage persistence, so refreshes keep you signed in.
     ...(isNative
       ? { storage: new LargeSecureStore(), persistSession: true }
-      : { persistSession: false }),
-    autoRefreshToken: isNative,
+      : isBrowser
+        ? { persistSession: true }
+        : { persistSession: false }),
+    autoRefreshToken: isNative || isBrowser,
     // Native deep links hand us a plain `code` query param to exchange
     // manually (see reset-password.tsx) rather than URL-fragment tokens.
     detectSessionInUrl: false,
