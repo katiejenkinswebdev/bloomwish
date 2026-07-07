@@ -10,7 +10,14 @@ export type TextFieldProps = TextInputProps & {
   errorText?: string;
 };
 
-export function TextField({ label, errorText, style, secureTextEntry, ...rest }: TextFieldProps) {
+export function TextField({
+  label,
+  errorText,
+  style,
+  secureTextEntry,
+  multiline,
+  ...rest
+}: TextFieldProps) {
   const theme = useTheme();
   const [isFocused, setIsFocused] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -27,8 +34,10 @@ export function TextField({ label, errorText, style, secureTextEntry, ...rest }:
           accessibilityLabel={label}
           placeholderTextColor={theme.textSecondary}
           secureTextEntry={isPasswordField && !isPasswordVisible}
+          multiline={multiline}
           style={[
             styles.input,
+            multiline && styles.multilineInput,
             isPasswordField && styles.inputWithToggle,
             {
               color: theme.text,
@@ -79,6 +88,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     paddingHorizontal: Spacing.three,
     fontSize: 16,
+  },
+  // Multiline boxes get the same breathing room as single-line fields —
+  // callers may still override height via `style`.
+  multilineInput: {
+    minHeight: 80,
+    paddingTop: Spacing.three,
+    paddingBottom: Spacing.three,
+    textAlignVertical: 'top',
   },
   inputWithToggle: {
     paddingRight: 64,
