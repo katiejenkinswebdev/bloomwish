@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { router } from 'expo-router';
+
+
+import { goBackOrHome } from '@/lib/navigation';
 import * as WebBrowser from 'expo-web-browser';
 import { useMutation, useQuery } from '@tanstack/react-query';
 
@@ -193,7 +195,7 @@ export default function PaywallScreen() {
         <Button
           label={isFullBloom ? 'Back to the garden' : 'Maybe later'}
           variant="ghost"
-          onPress={() => router.back()}
+          onPress={() => goBackOrHome()}
         />
       </ScrollView>
     </Screen>

@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
+
+import { goBackOrHome } from '@/lib/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { DictationButton } from '@/components/dictation-button';
@@ -62,9 +64,9 @@ export default function FeedScreen() {
           stateAdvanced={result.stateAdvanced}
           grantedBoost={result.grantedBoost}
           dreamId={dreamId}
-          onDone={() => router.back()}
+          onDone={() => goBackOrHome()}
           onLogSign={() => {
-            router.back();
+            goBackOrHome();
             router.push({ pathname: '/add-sign', params: { dreamId: dreamId! } });
           }}
         />
@@ -163,7 +165,7 @@ export default function FeedScreen() {
           <ThemedText themeColor="textSecondary">Gathering nourishment…</ThemedText>
         ) : null}
 
-        <Button label="Not now" variant="ghost" onPress={() => router.back()} />
+        <Button label="Not now" variant="ghost" onPress={() => goBackOrHome()} />
       </ScrollView>
     </Screen>
   );

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
+
+import { goBackOrHome } from '@/lib/navigation';
 import * as Haptics from 'expo-haptics';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Animated, {
@@ -102,7 +104,7 @@ export default function ReviveScreen() {
           <Button
             label="Return to your garden"
             loading={reviveMutation.isPending}
-            onPress={() => router.back()}
+            onPress={() => goBackOrHome()}
           />
         )}
       </Screen>
@@ -132,7 +134,7 @@ export default function ReviveScreen() {
         Breathe with the circle. Let the dream feel real again.
       </ThemedText>
 
-      <Button label="Not now" variant="ghost" onPress={() => router.back()} />
+      <Button label="Not now" variant="ghost" onPress={() => goBackOrHome()} />
     </Screen>
   );
 }

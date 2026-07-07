@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
+
+import { goBackOrHome } from '@/lib/navigation';
 import { useAudioPlayer } from 'expo-audio';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Animated, {
@@ -118,7 +120,7 @@ export default function WaterScreen() {
 
   const endEarly = () => {
     player.pause();
-    router.back();
+    goBackOrHome();
   };
 
   const chooseTrack = (candidate: GuidedTrack) => {
@@ -147,9 +149,9 @@ export default function WaterScreen() {
           stateAdvanced={result.stateAdvanced}
           grantedBoost={result.grantedBoost}
           dreamId={dreamId}
-          onDone={() => router.back()}
+          onDone={() => goBackOrHome()}
           onLogSign={() => {
-            router.back();
+            goBackOrHome();
             router.push({ pathname: '/add-sign', params: { dreamId: dreamId! } });
           }}
         />
@@ -260,7 +262,7 @@ export default function WaterScreen() {
         })}
 
         <Button label="Begin" onPress={startTimer} style={styles.begin} />
-        <Button label="Not now" variant="ghost" onPress={() => router.back()} />
+        <Button label="Not now" variant="ghost" onPress={() => goBackOrHome()} />
       </ScrollView>
     </Screen>
   );

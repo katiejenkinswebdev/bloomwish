@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
+
+import { goBackOrHome } from '@/lib/navigation';
 import * as Haptics from 'expo-haptics';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
@@ -83,11 +85,11 @@ export default function HarvestScreen() {
         <Button
           label="Visit the greenhouse"
           onPress={() => {
-            router.back();
+            goBackOrHome();
             router.navigate('/(app)/greenhouse');
           }}
         />
-        <Button label="Back to the garden" variant="ghost" onPress={() => router.back()} />
+        <Button label="Back to the garden" variant="ghost" onPress={() => goBackOrHome()} />
       </Screen>
     );
   }
@@ -116,7 +118,7 @@ export default function HarvestScreen() {
         loading={harvestMutation.isPending}
         onPress={() => harvestMutation.mutate()}
       />
-      <Button label="Not yet" variant="ghost" onPress={() => router.back()} />
+      <Button label="Not yet" variant="ghost" onPress={() => goBackOrHome()} />
     </Screen>
   );
 }

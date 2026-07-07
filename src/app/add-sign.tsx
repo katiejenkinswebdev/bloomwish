@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
+
+import { goBackOrHome } from '@/lib/navigation';
 import { useQuery } from '@tanstack/react-query';
 
 import { Spark } from '@/components/spark';
@@ -29,7 +31,7 @@ export default function AddSignScreen() {
         <ThemedText themeColor="textSecondary" style={styles.centeredText}>
           Your sign is logged — watch it glow around your plant.
         </ThemedText>
-        <Button label="Back to the garden" onPress={() => router.back()} />
+        <Button label="Back to the garden" onPress={() => goBackOrHome()} />
       </Screen>
     );
   }
@@ -44,7 +46,7 @@ export default function AddSignScreen() {
         <AddSignForm
           dreamId={dreamId!}
           onSaved={() => setSaved(true)}
-          onCancel={() => router.back()}
+          onCancel={() => goBackOrHome()}
         />
       </ScrollView>
     </Screen>

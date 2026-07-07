@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Switch, View } from 'react-native';
-import { router } from 'expo-router';
+
+
+import { goBackOrHome } from '@/lib/navigation';
 import { useMutation } from '@tanstack/react-query';
 
 import { ThemedText } from '@/components/themed-text';
@@ -48,7 +50,7 @@ export default function FeedbackScreen() {
         <ThemedText themeColor="textSecondary" style={styles.centered}>
           Every note helps the garden grow better.
         </ThemedText>
-        <Button label="Done" onPress={() => router.back()} />
+        <Button label="Done" onPress={() => goBackOrHome()} />
       </Screen>
     );
   }
@@ -109,7 +111,7 @@ export default function FeedbackScreen() {
           disabled={message.trim().length < 3}
           onPress={() => submitMutation.mutate()}
         />
-        <Button label="Cancel" variant="ghost" onPress={() => router.back()} />
+        <Button label="Cancel" variant="ghost" onPress={() => goBackOrHome()} />
       </ScrollView>
     </Screen>
   );

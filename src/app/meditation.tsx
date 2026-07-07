@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
+
+import { goBackOrHome } from '@/lib/navigation';
 import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Animated, {
@@ -95,7 +97,7 @@ function Player({
         label={status.playing ? 'Pause' : 'Play'}
         onPress={() => (status.playing ? player.pause() : player.play())}
       />
-      <Button label="Close" variant="ghost" onPress={() => router.back()} />
+      <Button label="Close" variant="ghost" onPress={() => goBackOrHome()} />
     </View>
   );
 }
@@ -161,9 +163,9 @@ export default function MeditationScreen() {
           stateAdvanced={result.stateAdvanced}
           grantedBoost={result.grantedBoost}
           dreamId={dreamId}
-          onDone={() => router.back()}
+          onDone={() => goBackOrHome()}
           onLogSign={() => {
-            router.back();
+            goBackOrHome();
             router.push({ pathname: '/add-sign', params: { dreamId: dreamId! } });
           }}
         />
@@ -212,7 +214,7 @@ export default function MeditationScreen() {
               requestMutation.reset();
             }}
           />
-          <Button label="Close" variant="ghost" onPress={() => router.back()} />
+          <Button label="Close" variant="ghost" onPress={() => goBackOrHome()} />
         </Screen>
       );
     }
@@ -289,7 +291,7 @@ export default function MeditationScreen() {
         loading={requestMutation.isPending}
         onPress={() => requestMutation.mutate()}
       />
-      <Button label="Not now" variant="ghost" onPress={() => router.back()} />
+      <Button label="Not now" variant="ghost" onPress={() => goBackOrHome()} />
     </Screen>
   );
 }
