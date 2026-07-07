@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { useMutation } from '@tanstack/react-query';
@@ -52,11 +52,13 @@ export default function DeepeningQuestionsScreen() {
     }
   };
 
-  if (!questions.length) {
-    // Deep-linked here without a draft in progress — restart the flow.
-    router.replace('/create-dream');
-    return null;
-  }
+  // Deep-linked or refreshed without a draft in progress — restart the flow.
+  // Navigation must happen after render, never during it.
+  const hasDraft = questions.length > 0;
+  useEffect(() => {
+    if (!hasDraft) router.replace('/create-dream');
+  }, [hasDraft]);
+  if (!hasDraft) return null;
 
   if (sceneMutation.isPending || (!currentQuestion && !sceneMutation.error)) {
     return (

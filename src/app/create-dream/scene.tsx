@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { useMutation } from '@tanstack/react-query';
@@ -40,10 +40,12 @@ export default function SceneScreen() {
     },
   });
 
-  if (!sceneText) {
-    router.replace('/create-dream');
-    return null;
-  }
+  // Refreshed or deep-linked without a scene — restart the flow. Navigation
+  // must happen after render, never during it.
+  useEffect(() => {
+    if (!sceneText) router.replace('/create-dream');
+  }, [sceneText]);
+  if (!sceneText) return null;
 
   const needsMoreVividness = score < VIVID_ENOUGH;
 
