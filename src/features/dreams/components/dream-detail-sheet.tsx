@@ -3,12 +3,15 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 
+import { ActionIconButton } from '@/components/action-icon-button';
+import { DropletIcon } from '@/components/droplet-icon';
 import { Spark } from '@/components/spark';
 import { ThemedText } from '@/components/themed-text';
 import { VividnessSeed } from '@/components/vividness-seed';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Sheet } from '@/components/ui/sheet';
+import { BrandPalette } from '@/constants/brand-palette';
 import { Spacing } from '@/constants/theme';
 import { AddSignForm } from '@/features/dreams/components/add-sign-form';
 import { fetchSessions, fetchSigns } from '@/features/dreams/signs';
@@ -105,23 +108,30 @@ export function DreamDetailSheet({ dream, effectiveHealth, onClose }: DreamDetai
                   />
                 </Card>
               ) : (
-                <View style={styles.actions}>
-                  <Button
+                <>
+                <View style={styles.iconRow}>
+                  <ActionIconButton
                     label="Water"
-                    variant="secondary"
+                    accessibilityLabel="Water this dream"
+                    backgroundColor="#5D9DC4"
                     onPress={() => {
                       handleClose();
                       router.push({ pathname: '/water', params: { dreamId: dream.id } });
-                    }}
-                  />
-                  <Button
+                    }}>
+                    <DropletIcon size={26} />
+                  </ActionIconButton>
+                  <ActionIconButton
                     label="Feed"
-                    variant="secondary"
+                    accessibilityLabel="Feed this dream"
+                    backgroundColor={BrandPalette.deepGreen}
                     onPress={() => {
                       handleClose();
                       router.push({ pathname: '/feed', params: { dreamId: dream.id } });
-                    }}
-                  />
+                    }}>
+                    <Spark size={28} />
+                  </ActionIconButton>
+                </View>
+                <View style={styles.actions}>
                   <Button label="Add a Sign" onPress={() => setIsAddingSign(true)} />
                   <Button
                     label="Personalized meditation ✦"
@@ -140,6 +150,7 @@ export function DreamDetailSheet({ dream, effectiveHealth, onClose }: DreamDetai
                     }}
                   />
                 </View>
+                </>
               )}
 
               <ThemedText type="smallBold" style={styles.sectionTitle}>
@@ -200,6 +211,12 @@ const styles = StyleSheet.create({
   },
   scene: {
     fontStyle: 'italic',
+  },
+  iconRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: Spacing.six,
+    paddingVertical: Spacing.two,
   },
   actions: {
     gap: Spacing.two,
