@@ -1,7 +1,8 @@
 import * as Crypto from 'expo-crypto';
 
 import { supabase } from '@/lib/supabase/client';
-import type { DreamHealth, SessionRow, SignRow } from '@/lib/supabase/database.types';
+import { completeSession, type CompletedSession } from '@/features/activities/api';
+import type { SessionRow, SignRow } from '@/lib/supabase/database.types';
 
 export async function fetchSigns(dreamId: string): Promise<SignRow[]> {
   const { data, error } = await supabase
@@ -24,18 +25,17 @@ export async function fetchSessions(dreamId: string): Promise<SessionRow[]> {
   return data;
 }
 
-/** One step better; dormant stays dormant — reviving is its own ritual. */
-function boostedHealth(current: DreamHealth): DreamHealth {
-  if (current === 'wilting') return 'healthy';
-  if (current === 'healthy') return 'thriving';
-  return current;
+export interface AddedSign {
+  sign: SignRow;
+  /** The sun leans in: signs feed growth like a session does. */
+  growth: CompletedSession;
 }
 
 export async function addSign(params: {
   dreamId: string;
   text: string;
   photoUri?: string;
-}): Promise<SignRow> {
+}): Promise<AddedSign> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -65,23 +65,28 @@ export async function addSign(params: {
     .single();
   if (error) throw error;
 
-  // A sign is evidence the dream is growing — small health boost.
-  const { data: dream } = await supabase
-    .from('dreams')
-    .select('health')
-    .eq('id', params.dreamId)
-    .single();
-  if (dream) {
-    await supabase
-      .from('dreams')
-      .update({
-        health: boostedHealth(dream.health),
-        last_interacted_at: new Date().toISOString(),
-      })
-      .eq('id', params.dreamId);
-  }
+  // A sign is real-world evidence the dream is growing — it nourishes the
+  // plant like a session: health steps up, growth points accrue (respecting
+  // the daily cap), and the stage can advance.
+  const { data: boostRow } = await supabase
+    .from('app_config')
+    .select('value')
+    .eq('key', 'sign_health_boost')
+    .maybeSingle();
+  const signBoost =
+    typeof (boostRow?.value as { boost?: number } | null)?.boost === 'number'
+      ? (boostRow!.value as { boost: number }).boost
+      : 5;
 
-  return sign;
+  const growth = await completeSession({
+    dreamId: params.dreamId,
+    type: 'feed',
+    activityId: 'sign',
+    durationSeconds: 0,
+    baseBoost: signBoost,
+  });
+
+  return { sign, growth };
 }
 
 /**

@@ -5,18 +5,19 @@ import { useLocalSearchParams } from 'expo-router';
 import { goBackOrHome } from '@/lib/navigation';
 import { useQuery } from '@tanstack/react-query';
 
-import { Spark } from '@/components/spark';
+import { SunMoment } from '@/features/dreams/components/sun-moment';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
 import { Spacing } from '@/constants/theme';
 import { fetchDreams } from '@/features/dreams/api';
 import { AddSignForm } from '@/features/dreams/components/add-sign-form';
+import type { AddedSign } from '@/features/dreams/signs';
 
 /** Standalone Add-a-Sign screen — where the post-session nudge lands. */
 export default function AddSignScreen() {
   const { dreamId } = useLocalSearchParams<{ dreamId: string }>();
-  const [saved, setSaved] = useState(false);
+  const [saved, setSaved] = useState<AddedSign | null>(null);
 
   const dreamsQuery = useQuery({ queryKey: ['dreams'], queryFn: fetchDreams });
   const dream = dreamsQuery.data?.find((d) => d.id === dreamId);
@@ -24,13 +25,18 @@ export default function AddSignScreen() {
   if (saved) {
     return (
       <Screen style={styles.centered}>
-        <Spark size={32} style={styles.spark} />
+        <SunMoment plantState={saved.growth.newState} />
         <ThemedText type="title" style={styles.centeredText}>
           A new firefly ✨
         </ThemedText>
         <ThemedText themeColor="textSecondary" style={styles.centeredText}>
-          Your sign is logged — watch it glow around your plant.
+          The sun leaned in — real-world signs feed your plant like nothing else.
         </ThemedText>
+        {saved.growth.stateAdvanced ? (
+          <ThemedText type="smallBold" themeColor="accent" style={styles.centeredText}>
+            ✦ A new petal — your plant just grew ✦
+          </ThemedText>
+        ) : null}
         <Button label="Back to the garden" onPress={() => goBackOrHome()} />
       </Screen>
     );
@@ -45,7 +51,7 @@ export default function AddSignScreen() {
         ) : null}
         <AddSignForm
           dreamId={dreamId!}
-          onSaved={() => setSaved(true)}
+          onSaved={setSaved}
           onCancel={() => goBackOrHome()}
         />
       </ScrollView>

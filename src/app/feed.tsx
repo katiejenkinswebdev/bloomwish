@@ -17,13 +17,30 @@ import { TextField } from '@/components/ui/text-field';
 import { useTheme } from '@/hooks/use-theme';
 import type { FeedActivityRow } from '@/lib/supabase/database.types';
 
-/** Activities where writing/speaking the reflection IS the practice. */
-const REFLECTION_ACTIVITIES = new Set([
-  'past_tense_writing',
-  'voice_note',
-  'gratitude_list',
-  'act_as_if',
-]);
+/** Per-activity input coaching: a quiet label, a placeholder that points the
+ * heart in the right direction. Activities listed here require the input. */
+const ACTIVITY_INPUT: Record<string, { label: string; placeholder: string }> = {
+  past_tense_writing: {
+    label: 'Your dream, remembered',
+    placeholder: 'Write it as a memory — “I still remember the day it happened…”',
+  },
+  tell_someone: {
+    label: 'Who did you tell?',
+    placeholder: 'Their name — and what it felt like to say your dream out loud to them',
+  },
+  voice_note: {
+    label: 'Your voice note',
+    placeholder: 'Speak (or write) how it feels now that your dream is real',
+  },
+  gratitude_list: {
+    label: 'Your five things',
+    placeholder: 'Five things you’re grateful for right now — tiny ones count double',
+  },
+  act_as_if: {
+    label: 'Acting as if',
+    placeholder: 'Be specific — what did you do, and what did it feel like in your body?',
+  },
+};
 
 export default function FeedScreen() {
   const { dreamId } = useLocalSearchParams<{ dreamId: string }>();
@@ -81,7 +98,8 @@ export default function FeedScreen() {
   }
 
   if (activity) {
-    const needsReflection = REFLECTION_ACTIVITIES.has(activity.key);
+    const inputConfig = ACTIVITY_INPUT[activity.key];
+    const needsReflection = !!inputConfig;
     return (
       <Screen padded={false}>
         <ScrollView contentContainerStyle={styles.detail} keyboardShouldPersistTaps="handled">
@@ -91,18 +109,8 @@ export default function FeedScreen() {
           {needsReflection ? (
             <>
               <TextField
-                label={
-                  activity.key === 'gratitude_list'
-                    ? 'Your five things'
-                    : activity.key === 'act_as_if'
-                      ? 'What did you actually do today?'
-                      : 'Write it here'
-                }
-                placeholder={
-                  activity.key === 'act_as_if'
-                    ? 'Be specific — what did you do, and what did it feel like in your body?'
-                    : undefined
-                }
+                label={inputConfig.label}
+                placeholder={inputConfig.placeholder}
                 value={
                   dictation.isListening && dictation.transcript
                     ? dictation.transcript

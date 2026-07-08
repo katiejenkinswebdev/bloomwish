@@ -9,11 +9,11 @@ import { Button } from '@/components/ui/button';
 import { TextField } from '@/components/ui/text-field';
 import { Spacing } from '@/constants/theme';
 import { useDictation } from '@/features/dictation/use-dictation';
-import { addSign } from '@/features/dreams/signs';
+import { addSign, type AddedSign } from '@/features/dreams/signs';
 
 export interface AddSignFormProps {
   dreamId: string;
-  onSaved: () => void;
+  onSaved: (result: AddedSign) => void;
   onCancel: () => void;
 }
 
@@ -30,11 +30,12 @@ export function AddSignForm({ dreamId, onSaved, onCancel }: AddSignFormProps) {
 
   const addSignMutation = useMutation({
     mutationFn: () => addSign({ dreamId, text: signText.trim(), photoUri }),
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['signs', dreamId] });
       queryClient.invalidateQueries({ queryKey: ['sign-counts'] });
       queryClient.invalidateQueries({ queryKey: ['dreams'] });
-      onSaved();
+      queryClient.invalidateQueries({ queryKey: ['sessions', dreamId] });
+      onSaved(result);
     },
   });
 
