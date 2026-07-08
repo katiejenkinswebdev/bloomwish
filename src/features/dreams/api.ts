@@ -67,6 +67,19 @@ export const generateScene = async (
 export const scoreScene = (sceneText: string) =>
   invokeCoach<CoachScore>({ action: 'score', sceneText });
 
+export interface CoachReview {
+  passed: boolean;
+  feedback: string;
+}
+
+/** Coach reviews a practice reflection for genuine, embodied engagement. */
+export const reviewReflection = (params: {
+  activityTitle: string;
+  activityDescription: string;
+  answer: string;
+  dreamText?: string;
+}) => invokeCoach<CoachReview>({ action: 'review', ...params });
+
 export async function fetchDreams(): Promise<DreamRow[]> {
   const { data, error } = await supabase
     .from('dreams')

@@ -48,6 +48,14 @@ interface ScoreRequest {
   sceneText: string;
 }
 
+interface ReviewRequest {
+  action: 'review';
+  activityTitle: string;
+  activityDescription: string;
+  answer: string;
+  dreamText?: string;
+}
+
 interface UserProfileContext {
   displayName?: string;
   experienceLevel?: string;
@@ -55,7 +63,7 @@ interface UserProfileContext {
   firstCategory?: string;
 }
 
-type CoachRequest = QuestionsRequest | SceneRequest | ScoreRequest;
+type CoachRequest = QuestionsRequest | SceneRequest | ScoreRequest | ReviewRequest;
 
 const QUESTIONS_SCHEMA = {
   type: 'object',
@@ -105,6 +113,24 @@ const SCORE_SCHEMA = {
     },
   },
   required: ['score', 'missing', 'encouragement'],
+  additionalProperties: false,
+} as const;
+
+const REVIEW_SCHEMA = {
+  type: 'object',
+  properties: {
+    passed: {
+      type: 'boolean',
+      description:
+        'True only when the answer shows genuine, specific, embodied engagement with the practice. Vague, generic, minimal-effort, off-topic, or gibberish answers do not pass — length alone neither passes nor fails an answer.',
+    },
+    feedback: {
+      type: 'string',
+      description:
+        'One or two sentences. If passed: warm, specific affirmation reflecting something real from their answer. If not passed: gentle coaching to go deeper — invite them back into the moment and the feeling in their body — never shaming, never sarcastic.',
+    },
+  },
+  required: ['passed', 'feedback'],
   additionalProperties: false,
 } as const;
 
@@ -161,6 +187,17 @@ Deno.serve(async (req) => {
               sceneText:
                 'You are standing right inside the moment you described — it has happened. [Demo scene: connect an Anthropic API key to hear the real coach.] The light is warm, and everything you told me about is here: the sights, the sounds, the people. You take a slow breath and feel it settle in your chest — the quiet, certain feeling of a wish that has bloomed. Stay here a moment. Let it be real.',
             }
+          : body.action === 'review'
+          ? (() => {
+              const words = body.answer.trim().split(/\s+/).length;
+              const passed = words >= 20;
+              return {
+                passed,
+                feedback: passed
+                  ? '[Demo review] That sounds real and specific — beautifully done.'
+                  : '[Demo review] Go a little deeper — what did you actually do, and what did it feel like in your body? (Demo passes at ~20 words.)',
+              };
+            })()
           : { score: 78, missing: [], encouragement: 'A demo score — but your dream is lovely.' };
     return new Response(JSON.stringify(demo), {
       headers: { 'Content-Type': 'application/json' },
@@ -194,6 +231,14 @@ Deno.serve(async (req) => {
           : '';
       prompt = `Someone described this dream:\n\n"${body.dreamText}"\n\nAnd shared these details:\n\n${answersBlock}${profileContext(body.profile)}${tweakBlock}\n\nReflect their dream back as a rich second-person, present-tense scene they can step into ("You are standing…"). Weave in their exact sensory and emotional details. 120–250 words. End by grounding them in the feeling of it being real.`;
       schema = SCENE_SCHEMA;
+      break;
+    }
+    case 'review': {
+      if (!body.answer?.trim() || !body.activityTitle) {
+        return new Response('activityTitle and answer are required', { status: 400 });
+      }
+      prompt = `Someone is doing the practice "${body.activityTitle}" (${body.activityDescription}).${body.dreamText ? `\n\nTheir dream: "${body.dreamText}"` : ''}\n\nThey wrote this about what they actually did today:\n\n"${body.answer}"\n\nAssess whether this reflects genuine, embodied engagement: something specific they really did, with real feeling in it. It does NOT need to be long — short but detailed and heartfelt passes. What does not pass: vague generalities ("I acted positive today"), going through the motions, keyboard mashing, copy-paste filler, or answers that dodge the practice entirely.\n\nIf it passes, affirm something specific and true from their words. If it doesn't, coach them warmly to try again: invite them to really go there — back into the moment, back into the feeling in their body — and describe what actually happened. Never shame them.`;
+      schema = REVIEW_SCHEMA;
       break;
     }
     case 'score': {
