@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
 import { Spacing } from '@/constants/theme';
 import { completeSession, fetchFeedActivities, type CompletedSession } from '@/features/activities/api';
-import { fetchDreams, reviewReflection, type CoachReview } from '@/features/dreams/api';
 import { SessionComplete } from '@/features/activities/components/session-complete';
 import { useDictation } from '@/features/dictation/use-dictation';
 import { TextField } from '@/components/ui/text-field';
@@ -26,9 +25,6 @@ const REFLECTION_ACTIVITIES = new Set([
   'act_as_if',
 ]);
 
-/** Activities where the coach reviews the reflection before it counts. */
-const REVIEWED_ACTIVITIES = new Set(['act_as_if']);
-
 export default function FeedScreen() {
   const { dreamId } = useLocalSearchParams<{ dreamId: string }>();
   const theme = useTheme();
@@ -36,26 +32,11 @@ export default function FeedScreen() {
 
   const [activity, setActivity] = useState<FeedActivityRow | null>(null);
   const [reflection, setReflection] = useState('');
-  const [review, setReview] = useState<CoachReview | null>(null);
   const [result, setResult] = useState<CompletedSession | null>(null);
   const [startedAt] = useState(() => Date.now());
 
   const dictation = useDictation((finalText) => {
-    setReview(null);
     setReflection((current) => (current ? `${current} ${finalText}` : finalText));
-  });
-
-  const dreamsQuery = useQuery({ queryKey: ['dreams'], queryFn: fetchDreams });
-
-  const reviewMutation = useMutation({
-    mutationFn: () =>
-      reviewReflection({
-        activityTitle: activity!.title,
-        activityDescription: activity!.description,
-        answer: reflection.trim(),
-        dreamText: dreamsQuery.data?.find((d) => d.id === dreamId)?.title,
-      }),
-    onSuccess: setReview,
   });
 
   const activitiesQuery = useQuery({
@@ -99,16 +80,8 @@ export default function FeedScreen() {
     );
   }
 
-  const updateReflection = (text: string) => {
-    if (review) setReview(null);
-    if (reviewMutation.isError) reviewMutation.reset();
-    setReflection(text);
-  };
-
   if (activity) {
     const needsReflection = REFLECTION_ACTIVITIES.has(activity.key);
-    const needsReview = REVIEWED_ACTIVITIES.has(activity.key);
-    const reviewPassed = !needsReview || review?.passed === true;
     return (
       <Screen padded={false}>
         <ScrollView contentContainerStyle={styles.detail} keyboardShouldPersistTaps="handled">
@@ -135,7 +108,7 @@ export default function FeedScreen() {
                     ? dictation.transcript
                     : reflection
                 }
-                onChangeText={updateReflection}
+                onChangeText={setReflection}
                 multiline
                 numberOfLines={6}
                 style={styles.reflectionInput}
@@ -149,47 +122,20 @@ export default function FeedScreen() {
             </>
           ) : null}
 
-          {review ? (
-            <ThemedText
-              type="small"
-              themeColor={review.passed ? 'primary' : 'textSecondary'}
-              style={styles.reviewFeedback}>
-              {review.feedback}
-            </ThemedText>
-          ) : null}
-
-          {reviewMutation.error ? (
-            <ThemedText themeColor="danger">
-              The coach couldn’t read your answer just now. Please try again.
-            </ThemedText>
-          ) : null}
-
           {completeMutation.error ? (
             <ThemedText themeColor="danger">
               Couldn’t save your session. Please try again.
             </ThemedText>
           ) : null}
 
-          {needsReview && !review?.passed ? (
-            <Button
-              label={review ? 'Try again — share it with the coach' : 'Share with the coach'}
-              loading={reviewMutation.isPending}
-              disabled={dictation.isListening || reflection.trim().length < 3}
-              onPress={() => reviewMutation.mutate()}
-              style={styles.completeButton}
-            />
-          ) : null}
-
           <Button
             label="I did this"
             loading={completeMutation.isPending}
             disabled={
-              dictation.isListening ||
-              (needsReflection && reflection.trim().length < 3) ||
-              !reviewPassed
+              dictation.isListening || (needsReflection && reflection.trim().length < 3)
             }
             onPress={() => completeMutation.mutate()}
-            style={needsReview ? undefined : styles.completeButton}
+            style={styles.completeButton}
           />
           <Button
             label="Back"
@@ -197,8 +143,6 @@ export default function FeedScreen() {
             onPress={() => {
               setActivity(null);
               setReflection('');
-              setReview(null);
-              reviewMutation.reset();
             }}
           />
         </ScrollView>
@@ -266,8 +210,5 @@ const styles = StyleSheet.create({
   },
   completeButton: {
     marginTop: Spacing.two,
-  },
-  reviewFeedback: {
-    fontStyle: 'italic',
   },
 });
