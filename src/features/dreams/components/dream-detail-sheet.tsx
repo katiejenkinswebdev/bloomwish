@@ -17,6 +17,36 @@ import { AddSignForm } from '@/features/dreams/components/add-sign-form';
 import { fetchSessions, fetchSigns } from '@/features/dreams/signs';
 import type { DreamHealth, DreamRow } from '@/lib/supabase/database.types';
 
+/** Warm, human status per health level — never raw enum text. */
+function healthStatus(health: DreamHealth): { label: string; bg: string; fg: string } {
+  switch (health) {
+    case 'thriving':
+      return { label: 'Thriving ✨', bg: BrandPalette.gold, fg: BrandPalette.plum };
+    case 'healthy':
+      return { label: 'Growing steadily 🌱', bg: BrandPalette.sage, fg: BrandPalette.plum };
+    case 'wilting':
+      return {
+        label: 'Missing you — a little water would help 💧',
+        bg: '#E8C98F',
+        fg: BrandPalette.plum,
+      };
+    case 'dormant':
+      return {
+        label: 'Resting — ready to revive when you are 🌙',
+        bg: '#B8B0A3',
+        fg: '#3E3A33',
+      };
+  }
+}
+
+const STATE_LABEL: Record<string, string> = {
+  seed: 'Seed',
+  sprout: 'Sprout',
+  growing: 'Growing',
+  budding: 'Budding',
+  blooming: 'Blooming',
+};
+
 export interface DreamDetailSheetProps {
   dream: DreamRow | null;
   effectiveHealth: DreamHealth | null;
@@ -52,18 +82,35 @@ export function DreamDetailSheet({ dream, effectiveHealth, onClose }: DreamDetai
           style={styles.scroll}
           contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled">
-          <ThemedText type="subtitle">{dream.title}</ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">
-            Planted{' '}
-            {dream.planted_at
-              ? new Date(dream.planted_at).toLocaleDateString(undefined, {
-                  month: 'long',
-                  day: 'numeric',
-                  year: 'numeric',
-                })
-              : 'recently'}{' '}
-            · {dream.state} · {effectiveHealth ?? dream.health}
-          </ThemedText>
+          <View style={styles.hero}>
+            <VividnessSeed
+              score={dream.vividness_score ?? 0}
+              size={88}
+              plant={{ state: dream.state, health: effectiveHealth ?? dream.health }}
+            />
+            <ThemedText type="subtitle" style={styles.heroTitle}>
+              {dream.title}
+            </ThemedText>
+            {(() => {
+              const status = healthStatus(effectiveHealth ?? dream.health);
+              return (
+                <View style={[styles.statusChip, { backgroundColor: status.bg }]}>
+                  <ThemedText type="smallBold" style={{ color: status.fg }}>
+                    {status.label}
+                  </ThemedText>
+                </View>
+              );
+            })()}
+            <ThemedText type="small" themeColor="textSecondary">
+              {STATE_LABEL[dream.state]} · planted{' '}
+              {dream.planted_at
+                ? new Date(dream.planted_at).toLocaleDateString(undefined, {
+                    month: 'long',
+                    day: 'numeric',
+                  })
+                : 'recently'}
+            </ThemedText>
+          </View>
 
           {isAddingSign ? (
             <>
@@ -76,14 +123,6 @@ export function DreamDetailSheet({ dream, effectiveHealth, onClose }: DreamDetai
             </>
           ) : (
             <>
-              <View style={styles.seedRow}>
-                <VividnessSeed
-                  score={dream.vividness_score ?? 0}
-                  size={72}
-                  plant={{ state: dream.state, health: effectiveHealth ?? dream.health }}
-                />
-              </View>
-
               {dream.scene_text ? (
                 <Card>
                   <ThemedText type="small" style={styles.scene}>
@@ -206,8 +245,17 @@ const styles = StyleSheet.create({
     gap: Spacing.three,
     paddingBottom: Spacing.five,
   },
-  seedRow: {
+  hero: {
     alignItems: 'center',
+    gap: Spacing.two,
+  },
+  heroTitle: {
+    textAlign: 'center',
+  },
+  statusChip: {
+    borderRadius: Spacing.four,
+    paddingVertical: Spacing.one,
+    paddingHorizontal: Spacing.three,
   },
   scene: {
     fontStyle: 'italic',
