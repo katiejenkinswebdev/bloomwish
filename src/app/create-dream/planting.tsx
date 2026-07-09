@@ -17,7 +17,9 @@ import Animated, {
 import { Spark } from '@/components/spark';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Screen } from '@/components/ui/screen';
+import { TextField } from '@/components/ui/text-field';
 import { Branding } from '@/config/branding';
 import { BrandPalette } from '@/constants/brand-palette';
 import { Spacing } from '@/constants/theme';
@@ -30,6 +32,8 @@ const SEED_DROP_DISTANCE = 260;
 export default function PlantingCeremonyScreen() {
   const reducedMotion = useReducedMotion();
   const queryClient = useQueryClient();
+  const [phase, setPhase] = useState<'capsule' | 'ceremony'>('capsule');
+  const [capsuleText, setCapsuleText] = useState('');
   const [ceremonyDone, setCeremonyDone] = useState(false);
 
   const seedY = useSharedValue(-SEED_DROP_DISTANCE);
@@ -40,7 +44,12 @@ export default function PlantingCeremonyScreen() {
     mutationFn: async () => {
       const { dreamText, sceneText, vividnessScore } = useDreamDraftStore.getState();
       const title = dreamText.length > 60 ? `${dreamText.slice(0, 57)}…` : dreamText;
-      return plantDream({ title, sceneText, vividnessScore: vividnessScore ?? 0 });
+      return plantDream({
+        title,
+        sceneText,
+        vividnessScore: vividnessScore ?? 0,
+        capsuleText: capsuleText.trim() || undefined,
+      });
     },
     onSuccess: (dream) => {
       queryClient.invalidateQueries({ queryKey: ['dreams'] });
@@ -49,6 +58,7 @@ export default function PlantingCeremonyScreen() {
   });
 
   useEffect(() => {
+    if (phase !== 'ceremony') return;
     plantMutation.mutate();
 
     const finishCeremony = () => {
@@ -72,9 +82,9 @@ export default function PlantingCeremonyScreen() {
       })
     );
     affirmationOpacity.value = withDelay(1800, withTiming(1, { duration: 800 }));
-    // Run the ceremony exactly once on mount.
+    // Run the ceremony exactly once, when the capsule step hands over.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [phase]);
 
   const seedStyle = useAnimatedStyle(() => ({
     opacity: seedOpacity.value,
@@ -94,6 +104,38 @@ export default function PlantingCeremonyScreen() {
     // The emotional peak: show the Full Bloom paywall once, always dismissable.
     router.push('/paywall');
   };
+
+  if (phase === 'capsule') {
+    return (
+      <Screen style={styles.container}>
+        <ThemedText type="title" style={styles.affirmation}>
+          Tuck a note inside 💌
+        </ThemedText>
+        <ThemedText type="small" themeColor="textSecondary" style={styles.affirmation}>
+          A time capsule, sealed until the day you harvest this dream. Only future-you will read
+          it.
+        </ThemedText>
+        <Card>
+          <TextField
+            label="For harvest day (optional)"
+            placeholder="Dear future me — if you’re reading this, it happened…"
+            value={capsuleText}
+            onChangeText={setCapsuleText}
+            multiline
+          />
+        </Card>
+        <Button label="Plant my dream 🌱" onPress={() => setPhase('ceremony')} />
+        <Button
+          label="Plant without a note"
+          variant="ghost"
+          onPress={() => {
+            setCapsuleText('');
+            setPhase('ceremony');
+          }}
+        />
+      </Screen>
+    );
+  }
 
   return (
     <Screen style={styles.container}>

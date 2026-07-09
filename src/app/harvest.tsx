@@ -23,12 +23,17 @@ export default function HarvestScreen() {
   const { dreamId } = useLocalSearchParams<{ dreamId: string }>();
   const queryClient = useQueryClient();
   const [trophy, setTrophy] = useState<TrophyRow | null>(null);
+  const [capsuleText, setCapsuleText] = useState<string | null>(null);
 
   const dreamsQuery = useQuery({ queryKey: ['dreams'], queryFn: fetchDreams });
   const dream = dreamsQuery.data?.find((d) => d.id === dreamId);
 
   const harvestMutation = useMutation({
-    mutationFn: () => harvestDream(dreamId!),
+    mutationFn: () => {
+      // Capture the sealed note before the dream leaves the active list.
+      setCapsuleText(dream?.capsule_text ?? null);
+      return harvestDream(dreamId!);
+    },
     onSuccess: (awarded) => {
       setTrophy(awarded);
       queryClient.invalidateQueries({ queryKey: ['dreams'] });
@@ -72,7 +77,18 @@ export default function HarvestScreen() {
             </ThemedText>
           </Animated.View>
 
-          <Animated.View entering={FadeInUp.delay(1700).duration(700)} style={styles.affirmation}>
+          {capsuleText ? (
+            <Animated.View entering={FadeInUp.delay(1700).duration(700)} style={styles.capsule}>
+              <ThemedText type="smallBold">💌 From the day you planted this:</ThemedText>
+              <ThemedText type="small" style={styles.capsuleText}>
+                “{capsuleText}”
+              </ThemedText>
+            </Animated.View>
+          ) : null}
+
+          <Animated.View
+            entering={FadeInUp.delay(capsuleText ? 2400 : 1700).duration(700)}
+            style={styles.affirmation}>
             <ThemedText type="subtitle" style={styles.centered}>
               {Branding.affirmation}
             </ThemedText>
@@ -156,5 +172,14 @@ const styles = StyleSheet.create({
   },
   affirmation: {
     gap: Spacing.two,
+  },
+  capsule: {
+    backgroundColor: '#F3E9DA',
+    borderRadius: Spacing.two,
+    padding: Spacing.three,
+    gap: Spacing.one,
+  },
+  capsuleText: {
+    fontStyle: 'italic',
   },
 });

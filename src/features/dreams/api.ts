@@ -120,6 +120,8 @@ export async function plantDream(params: {
   title: string;
   sceneText: string;
   vividnessScore: number;
+  /** Optional note, sealed until harvest day. */
+  capsuleText?: string;
 }): Promise<DreamRow> {
   const {
     data: { user },
@@ -138,6 +140,7 @@ export async function plantDream(params: {
       title: params.title,
       scene_text: params.sceneText,
       vividness_score: params.vividnessScore,
+      capsule_text: params.capsuleText ?? null,
       state: 'seed',
       health: 'thriving',
       is_starter_dream: (count ?? 0) === 0,
