@@ -6,7 +6,8 @@ import { useTheme } from '@/hooks/use-theme';
 import { Spacing } from '@/constants/theme';
 
 export type TextFieldProps = TextInputProps & {
-  label: string;
+  /** Optional title above the field — most inputs let the placeholder speak. */
+  label?: string;
   errorText?: string;
 };
 
@@ -26,12 +27,14 @@ export function TextField({
 
   return (
     <View style={styles.container}>
-      <ThemedText type="small" themeColor="textSecondary">
-        {label}
-      </ThemedText>
+      {label ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          {label}
+        </ThemedText>
+      ) : null}
       <View>
         <TextInput
-          accessibilityLabel={label}
+          accessibilityLabel={label ?? rest.placeholder}
           placeholderTextColor={theme.textSecondary}
           secureTextEntry={isPasswordField && !isPasswordVisible}
           multiline={multiline}

@@ -81,7 +81,6 @@ export default function FeedbackScreen() {
         </View>
 
         <TextField
-          label="What’s on your mind?"
           value={message}
           onChangeText={setMessage}
           multiline

@@ -52,7 +52,6 @@ export function AddSignForm({ dreamId, onSaved, onCancel }: AddSignFormProps) {
   return (
     <View style={styles.container}>
       <TextField
-        label="What did you notice?"
         value={dictation.isListening && dictation.transcript ? dictation.transcript : signText}
         onChangeText={setSignText}
         multiline

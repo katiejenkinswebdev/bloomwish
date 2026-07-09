@@ -433,7 +433,6 @@ export default function WaterScreen() {
             {Math.min(scriptCount + 1, target.count)} of {target.count}
           </ThemedText>
           <TextField
-            label="Write it in your own hand"
             placeholder="Type your dream as one flowing sentence…"
             value={scriptEntry}
             onChangeText={setScriptEntry}

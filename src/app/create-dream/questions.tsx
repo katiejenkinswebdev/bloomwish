@@ -120,7 +120,6 @@ export default function DeepeningQuestionsScreen() {
           <ThemedText type="subtitle">{currentQuestion}</ThemedText>
 
           <TextField
-            label="Your answer"
             value={
               dictation.isListening && dictation.transcript
                 ? dictation.transcript

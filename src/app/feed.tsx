@@ -55,27 +55,22 @@ function activityIcon(key: string, holeColor: string) {
   }
 }
 
-/** Per-activity input coaching: a quiet label, a placeholder that points the
- * heart in the right direction. Activities listed here require the input. */
-const ACTIVITY_INPUT: Record<string, { label: string; placeholder: string }> = {
+/** Per-activity input coaching: a placeholder that points the heart in the
+ * right direction. Activities listed here require the input. */
+const ACTIVITY_INPUT: Record<string, { placeholder: string }> = {
   past_tense_writing: {
-    label: 'Your dream, remembered',
     placeholder: 'Write it as a memory — “I still remember the day it happened…”',
   },
   tell_someone: {
-    label: 'Who did you tell?',
     placeholder: 'Their name — and what it felt like to say your dream out loud to them',
   },
   voice_note: {
-    label: 'Your voice note',
     placeholder: 'Speak (or write) how it feels now that your dream is real',
   },
   gratitude_list: {
-    label: 'Your five things',
     placeholder: 'Five things you’re grateful for right now — tiny ones count double',
   },
   act_as_if: {
-    label: 'Acting as if',
     placeholder: 'Be specific — what did you do, and what did it feel like in your body?',
   },
 };
@@ -231,7 +226,6 @@ export default function FeedScreen() {
           <ThemedText type="title">{activity.title}</ThemedText>
           <ThemedText themeColor="textSecondary">{activity.description}</ThemedText>
           <TextField
-            label="The doubt"
             placeholder="Write the worry exactly as it sounds in your head…"
             value={dictation.isListening && dictation.transcript ? dictation.transcript : reflection}
             onChangeText={setReflection}
@@ -280,7 +274,6 @@ export default function FeedScreen() {
                   : `${Math.floor(rampageSecondsLeft / 60)}:${String(rampageSecondsLeft % 60).padStart(2, '0')}`}
               </ThemedText>
               <TextField
-                label="Everything you appreciate"
                 placeholder="Say it or type it — don’t stop, don’t edit…"
                 value={
                   dictation.isListening && dictation.transcript
@@ -338,7 +331,6 @@ export default function FeedScreen() {
           {needsReflection ? (
             <>
               <TextField
-                label={inputConfig.label}
                 placeholder={inputConfig.placeholder}
                 value={
                   dictation.isListening && dictation.transcript

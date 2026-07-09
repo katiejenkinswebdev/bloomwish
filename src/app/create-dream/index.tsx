@@ -80,7 +80,6 @@ export default function DescribeDreamScreen() {
           </Card>
 
           <TextField
-            label="Your dream"
             value={dictation.isListening && dictation.transcript ? dictation.transcript : dreamText}
             onChangeText={setDreamText}
             multiline

@@ -66,11 +66,17 @@ export default function GreenhouseScreen() {
   return (
     <Screen padded={false}>
       <ScrollView contentContainerStyle={styles.content}>
-        {/* The glass roof — light falling through panes. */}
+        {/* The glass gable — an A-frame roof with a spark at the peak. */}
         <View style={styles.roof} pointerEvents="none">
-          <View style={[styles.pane, styles.paneLeft]} />
-          <View style={styles.ridge} />
-          <View style={[styles.pane, styles.paneRight]} />
+          <View style={[styles.glass, styles.glassLeft]} />
+          <View style={[styles.glass, styles.glassRight]} />
+          <View style={[styles.beam, styles.beamLeft]} />
+          <View style={[styles.beam, styles.beamRight]} />
+          <View style={[styles.mullion, styles.mullionLeft]} />
+          <View style={[styles.mullion, styles.mullionCenter]} />
+          <View style={[styles.mullion, styles.mullionRight]} />
+          <View style={styles.eave} />
+          <Spark size={16} style={styles.finial} />
         </View>
 
         <View style={styles.header}>
@@ -112,31 +118,73 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.six,
   },
   roof: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    height: 26,
+    height: 72,
     marginHorizontal: -Spacing.four,
     marginBottom: -Spacing.two,
+    overflow: 'hidden',
   },
-  pane: {
-    flex: 1,
-    height: 14,
-    backgroundColor: 'rgba(143, 188, 148, 0.16)',
-    borderColor: 'rgba(143, 188, 148, 0.4)',
-    borderTopWidth: 1,
+  glass: {
+    position: 'absolute',
+    top: 30,
+    width: '60%',
+    height: 46,
+    backgroundColor: 'rgba(143, 188, 148, 0.14)',
   },
-  paneLeft: {
-    transform: [{ skewY: '4deg' }],
+  glassLeft: {
+    left: '-4%',
+    transform: [{ rotate: '-12deg' }],
   },
-  paneRight: {
-    transform: [{ skewY: '-4deg' }],
+  glassRight: {
+    right: '-4%',
+    transform: [{ rotate: '12deg' }],
   },
-  ridge: {
-    width: 5,
-    height: 24,
-    borderRadius: 2,
-    backgroundColor: BrandPalette.sage,
-    opacity: 0.7,
+  beam: {
+    position: 'absolute',
+    top: 34,
+    width: '56%',
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: BrandPalette.deepGreen,
+    opacity: 0.75,
+  },
+  beamLeft: {
+    left: '-3%',
+    transform: [{ rotate: '-12deg' }],
+  },
+  beamRight: {
+    right: '-3%',
+    transform: [{ rotate: '12deg' }],
+  },
+  mullion: {
+    position: 'absolute',
+    bottom: 0,
+    width: 3,
+    height: 22,
+    borderRadius: 1.5,
+    backgroundColor: 'rgba(143, 188, 148, 0.45)',
+  },
+  mullionLeft: {
+    left: '18%',
+  },
+  mullionCenter: {
+    left: '50%',
+    height: 30,
+  },
+  mullionRight: {
+    right: '18%',
+  },
+  eave: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 3,
+    backgroundColor: 'rgba(143, 188, 148, 0.5)',
+  },
+  finial: {
+    position: 'absolute',
+    top: 4,
+    alignSelf: 'center',
   },
   header: {
     flexDirection: 'row',

@@ -36,6 +36,14 @@ import type { DreamRow } from '@/lib/supabase/database.types';
 
 const PLANT_AREA = 132;
 
+/** The trail's winding rhythm — segments drift left, center, right. */
+const PATH_DRIFT = [
+  { align: 'flex-start', rotate: '-5deg' },
+  { align: 'center', rotate: '3deg' },
+  { align: 'flex-end', rotate: '-3deg' },
+  { align: 'center', rotate: '4deg' },
+] as const;
+
 // One app-open delight roll per launch, not per navigation.
 let hasRolledThisLaunch = false;
 
@@ -159,34 +167,31 @@ export default function GardenScreen() {
 
           {trophies.length > 0 ? (
             <View style={styles.gardenPath}>
-              <ThemedText type="small" themeColor="textSecondary" style={styles.pathLabel}>
-                The garden path — every stone laid by a dream that came true
-              </ThemedText>
-              {trophies.map((trophy, index) => (
-                <View
-                  key={trophy.id}
-                  style={[styles.stoneRow, index % 2 === 1 && styles.stoneRowAlt]}>
-                  <View style={[styles.stone, index % 2 === 1 && styles.stoneAlt]}>
-                    <View style={styles.moss} />
-                    <ThemedText type="smallBold" numberOfLines={1} style={styles.stoneText}>
-                      {trophy.dream_title}
-                    </ThemedText>
-                    <ThemedText type="small" style={styles.stoneText}>
-                      {new Date(trophy.harvested_at).toLocaleDateString()}
-                    </ThemedText>
-                  </View>
-                  {index < trophies.length - 1 ? (
-                    <View
-                      style={[
-                        styles.pebbles,
-                        index % 2 === 1 ? styles.pebblesLeft : styles.pebblesRight,
-                      ]}>
-                      <View style={styles.pebble} />
-                      <View style={[styles.pebble, styles.pebbleSmall]} />
+              {trophies.map((trophy, index) => {
+                const drift = PATH_DRIFT[index % PATH_DRIFT.length];
+                return (
+                  <View
+                    key={trophy.id}
+                    accessibilityLabel={`Garden path stone: ${trophy.dream_title}, came true ${new Date(trophy.harvested_at).toLocaleDateString()}`}
+                    style={[
+                      styles.pathSegment,
+                      { alignSelf: drift.align, transform: [{ rotate: drift.rotate }] },
+                    ]}>
+                    <View style={[styles.tuft, styles.tuftLeft]} />
+                    <View style={[styles.tuft, styles.tuftRight]} />
+                    <View style={styles.stone}>
+                      <View style={styles.moss} />
+                      <ThemedText type="smallBold" numberOfLines={1} style={styles.stoneText}>
+                        {trophy.dream_title}
+                      </ThemedText>
+                      <ThemedText type="small" style={styles.stoneText}>
+                        {new Date(trophy.harvested_at).toLocaleDateString()}
+                      </ThemedText>
                     </View>
-                  ) : null}
-                </View>
-              ))}
+                  </View>
+                );
+              })}
+              <View style={[styles.pathSegment, styles.pathTaper]} />
             </View>
           ) : null}
         </ScrollView>
@@ -284,26 +289,51 @@ const styles = StyleSheet.create({
   },
   gardenPath: {
     width: '100%',
-    gap: Spacing.one,
-    paddingTop: Spacing.four,
+    paddingTop: Spacing.five,
+    paddingHorizontal: Spacing.two,
   },
-  pathLabel: {
-    textAlign: 'center',
-    marginBottom: Spacing.two,
+  pathSegment: {
+    width: '64%',
+    minWidth: 220,
+    alignItems: 'center',
+    paddingVertical: Spacing.two,
+    paddingHorizontal: Spacing.two,
+    backgroundColor: '#E6D8B8',
+    borderWidth: 2,
+    borderColor: '#CDBB92',
+    borderRadius: 36,
+    marginTop: -12,
   },
-  stoneRow: {
-    width: '100%',
-    alignItems: 'flex-start',
-    paddingHorizontal: Spacing.four,
+  pathTaper: {
+    alignSelf: 'center',
+    width: 72,
+    minWidth: 72,
+    height: 26,
+    borderRadius: 14,
+    opacity: 0.55,
+    transform: [{ rotate: '2deg' }],
   },
-  stoneRowAlt: {
-    alignItems: 'flex-end',
+  tuft: {
+    position: 'absolute',
+    width: 18,
+    height: 8,
+    borderRadius: 5,
+    backgroundColor: BrandPalette.sage,
+  },
+  tuftLeft: {
+    left: -8,
+    top: 14,
+    transform: [{ rotate: '-28deg' }],
+  },
+  tuftRight: {
+    right: -8,
+    bottom: 14,
+    transform: [{ rotate: '28deg' }],
   },
   stone: {
-    minWidth: 150,
-    maxWidth: 210,
     alignItems: 'center',
     gap: 2,
+    maxWidth: '94%',
     backgroundColor: '#A9A297',
     borderColor: '#8C857A',
     borderWidth: 1,
@@ -313,14 +343,6 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 34,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 22,
-    transform: [{ rotate: '-2deg' }],
-  },
-  stoneAlt: {
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 24,
-    borderBottomLeftRadius: 22,
-    borderBottomRightRadius: 30,
-    transform: [{ rotate: '2deg' }],
   },
   stoneText: {
     color: '#3E3A33',
@@ -334,28 +356,5 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     backgroundColor: BrandPalette.sage,
     opacity: 0.8,
-  },
-  pebbles: {
-    flexDirection: 'row',
-    gap: Spacing.one,
-    paddingVertical: Spacing.one,
-  },
-  pebblesRight: {
-    alignSelf: 'flex-end',
-    marginRight: '32%',
-  },
-  pebblesLeft: {
-    alignSelf: 'flex-start',
-    marginLeft: '32%',
-  },
-  pebble: {
-    width: 10,
-    height: 7,
-    borderRadius: 5,
-    backgroundColor: '#B5AEA2',
-  },
-  pebbleSmall: {
-    width: 7,
-    height: 5,
   },
 });

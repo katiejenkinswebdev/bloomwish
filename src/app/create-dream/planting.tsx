@@ -117,7 +117,6 @@ export default function PlantingCeremonyScreen() {
         </ThemedText>
         <Card>
           <TextField
-            label="For harvest day (optional)"
             placeholder="Dear future me — if you’re reading this, it happened…"
             value={capsuleText}
             onChangeText={setCapsuleText}

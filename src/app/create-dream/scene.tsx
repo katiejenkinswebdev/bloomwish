@@ -81,7 +81,6 @@ export default function SceneScreen() {
         ) : null}
 
         <TextField
-          label="Want to change anything?"
           value={tweakInstruction}
           onChangeText={setTweakInstruction}
           placeholder="e.g. add the smell of rain, make it sunset"
