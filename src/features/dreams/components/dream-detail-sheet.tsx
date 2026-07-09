@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
@@ -13,7 +12,6 @@ import { Card } from '@/components/ui/card';
 import { Sheet } from '@/components/ui/sheet';
 import { BrandPalette } from '@/constants/brand-palette';
 import { Spacing } from '@/constants/theme';
-import { AddSignForm } from '@/features/dreams/components/add-sign-form';
 import { fetchSessions, fetchSigns } from '@/features/dreams/signs';
 import type { DreamHealth, DreamRow } from '@/lib/supabase/database.types';
 
@@ -54,8 +52,6 @@ export interface DreamDetailSheetProps {
 }
 
 export function DreamDetailSheet({ dream, effectiveHealth, onClose }: DreamDetailSheetProps) {
-  const [isAddingSign, setIsAddingSign] = useState(false);
-
   const signsQuery = useQuery({
     queryKey: ['signs', dream?.id],
     queryFn: () => fetchSigns(dream!.id),
@@ -69,7 +65,6 @@ export function DreamDetailSheet({ dream, effectiveHealth, onClose }: DreamDetai
   });
 
   const handleClose = () => {
-    setIsAddingSign(false);
     onClose();
   };
 
@@ -112,17 +107,7 @@ export function DreamDetailSheet({ dream, effectiveHealth, onClose }: DreamDetai
             </ThemedText>
           </View>
 
-          {isAddingSign ? (
-            <>
-              <ThemedText type="smallBold">Signs it’s growing</ThemedText>
-              <AddSignForm
-                dreamId={dream.id}
-                onSaved={() => setIsAddingSign(false)}
-                onCancel={() => setIsAddingSign(false)}
-              />
-            </>
-          ) : (
-            <>
+
               {dream.scene_text ? (
                 <Card>
                   <ThemedText type="small" style={styles.scene}>
@@ -169,9 +154,18 @@ export function DreamDetailSheet({ dream, effectiveHealth, onClose }: DreamDetai
                     }}>
                     <Spark size={28} />
                   </ActionIconButton>
+                  <ActionIconButton
+                    label="Sign"
+                    accessibilityLabel="Log a sign your dream is growing"
+                    backgroundColor={BrandPalette.plum}
+                    onPress={() => {
+                      handleClose();
+                      router.push({ pathname: '/add-sign', params: { dreamId: dream.id } });
+                    }}>
+                    <Spark size={22} />
+                  </ActionIconButton>
                 </View>
                 <View style={styles.actions}>
-                  <Button label="Add a Sign" onPress={() => setIsAddingSign(true)} />
                   <Button
                     label="Personalized meditation ✦"
                     variant="secondary"
@@ -229,8 +223,7 @@ export function DreamDetailSheet({ dream, effectiveHealth, onClose }: DreamDetai
                   Sessions you complete will appear here.
                 </ThemedText>
               )}
-            </>
-          )}
+
         </ScrollView>
       ) : null}
     </Sheet>

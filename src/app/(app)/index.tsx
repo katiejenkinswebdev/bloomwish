@@ -145,6 +145,18 @@ export default function GardenScreen() {
         </ScrollView>
       )}
 
+      {dreams.length > 0 ? (
+        <Button
+          label="✨ Log a sign"
+          variant="secondary"
+          onPress={() =>
+            dreams.length === 1
+              ? router.push({ pathname: '/add-sign', params: { dreamId: dreams[0].id } })
+              : router.push('/add-sign')
+          }
+          style={styles.signButton}
+        />
+      ) : null}
       <Button
         label="Plant a dream"
         onPress={() => {
@@ -206,6 +218,9 @@ const styles = StyleSheet.create({
   },
   plantTitle: {
     maxWidth: PLANT_AREA,
+  },
+  signButton: {
+    marginBottom: Spacing.two,
   },
   plantButton: {
     marginBottom: Spacing.five,

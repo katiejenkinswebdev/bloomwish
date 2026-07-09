@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
+import { Pressable, ScrollView, StyleSheet } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 
 import { goBackOrHome } from '@/lib/navigation';
 import { useQuery } from '@tanstack/react-query';
 
+import { PlantGlyph } from '@/components/plant-glyph';
 import { SunMoment } from '@/features/dreams/components/sun-moment';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
@@ -16,11 +17,14 @@ import type { AddedSign } from '@/features/dreams/signs';
 
 /** Standalone Add-a-Sign screen — where the post-session nudge lands. */
 export default function AddSignScreen() {
-  const { dreamId } = useLocalSearchParams<{ dreamId: string }>();
+  const { dreamId: dreamIdParam } = useLocalSearchParams<{ dreamId?: string }>();
+  const [pickedDreamId, setPickedDreamId] = useState<string | null>(null);
   const [saved, setSaved] = useState<AddedSign | null>(null);
 
+  const dreamId = dreamIdParam ?? pickedDreamId ?? undefined;
   const dreamsQuery = useQuery({ queryKey: ['dreams'], queryFn: fetchDreams });
-  const dream = dreamsQuery.data?.find((d) => d.id === dreamId);
+  const dreams = dreamsQuery.data ?? [];
+  const dream = dreams.find((d) => d.id === dreamId);
 
   if (saved) {
     return (
@@ -42,6 +46,30 @@ export default function AddSignScreen() {
     );
   }
 
+  if (!dreamId) {
+    return (
+      <Screen padded={false}>
+        <ScrollView contentContainerStyle={styles.content}>
+          <ThemedText type="title">Signs it’s growing</ThemedText>
+          <ThemedText themeColor="textSecondary">Which dream sent you a sign?</ThemedText>
+          {dreams.map((candidate) => (
+            <Pressable
+              key={candidate.id}
+              accessibilityRole="button"
+              onPress={() => setPickedDreamId(candidate.id)}
+              style={({ pressed }) => [styles.dreamOption, { opacity: pressed ? 0.8 : 1 }]}>
+              <PlantGlyph state={candidate.state} health={candidate.health} size={48} />
+              <ThemedText type="small" style={styles.dreamOptionTitle} numberOfLines={2}>
+                {candidate.title}
+              </ThemedText>
+            </Pressable>
+          ))}
+          <Button label="Cancel" variant="ghost" onPress={() => goBackOrHome()} />
+        </ScrollView>
+      </Screen>
+    );
+  }
+
   return (
     <Screen padded={false}>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
@@ -50,7 +78,7 @@ export default function AddSignScreen() {
           <ThemedText themeColor="textSecondary">{dream.title}</ThemedText>
         ) : null}
         <AddSignForm
-          dreamId={dreamId!}
+          dreamId={dreamId}
           onSaved={setSaved}
           onCancel={() => goBackOrHome()}
         />
@@ -74,5 +102,14 @@ const styles = StyleSheet.create({
   },
   spark: {
     alignSelf: 'center',
+  },
+  dreamOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
+    paddingVertical: Spacing.two,
+  },
+  dreamOptionTitle: {
+    flex: 1,
   },
 });

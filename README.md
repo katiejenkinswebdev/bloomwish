@@ -15,9 +15,11 @@ A manifestation and visualization app: plant a wish, grow a dream. Users capture
 
 ## To do
 
-- [ ] **Signs button** — give Signs a prominent standalone entry point (e.g. a firefly icon button in the garden or the plant sheet's icon row) instead of living only inside the plant sheet and the post-session nudge. Signs now feed growth (the "sun moment"), so they've earned front-door placement.
+- [x] **Signs button** — done: a Sign icon (gold spark on plum) joins Water/Feed in the plant sheet's icon row, and the garden has a "✨ Log a sign" button (goes straight to your dream, or offers a picker when you have several). All paths land on the sun-moment celebration.
 - [ ] **QA pass on device** — run the full flow checklist below on real iPhone + Android dev builds (`npx expo run:ios` / `run:android`). The web preview has validated logic and flows; dictation (on-device), haptics, widgets, purchases, and notifications can only be truly verified on devices.
 - [ ] **Production prep** — follow "Path to production" below in order.
+
+> **Testing reminder:** browser sessions now persist, so you won't see the sign-in screens again until you **sign out (Profile → Sign out)**. Do that before QA'ing the auth flows (sign-in, sign-up, password reset) — item 9 of the checklist.
 
 ### QA flow checklist (run on device)
 
