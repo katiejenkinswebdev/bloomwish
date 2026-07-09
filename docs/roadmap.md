@@ -32,6 +32,17 @@ Not built yet, by design. Architecture stays open for these.
 
 ## Engagement
 
+- **Dream Board (v1.1 priority — first post-launch feature)**: images and
+  word-cards attached to a specific dream, not a freestanding vision board —
+  the garden stays the one metaphor. Adding an item feeds the plant (Signs
+  mechanic); board images crossfade gently behind the Water timer so the
+  board is practiced with, not just looked at; lives in the plant detail
+  sheet. Infrastructure exists (sign-photos bucket pattern, image picker,
+  RLS): ~3–4 days — board_items table + bucket (~1h), add/remove UI (~½d),
+  collage display (~1d), timer slideshow (~½–1d), feed hook + analytics +
+  free-tier item limit + QA (~½d). Strong ASO angle ("vision board app") and
+  future fuel for shareable harvest cards.
+
 - "Remember when" resurfacing of past Signs and journal entries (the rewards table already records grants)
 - Annual Bloom Report (shareable year-in-review)
 - Streaks and advanced gamification
