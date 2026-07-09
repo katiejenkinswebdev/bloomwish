@@ -48,6 +48,20 @@ interface ScoreRequest {
   sceneText: string;
 }
 
+interface AffirmationRequest {
+  action: 'affirmation';
+  dreamText: string;
+  sceneText?: string;
+  profile?: UserProfileContext;
+}
+
+interface LetterRequest {
+  action: 'letter';
+  dreamText: string;
+  sceneText?: string;
+  profile?: UserProfileContext;
+}
+
 interface ReviewRequest {
   action: 'review';
   activityTitle: string;
@@ -63,7 +77,13 @@ interface UserProfileContext {
   firstCategory?: string;
 }
 
-type CoachRequest = QuestionsRequest | SceneRequest | ScoreRequest | ReviewRequest;
+type CoachRequest =
+  | QuestionsRequest
+  | SceneRequest
+  | ScoreRequest
+  | ReviewRequest
+  | AffirmationRequest
+  | LetterRequest;
 
 const QUESTIONS_SCHEMA = {
   type: 'object',
@@ -113,6 +133,32 @@ const SCORE_SCHEMA = {
     },
   },
   required: ['score', 'missing', 'encouragement'],
+  additionalProperties: false,
+} as const;
+
+const AFFIRMATION_SCHEMA = {
+  type: 'object',
+  properties: {
+    affirmation: {
+      type: 'string',
+      description:
+        'One present-tense "I am / I have / I welcome" affirmation, 8–16 words, drawn from this specific dream — concrete and felt, never generic. No quotes around it.',
+    },
+  },
+  required: ['affirmation'],
+  additionalProperties: false,
+} as const;
+
+const LETTER_SCHEMA = {
+  type: 'object',
+  properties: {
+    letterText: {
+      type: 'string',
+      description:
+        'A warm letter (120–200 words) written by the person\'s future self — the one whose dream already came true — to the person today. First person, past tense about the dream ("I still remember when we were wishing for this"), specific to their scene details, ending with encouragement and love. Sign it "— You, a little further down the path".',
+    },
+  },
+  required: ['letterText'],
   additionalProperties: false,
 } as const;
 
@@ -187,7 +233,17 @@ Deno.serve(async (req) => {
               sceneText:
                 'You are standing right inside the moment you described — it has happened. [Demo scene: connect an Anthropic API key to hear the real coach.] The light is warm, and everything you told me about is here: the sights, the sounds, the people. You take a slow breath and feel it settle in your chest — the quiet, certain feeling of a wish that has bloomed. Stay here a moment. Let it be real.',
             }
-          : body.action === 'review'
+          : body.action === 'affirmation'
+          ? {
+              affirmation:
+                'I am already living the first quiet moments of this dream. [Demo — connect an Anthropic key.]',
+            }
+          : body.action === 'letter'
+            ? {
+                letterText:
+                  'Dear you,\n\nI still remember when we were wishing for this — how big it felt, how far away. I want you to know: it arrived. Not all at once, but in small ordinary mornings that slowly became the life we pictured. Keep tending it the way you are. The watering matters more than you know.\n\n[Demo letter — connect an Anthropic key to receive the real one, written from your own scene.]\n\n— You, a little further down the path',
+              }
+            : body.action === 'review'
           ? (() => {
               const words = body.answer.trim().split(/\s+/).length;
               const passed = words >= 20;
@@ -231,6 +287,22 @@ Deno.serve(async (req) => {
           : '';
       prompt = `Someone described this dream:\n\n"${body.dreamText}"\n\nAnd shared these details:\n\n${answersBlock}${profileContext(body.profile)}${tweakBlock}\n\nReflect their dream back as a rich second-person, present-tense scene they can step into ("You are standing…"). Weave in their exact sensory and emotional details. 120–250 words. End by grounding them in the feeling of it being real.`;
       schema = SCENE_SCHEMA;
+      break;
+    }
+    case 'affirmation': {
+      if (!body.dreamText?.trim()) {
+        return new Response('dreamText is required', { status: 400 });
+      }
+      prompt = `Someone's dream: "${body.dreamText}"${body.sceneText ? `\n\nTheir visualization scene: "${body.sceneText}"` : ''}${profileContext(body.profile)}\n\nWrite one affirmation for them to say aloud today: present tense, first person, 8–16 words, drawn from the specific texture of THEIR dream — never generic. It should feel true enough to say without flinching.`;
+      schema = AFFIRMATION_SCHEMA;
+      break;
+    }
+    case 'letter': {
+      if (!body.dreamText?.trim()) {
+        return new Response('dreamText is required', { status: 400 });
+      }
+      prompt = `Someone's dream: "${body.dreamText}"${body.sceneText ? `\n\nTheir visualization scene, which describes the dream as real: "${body.sceneText}"` : ''}${profileContext(body.profile)}\n\nWrite them a letter from their own future self — the version of them whose dream already came true. 120–200 words. First person. Speak of the dream in the past tense, with specific details from their scene. Warm, grounded, a little wry if it fits their tone. No promises about timing, no magic-sounding guarantees — just the felt reality of having arrived, and love for the person still walking. Sign it "— You, a little further down the path".`;
+      schema = LETTER_SCHEMA;
       break;
     }
     case 'review': {

@@ -67,6 +67,32 @@ export const generateScene = async (
 export const scoreScene = (sceneText: string) =>
   invokeCoach<CoachScore>({ action: 'score', sceneText });
 
+export interface CoachAffirmation {
+  affirmation: string;
+}
+
+export interface CoachLetter {
+  letterText: string;
+}
+
+/** One personal, present-tense affirmation drawn from the dream. */
+export const fetchAffirmation = async (dreamText: string, sceneText?: string) =>
+  invokeCoach<CoachAffirmation>({
+    action: 'affirmation',
+    dreamText,
+    sceneText,
+    profile: await coachProfileContext(),
+  });
+
+/** A letter from the user's future self, written from their own scene. */
+export const fetchFutureLetter = async (dreamText: string, sceneText?: string) =>
+  invokeCoach<CoachLetter>({
+    action: 'letter',
+    dreamText,
+    sceneText,
+    profile: await coachProfileContext(),
+  });
+
 export interface CoachReview {
   passed: boolean;
   feedback: string;

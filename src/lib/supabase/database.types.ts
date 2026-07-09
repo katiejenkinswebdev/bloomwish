@@ -44,6 +44,7 @@ export type DreamRow = {
   state: DreamState;
   health: DreamHealth;
   is_starter_dream: boolean;
+  capsule_text: string | null;
   planted_at: string | null;
   harvested_at: string | null;
   last_interacted_at: string;
