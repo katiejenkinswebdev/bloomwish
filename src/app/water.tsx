@@ -144,7 +144,6 @@ export default function WaterScreen() {
     } else if (next === 'write') {
       setScriptCount(0);
       setScriptEntry('');
-      // eslint-disable-next-line react-hooks/purity -- event handler, not render: the 369 count follows the current time of day
       setScriptTarget(scriptingTarget());
       // eslint-disable-next-line react-hooks/purity -- event handler, not render: stamping the practice start time
       setStartedAt(Date.now());
