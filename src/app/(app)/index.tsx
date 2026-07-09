@@ -21,6 +21,7 @@ import {
 } from '@/features/dreams/health';
 import { fetchSignCounts } from '@/features/dreams/signs';
 import { fetchTrophies } from '@/features/harvest/api';
+import { fetchNotificationPrefs, notificationPrefsQueryKey } from '@/features/notifications/prefs';
 import { syncNotifications } from '@/features/notifications/scheduler';
 import { fetchProfile, profileQueryKey } from '@/features/profile/api';
 import { maybeGrantReward, type GrantedReward } from '@/features/rewards/api';
@@ -50,6 +51,10 @@ export default function GardenScreen() {
   const signCountsQuery = useQuery({ queryKey: ['sign-counts'], queryFn: fetchSignCounts });
   const trophiesQuery = useQuery({ queryKey: ['trophies'], queryFn: fetchTrophies });
   const profileQuery = useQuery({ queryKey: profileQueryKey, queryFn: fetchProfile });
+  const prefsQuery = useQuery({
+    queryKey: notificationPrefsQueryKey,
+    queryFn: fetchNotificationPrefs,
+  });
 
   useEffect(() => {
     if (hasRolledThisLaunch) return;
@@ -67,9 +72,10 @@ export default function GardenScreen() {
       profile: profileQuery.data,
       dreams: dreamsQuery.data,
       decayConfig: configQuery.data,
+      prefs: prefsQuery.data,
     });
     syncWidgets(computeGardenWidgetState(dreamsQuery.data, configQuery.data));
-  }, [dreamsQuery.data, profileQuery.data, configQuery.data]);
+  }, [dreamsQuery.data, profileQuery.data, configQuery.data, prefsQuery.data]);
 
   const dreams = dreamsQuery.data ?? [];
   const signCounts = signCountsQuery.data ?? {};

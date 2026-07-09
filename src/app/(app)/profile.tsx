@@ -10,7 +10,7 @@ import { Sheet } from '@/components/ui/sheet';
 import { TextField } from '@/components/ui/text-field';
 import { Branding } from '@/config/branding';
 import { Spacing } from '@/constants/theme';
-import { brandedAuthErrorMessage, deleteAccount, signOut } from '@/features/auth/api';
+import { brandedAuthErrorMessage, deleteAccount, signOut, updatePassword } from '@/features/auth/api';
 import { useUser } from '@/store/auth-store';
 
 const DELETE_CONFIRMATION_WORD = 'DELETE';
@@ -19,6 +19,11 @@ export default function ProfileScreen() {
   const user = useUser();
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [isDeleteSheetVisible, setIsDeleteSheetVisible] = useState(false);
+  const [isPasswordSheetVisible, setIsPasswordSheetVisible] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [passwordNotice, setPasswordNotice] = useState<string | null>(null);
   const [confirmationInput, setConfirmationInput] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,9 +67,23 @@ export default function ProfileScreen() {
       ) : null}
 
       <Button
+        label="Edit my preferences"
+        variant="secondary"
+        onPress={() => router.push('/preferences')}
+      />
+
+      <Button
+        label="Change password"
+        variant="secondary"
+        onPress={() => setIsPasswordSheetVisible(true)}
+        style={styles.stackedButton}
+      />
+
+      <Button
         label="Share feedback"
         variant="secondary"
         onPress={() => router.push('/feedback')}
+        style={styles.stackedButton}
       />
 
       <View style={styles.legalLinks}>
@@ -94,6 +113,70 @@ export default function ProfileScreen() {
         onPress={() => setIsDeleteSheetVisible(true)}
         style={styles.deleteButton}
       />
+
+      <Sheet
+        visible={isPasswordSheetVisible}
+        onClose={() => {
+          setIsPasswordSheetVisible(false);
+          setNewPassword('');
+          setConfirmNewPassword('');
+          setPasswordNotice(null);
+        }}>
+        <ThemedText type="subtitle">Change your password</ThemedText>
+        <TextField
+          label="New password"
+          value={newPassword}
+          onChangeText={setNewPassword}
+          secureTextEntry
+          autoCapitalize="none"
+          textContentType="newPassword"
+          errorText={
+            newPassword.length > 0 && newPassword.length < 8 ? 'At least 8 characters' : undefined
+          }
+        />
+        <TextField
+          label="Confirm new password"
+          value={confirmNewPassword}
+          onChangeText={setConfirmNewPassword}
+          secureTextEntry
+          autoCapitalize="none"
+          errorText={
+            confirmNewPassword.length > 0 && confirmNewPassword !== newPassword
+              ? 'Passwords don’t match'
+              : undefined
+          }
+        />
+        {passwordNotice ? <ThemedText type="small">{passwordNotice}</ThemedText> : null}
+        <Button
+          label="Update password"
+          loading={isChangingPassword}
+          disabled={newPassword.length < 8 || newPassword !== confirmNewPassword}
+          onPress={async () => {
+            setIsChangingPassword(true);
+            setPasswordNotice(null);
+            try {
+              await updatePassword(newPassword);
+              setPasswordNotice('Password updated 🌱');
+              setNewPassword('');
+              setConfirmNewPassword('');
+            } catch (err) {
+              setPasswordNotice(brandedAuthErrorMessage(err));
+            } finally {
+              setIsChangingPassword(false);
+            }
+          }}
+        />
+        <Button
+          label="Close"
+          variant="ghost"
+          onPress={() => {
+            setIsPasswordSheetVisible(false);
+            setNewPassword('');
+            setConfirmNewPassword('');
+            setPasswordNotice(null);
+          }}
+        />
+      </Sheet>
 
       <Sheet
         visible={isDeleteSheetVisible}
@@ -142,6 +225,9 @@ const styles = StyleSheet.create({
   },
   signOutButton: {
     marginTop: Spacing.four,
+  },
+  stackedButton: {
+    marginTop: Spacing.two,
   },
   legalLinks: {
     flexDirection: 'row',

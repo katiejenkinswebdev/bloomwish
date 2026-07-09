@@ -60,6 +60,7 @@ function RootNavigator() {
           <Stack.Screen name="harvest" options={{ presentation: 'modal' }} />
           <Stack.Screen name="feedback" options={{ presentation: 'modal' }} />
           <Stack.Screen name="add-sign" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="preferences" options={{ presentation: 'modal' }} />
         </Stack.Protected>
         <Stack.Protected guard={needsOnboarding}>
           <Stack.Screen name="onboarding" />

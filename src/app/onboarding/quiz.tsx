@@ -1,16 +1,16 @@
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
+import { OptionButton } from '@/components/ui/option-button';
 import { Screen } from '@/components/ui/screen';
 import { TextField } from '@/components/ui/text-field';
 import { Spacing } from '@/constants/theme';
 import { upsertProfile, profileQueryKey } from '@/features/profile/api';
 import type { ExperienceLevel, TonePreference } from '@/lib/supabase/database.types';
-import { useTheme } from '@/hooks/use-theme';
 
 interface QuizAnswers {
   displayName: string;
@@ -21,7 +21,7 @@ interface QuizAnswers {
   reminderTime: string | null;
 }
 
-const CATEGORIES = [
+export const CATEGORIES = [
   'Love & relationships',
   'Career & purpose',
   'Abundance',
@@ -31,53 +31,25 @@ const CATEGORIES = [
   'Adventure',
 ];
 
-const EXPERIENCE_OPTIONS: { label: string; value: ExperienceLevel }[] = [
+export const EXPERIENCE_OPTIONS: { label: string; value: ExperienceLevel }[] = [
   { label: 'Brand new to it', value: 'new' },
   { label: 'I’ve dabbled', value: 'some_experience' },
   { label: 'It’s part of my life', value: 'experienced' },
 ];
 
-const LENGTH_OPTIONS = [1, 3, 5, 10];
+export const LENGTH_OPTIONS = [1, 3, 5, 10];
 
-const TONE_OPTIONS: { label: string; value: TonePreference }[] = [
+export const TONE_OPTIONS: { label: string; value: TonePreference }[] = [
   { label: 'Gentle & soothing', value: 'gentle' },
   { label: 'Bright & energizing', value: 'energizing' },
 ];
 
-const REMINDER_OPTIONS = [
+export const REMINDER_OPTIONS = [
   { label: 'Morning (8am)', value: '08:00' },
   { label: 'Midday (12pm)', value: '12:00' },
   { label: 'Evening (6pm)', value: '18:00' },
   { label: 'Night (9pm)', value: '21:00' },
 ];
-
-function OptionButton({
-  label,
-  selected,
-  onPress,
-}: {
-  label: string;
-  selected: boolean;
-  onPress: () => void;
-}) {
-  const theme = useTheme();
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityState={{ selected }}
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.option,
-        {
-          backgroundColor: selected ? theme.primarySoft : theme.backgroundElement,
-          borderColor: selected ? theme.primary : theme.border,
-          opacity: pressed ? 0.85 : 1,
-        },
-      ]}>
-      <ThemedText type="small">{label}</ThemedText>
-    </Pressable>
-  );
-}
 
 export default function OnboardingQuizScreen() {
   const queryClient = useQueryClient();
@@ -243,12 +215,6 @@ const styles = StyleSheet.create({
   },
   options: {
     gap: Spacing.two,
-  },
-  option: {
-    borderWidth: 1,
-    borderRadius: Spacing.two,
-    paddingVertical: Spacing.three,
-    paddingHorizontal: Spacing.three,
   },
   nextButton: {
     marginTop: Spacing.three,

@@ -3,7 +3,11 @@ import * as Notifications from 'expo-notifications';
 
 import type { HealthDecayConfig } from '@/features/dreams/health';
 import { DEFAULT_HEALTH_DECAY } from '@/features/dreams/health';
-import type { DreamRow, UserProfileRow } from '@/lib/supabase/database.types';
+import type {
+  DreamRow,
+  NotificationPrefsRow,
+  UserProfileRow,
+} from '@/lib/supabase/database.types';
 
 /**
  * All notification copy lives here so its tone can be audited in one place.
@@ -144,13 +148,22 @@ export async function syncNotifications(params: {
   profile: UserProfileRow | null;
   dreams: DreamRow[];
   decayConfig?: HealthDecayConfig;
+  /** Per-user toggles; null (no row yet) means everything defaults on. */
+  prefs?: NotificationPrefsRow | null;
 }): Promise<void> {
   try {
     if (!(await ensureReady())) return;
+    const dailyOn = params.prefs?.daily_reminder_enabled ?? true;
+    const wiltingOn = params.prefs?.wilting_alerts_enabled ?? true;
+    const delightOn = params.prefs?.delight_notifications_enabled ?? true;
     await Promise.all([
-      syncDailyReminder(params.profile),
-      syncWiltingAlerts(params.dreams, params.decayConfig ?? DEFAULT_HEALTH_DECAY),
-      syncDelightNotifications(),
+      dailyOn
+        ? syncDailyReminder(params.profile)
+        : Notifications.cancelScheduledNotificationAsync(DAILY_ID).catch(() => {}),
+      wiltingOn
+        ? syncWiltingAlerts(params.dreams, params.decayConfig ?? DEFAULT_HEALTH_DECAY)
+        : cancelByPrefix(WILT_PREFIX),
+      delightOn ? syncDelightNotifications() : cancelByPrefix(DELIGHT_PREFIX),
     ]);
   } catch (err) {
     console.warn('notification sync failed', err);
