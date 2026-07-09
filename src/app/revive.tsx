@@ -85,7 +85,7 @@ export default function ReviveScreen() {
     return (
       <Screen style={styles.container}>
         <ThemedText type="title" style={styles.centered}>
-          Welcome back 🌱
+          Welcome back
         </ThemedText>
         <ThemedText type="subtitle" style={styles.centered}>
           {Branding.affirmation}

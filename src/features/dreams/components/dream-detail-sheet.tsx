@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { ActionIconButton } from '@/components/action-icon-button';
 import { DropletIcon } from '@/components/droplet-icon';
+import { LeafIcon } from '@/components/icons';
 import { Spark } from '@/components/spark';
 import { ThemedText } from '@/components/themed-text';
 import { VividnessSeed } from '@/components/vividness-seed';
@@ -19,18 +20,18 @@ import type { DreamHealth, DreamRow } from '@/lib/supabase/database.types';
 function healthStatus(health: DreamHealth): { label: string; bg: string; fg: string } {
   switch (health) {
     case 'thriving':
-      return { label: 'Thriving ✨', bg: BrandPalette.gold, fg: BrandPalette.plum };
+      return { label: 'Thriving', bg: BrandPalette.gold, fg: BrandPalette.plum };
     case 'healthy':
-      return { label: 'Growing steadily 🌱', bg: BrandPalette.sage, fg: BrandPalette.plum };
+      return { label: 'Growing steadily', bg: BrandPalette.sage, fg: BrandPalette.plum };
     case 'wilting':
       return {
-        label: 'Missing you — a little water would help 💧',
+        label: 'Missing you — a little water would help',
         bg: '#E8C98F',
         fg: BrandPalette.plum,
       };
     case 'dormant':
       return {
-        label: 'Resting — ready to revive when you are 🌙',
+        label: 'Resting — ready to revive when you are',
         bg: '#B8B0A3',
         fg: '#3E3A33',
       };
@@ -125,10 +126,9 @@ export function DreamDetailSheet({ dream, effectiveHealth, onClose }: DreamDetai
                   </ThemedText>
                   <Button
                     label="Revive this dream"
-                    onPress={() => {
-                      handleClose();
-                      router.push({ pathname: '/revive', params: { dreamId: dream.id } });
-                    }}
+                    onPress={() =>
+                      router.push({ pathname: '/revive', params: { dreamId: dream.id } })
+                    }
                   />
                 </Card>
               ) : (
@@ -138,30 +138,27 @@ export function DreamDetailSheet({ dream, effectiveHealth, onClose }: DreamDetai
                     label="Water"
                     accessibilityLabel="Water this dream"
                     backgroundColor="#5D9DC4"
-                    onPress={() => {
-                      handleClose();
-                      router.push({ pathname: '/water', params: { dreamId: dream.id } });
-                    }}>
+                    onPress={() =>
+                      router.push({ pathname: '/water', params: { dreamId: dream.id } })
+                    }>
                     <DropletIcon size={26} />
                   </ActionIconButton>
                   <ActionIconButton
                     label="Feed"
                     accessibilityLabel="Feed this dream"
                     backgroundColor={BrandPalette.deepGreen}
-                    onPress={() => {
-                      handleClose();
-                      router.push({ pathname: '/feed', params: { dreamId: dream.id } });
-                    }}>
-                    <Spark size={28} />
+                    onPress={() =>
+                      router.push({ pathname: '/feed', params: { dreamId: dream.id } })
+                    }>
+                    <LeafIcon size={28} color="#FFFFFF" />
                   </ActionIconButton>
                   <ActionIconButton
                     label="Sign"
                     accessibilityLabel="Log a sign your dream is growing"
                     backgroundColor={BrandPalette.plum}
-                    onPress={() => {
-                      handleClose();
-                      router.push({ pathname: '/add-sign', params: { dreamId: dream.id } });
-                    }}>
+                    onPress={() =>
+                      router.push({ pathname: '/add-sign', params: { dreamId: dream.id } })
+                    }>
                     <Spark size={22} />
                   </ActionIconButton>
                 </View>
@@ -169,13 +166,12 @@ export function DreamDetailSheet({ dream, effectiveHealth, onClose }: DreamDetai
                   <Button
                     label="Personalized meditation ✦"
                     variant="secondary"
-                    onPress={() => {
-                      handleClose();
-                      router.push({ pathname: '/meditation', params: { dreamId: dream.id } });
-                    }}
+                    onPress={() =>
+                      router.push({ pathname: '/meditation', params: { dreamId: dream.id } })
+                    }
                   />
                   <Button
-                    label="It came true — harvest 🌾"
+                    label="It came true — harvest"
                     variant="ghost"
                     onPress={() => {
                       handleClose();
@@ -212,11 +208,17 @@ export function DreamDetailSheet({ dream, effectiveHealth, onClose }: DreamDetai
               </ThemedText>
               {sessionsQuery.data?.length ? (
                 sessionsQuery.data.map((session) => (
-                  <ThemedText key={session.id} type="small" themeColor="textSecondary">
-                    {session.type === 'water' ? '💧' : '🌿'}{' '}
-                    {session.activity_id === 'revive' ? 'Re-commitment' : session.type} ·{' '}
-                    {new Date(session.completed_at).toLocaleDateString()}
-                  </ThemedText>
+                  <View key={session.id} style={styles.sessionRow}>
+                    {session.type === 'water' ? (
+                      <DropletIcon size={11} color="#5D9DC4" />
+                    ) : (
+                      <LeafIcon size={13} />
+                    )}
+                    <ThemedText type="small" themeColor="textSecondary">
+                      {session.activity_id === 'revive' ? 'Re-commitment' : session.type} ·{' '}
+                      {new Date(session.completed_at).toLocaleDateString()}
+                    </ThemedText>
+                  </View>
                 ))
               ) : (
                 <ThemedText type="small" themeColor="textSecondary">
@@ -264,6 +266,11 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     marginTop: Spacing.two,
+  },
+  sessionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
   },
   signRow: {
     flexDirection: 'row',

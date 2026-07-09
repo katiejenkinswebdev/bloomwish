@@ -62,7 +62,7 @@ export function DelightMoment({ reward, onClose }: DelightMomentProps) {
             <>
               <Spark size={32} />
               <ThemedText type="subtitle" style={styles.centered}>
-                It’s 11:11 — make a wish ✨
+                It’s 11:11 — make a wish
               </ThemedText>
               <ThemedText type="small" themeColor="textSecondary" style={styles.centered}>
                 You opened your garden at exactly the right moment. Hold your dream in your mind

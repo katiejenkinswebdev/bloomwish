@@ -9,6 +9,7 @@ import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 
 import { Butterfly } from '@/components/butterfly';
 import { Spark } from '@/components/spark';
+import { EnvelopeIcon } from '@/components/icons';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
@@ -60,7 +61,7 @@ export default function HarvestScreen() {
 
           <Animated.View entering={FadeInUp.delay(500).duration(700)}>
             <ThemedText type="title" style={styles.centered}>
-              Harvested! 🌾
+              Harvested!
             </ThemedText>
           </Animated.View>
 
@@ -79,7 +80,10 @@ export default function HarvestScreen() {
 
           {capsuleText ? (
             <Animated.View entering={FadeInUp.delay(1700).duration(700)} style={styles.capsule}>
-              <ThemedText type="smallBold">💌 From the day you planted this:</ThemedText>
+              <View style={styles.capsuleHeader}>
+                <EnvelopeIcon size={18} holeColor="#F3E9DA" />
+                <ThemedText type="smallBold">From the day you planted this:</ThemedText>
+              </View>
               <ThemedText type="small" style={styles.capsuleText}>
                 “{capsuleText}”
               </ThemedText>
@@ -130,7 +134,7 @@ export default function HarvestScreen() {
       ) : null}
 
       <Button
-        label="Yes — harvest it 🌾"
+        label="Yes — harvest it"
         loading={harvestMutation.isPending}
         onPress={() => harvestMutation.mutate()}
       />
@@ -171,6 +175,11 @@ const styles = StyleSheet.create({
     color: '#F5F2EC',
   },
   affirmation: {
+    gap: Spacing.two,
+  },
+  capsuleHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: Spacing.two,
   },
   capsule: {

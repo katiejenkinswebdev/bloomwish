@@ -141,7 +141,7 @@ export function SessionComplete({
       {grantedBoost === 0 ? (
         <ThemedText type="small" themeColor="textSecondary" style={styles.centered}>
           Your garden has soaked up all it can hold today — it will grow from tomorrow’s
-          tending. Every session still counts for you. 🌙
+          tending. Every session still counts for you.
         </ThemedText>
       ) : null}
 

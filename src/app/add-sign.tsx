@@ -33,7 +33,7 @@ export default function AddSignScreen() {
       <Screen style={styles.centered}>
         <SunMoment plantState={saved.growth.newState} />
         <ThemedText type="title" style={styles.centeredText}>
-          A new firefly ✨
+          A new firefly
         </ThemedText>
         <ThemedText themeColor="textSecondary" style={styles.centeredText}>
           The sun leaned in — real-world signs feed your plant like nothing else.

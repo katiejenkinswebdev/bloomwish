@@ -1,6 +1,6 @@
-import { Pressable, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
-import { ThemedText } from '@/components/themed-text';
+import { MicIcon } from '@/components/icons';
 import { useTheme } from '@/hooks/use-theme';
 import { Spacing } from '@/constants/theme';
 
@@ -9,10 +9,7 @@ export interface DictationButtonProps {
   onPress: () => void;
 }
 
-/**
- * Mic toggle for on-device dictation.
- * TODO(phase 8): replace the emoji glyph with brand iconography.
- */
+/** Mic toggle for on-device dictation, in the Wishing Seed icon style. */
 export function DictationButton({ isListening, onPress }: DictationButtonProps) {
   const theme = useTheme();
 
@@ -29,7 +26,7 @@ export function DictationButton({ isListening, onPress }: DictationButtonProps) 
           opacity: pressed ? 0.85 : 1,
         },
       ]}>
-      <ThemedText style={styles.glyph}>{isListening ? '◼' : '🎙️'}</ThemedText>
+      {isListening ? <View style={styles.stop} /> : <MicIcon size={26} color="#FFFFFF" />}
     </Pressable>
   );
 }
@@ -43,8 +40,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: Spacing.two,
   },
-  glyph: {
-    fontSize: 22,
-    color: '#fff',
+  stop: {
+    width: 18,
+    height: 18,
+    borderRadius: 4,
+    backgroundColor: '#FFFFFF',
   },
 });

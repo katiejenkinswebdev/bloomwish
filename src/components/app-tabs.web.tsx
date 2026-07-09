@@ -1,19 +1,23 @@
+import type { ColorValue } from 'react-native';
 import { Tabs } from 'expo-router';
 
-import { ThemedText } from '@/components/themed-text';
+import { GardenerIcon, GreenhouseIcon, SproutIcon } from '@/components/icons';
 import { useTheme } from '@/hooks/use-theme';
 
 /**
  * Web preview tab bar. NativeTabs (used on iOS/Android) is not stable on
- * react-native-web, so the browser gets expo-router's classic JS tabs.
+ * react-native-web, so the browser gets expo-router's classic JS tabs — with
+ * the Wishing Seed icon set, tinted by tab state.
  */
-function TabGlyph({ emoji }: { emoji: string }) {
-  return <ThemedText style={{ fontSize: 18 }}>{emoji}</ThemedText>;
-}
-
-const GardenGlyph = () => <TabGlyph emoji="🌱" />;
-const GreenhouseGlyph = () => <TabGlyph emoji="🏆" />;
-const ProfileGlyph = () => <TabGlyph emoji="🙂" />;
+const GardenGlyph = ({ color }: { color: ColorValue }) => (
+  <SproutIcon size={24} color={color as string} />
+);
+const GreenhouseGlyph = ({ color }: { color: ColorValue }) => (
+  <GreenhouseIcon size={24} color={color as string} />
+);
+const ProfileGlyph = ({ color }: { color: ColorValue }) => (
+  <GardenerIcon size={24} color={color as string} />
+);
 
 export default function AppTabs() {
   const theme = useTheme();

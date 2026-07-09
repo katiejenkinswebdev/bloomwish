@@ -6,6 +6,17 @@ import { goBackOrHome } from '@/lib/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { DictationButton } from '@/components/dictation-button';
+import {
+  BoltIcon,
+  BookIcon,
+  EnvelopeIcon,
+  FlowerIcon,
+  LeafIcon,
+  MaskIcon,
+  MicIcon,
+  SpeechBubbleIcon,
+} from '@/components/icons';
+import { BrandPalette } from '@/constants/brand-palette';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
@@ -21,16 +32,28 @@ import { useTheme } from '@/hooks/use-theme';
 import type { FeedActivityRow } from '@/lib/supabase/database.types';
 
 /** Icons for the feed practices — same visual language as the Water modes. */
-const FEED_EMOJI: Record<string, string> = {
-  past_tense_writing: '📖',
-  tell_someone: '💬',
-  voice_note: '🎙',
-  gratitude_list: '🌻',
-  act_as_if: '🎭',
-  compost_doubts: '🍂',
-  rampage: '⚡',
-  future_letter: '💌',
-};
+function activityIcon(key: string, holeColor: string) {
+  switch (key) {
+    case 'past_tense_writing':
+      return <BookIcon size={30} holeColor={holeColor} />;
+    case 'tell_someone':
+      return <SpeechBubbleIcon size={30} />;
+    case 'voice_note':
+      return <MicIcon size={30} />;
+    case 'gratitude_list':
+      return <FlowerIcon size={30} />;
+    case 'act_as_if':
+      return <MaskIcon size={30} holeColor={holeColor} />;
+    case 'compost_doubts':
+      return <LeafIcon size={30} color={BrandPalette.warmBrown} />;
+    case 'rampage':
+      return <BoltIcon size={30} />;
+    case 'future_letter':
+      return <EnvelopeIcon size={30} holeColor={holeColor} />;
+    default:
+      return <LeafIcon size={30} />;
+  }
+}
 
 /** Per-activity input coaching: a quiet label, a placeholder that points the
  * heart in the right direction. Activities listed here require the input. */
@@ -160,7 +183,7 @@ export default function FeedScreen() {
                 </ThemedText>
               ) : null}
               <Button
-                label="Take it to heart 💌"
+                label="Take it to heart"
                 loading={completeMutation.isPending}
                 onPress={() =>
                   completeMutation.mutate({ reflectionText: letterQuery.data?.letterText })
@@ -221,7 +244,7 @@ export default function FeedScreen() {
             onPress={() => (dictation.isListening ? dictation.stop() : dictation.start())}
           />
           <Button
-            label="Compost it 🍂"
+            label="Compost it"
             disabled={reflection.trim().length < 3 || dictation.isListening}
             onPress={() => setIsComposting(true)}
           />
@@ -243,7 +266,7 @@ export default function FeedScreen() {
 
           {rampageSecondsLeft === null ? (
             <Button
-              label="Start the 60 seconds ⚡"
+              label="Start the 60 seconds"
               onPress={() => {
                 setRampageSecondsLeft(60);
                 dictation.start();
@@ -252,7 +275,9 @@ export default function FeedScreen() {
           ) : (
             <>
               <ThemedText type="title" style={styles.rampageClock}>
-                {finished ? 'Beautiful.' : `0:${String(rampageSecondsLeft).padStart(2, '0')}`}
+                {finished
+                  ? 'Beautiful.'
+                  : `${Math.floor(rampageSecondsLeft / 60)}:${String(rampageSecondsLeft % 60).padStart(2, '0')}`}
               </ThemedText>
               <TextField
                 label="Everything you appreciate"
@@ -286,7 +311,7 @@ export default function FeedScreen() {
                     </ThemedText>
                   ) : null}
                   <Button
-                    label="Let it be ✨"
+                    label="Let it be"
                     loading={completeMutation.isPending}
                     disabled={dictation.isListening}
                     onPress={() => completeMutation.mutate(undefined)}
@@ -380,7 +405,7 @@ export default function FeedScreen() {
                 opacity: pressed ? 0.85 : 1,
               },
             ]}>
-            <ThemedText style={styles.activityEmoji}>{FEED_EMOJI[item.key] ?? '🌿'}</ThemedText>
+            {activityIcon(item.key, theme.backgroundElement)}
             <View style={styles.activityBody}>
               <ThemedText type="smallBold">{item.title}</ThemedText>
               <ThemedText type="small" themeColor="textSecondary">
@@ -413,9 +438,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: Spacing.three,
     padding: Spacing.three,
-  },
-  activityEmoji: {
-    fontSize: 28,
   },
   activityBody: {
     flex: 1,

@@ -27,8 +27,8 @@ import { syncNotifications } from '@/features/notifications/scheduler';
 import { fetchProfile, profileQueryKey } from '@/features/profile/api';
 import { grantElevenEleven, maybeGrantReward, type GrantedReward } from '@/features/rewards/api';
 import { DelightMoment } from '@/features/rewards/components/delight-moment';
-import { seasonalTouch } from '@/features/rewards/season';
 import { useIsFullBloom } from '@/features/purchases/entitlements';
+import { BrandPalette } from '@/constants/brand-palette';
 import { fetchLocalWeather } from '@/features/weather/weather-mirror';
 import { RainOverlay } from '@/components/rain-overlay';
 import { computeGardenWidgetState, syncWidgets } from '@/features/widget/widget-state';
@@ -40,10 +40,11 @@ const PLANT_AREA = 132;
 let hasRolledThisLaunch = false;
 
 export default function GardenScreen() {
-  const [selectedDream, setSelectedDream] = useState<DreamRow | null>(null);
+  // Track the selected dream by id so the sheet always shows fresh data —
+  // including growth that happened while a Water/Feed/Sign flow was on top.
+  const [selectedDreamId, setSelectedDreamId] = useState<string | null>(null);
   const [reward, setReward] = useState<GrantedReward | null>(null);
   const isFullBloom = useIsFullBloom();
-  const [season] = useState(() => seasonalTouch());
 
   const dreamsQuery = useQuery({ queryKey: ['dreams'], queryFn: fetchDreams });
   const configQuery = useQuery({
@@ -108,13 +109,13 @@ export default function GardenScreen() {
   const signCounts = signCountsQuery.data ?? {};
   const trophies = trophiesQuery.data ?? [];
   const healthFor = (dream: DreamRow) => deriveHealth(dream, configQuery.data);
+  const selectedDream = dreams.find((d) => d.id === selectedDreamId) ?? null;
 
   return (
     <Screen>
       <View style={styles.header}>
         <ThemedText type="title">Your garden</ThemedText>
         <Spark size={20} />
-        <ThemedText accessibilityLabel={season.greeting}>{season.glyph}</ThemedText>
       </View>
 
       {trophies.length > 0 ? (
@@ -140,7 +141,7 @@ export default function GardenScreen() {
               key={dream.id}
               accessibilityRole="button"
               accessibilityLabel={`${dream.title}, ${dream.state}, ${healthFor(dream)}`}
-              onPress={() => setSelectedDream(dream)}
+              onPress={() => setSelectedDreamId(dream.id)}
               style={({ pressed }) => [
                 styles.plot,
                 index % 2 === 1 && styles.plotOffset,
@@ -159,20 +160,33 @@ export default function GardenScreen() {
           {trophies.length > 0 ? (
             <View style={styles.gardenPath}>
               <ThemedText type="small" themeColor="textSecondary" style={styles.pathLabel}>
-                The garden path
+                The garden path — every stone laid by a dream that came true
               </ThemedText>
-              <View style={styles.plaqueRow}>
-                {trophies.map((trophy) => (
-                  <View key={trophy.id} style={styles.pathPlaque}>
-                    <ThemedText type="small" numberOfLines={1} style={styles.pathPlaqueText}>
+              {trophies.map((trophy, index) => (
+                <View
+                  key={trophy.id}
+                  style={[styles.stoneRow, index % 2 === 1 && styles.stoneRowAlt]}>
+                  <View style={[styles.stone, index % 2 === 1 && styles.stoneAlt]}>
+                    <View style={styles.moss} />
+                    <ThemedText type="smallBold" numberOfLines={1} style={styles.stoneText}>
                       {trophy.dream_title}
                     </ThemedText>
-                    <ThemedText type="small" style={styles.pathPlaqueText}>
+                    <ThemedText type="small" style={styles.stoneText}>
                       {new Date(trophy.harvested_at).toLocaleDateString()}
                     </ThemedText>
                   </View>
-                ))}
-              </View>
+                  {index < trophies.length - 1 ? (
+                    <View
+                      style={[
+                        styles.pebbles,
+                        index % 2 === 1 ? styles.pebblesLeft : styles.pebblesRight,
+                      ]}>
+                      <View style={styles.pebble} />
+                      <View style={[styles.pebble, styles.pebbleSmall]} />
+                    </View>
+                  ) : null}
+                </View>
+              ))}
             </View>
           ) : null}
         </ScrollView>
@@ -180,7 +194,7 @@ export default function GardenScreen() {
 
       {dreams.length > 0 ? (
         <Button
-          label="✨ Log a sign"
+          label="Log a sign"
           variant="secondary"
           onPress={() =>
             dreams.length === 1
@@ -210,7 +224,7 @@ export default function GardenScreen() {
       <DreamDetailSheet
         dream={selectedDream}
         effectiveHealth={selectedDream ? healthFor(selectedDream) : null}
-        onClose={() => setSelectedDream(null)}
+        onClose={() => setSelectedDreamId(null)}
       />
 
       <DelightMoment reward={reward} onClose={() => setReward(null)} />
@@ -270,29 +284,78 @@ const styles = StyleSheet.create({
   },
   gardenPath: {
     width: '100%',
-    gap: Spacing.two,
+    gap: Spacing.one,
     paddingTop: Spacing.four,
   },
   pathLabel: {
     textAlign: 'center',
+    marginBottom: Spacing.two,
   },
-  plaqueRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: Spacing.two,
+  stoneRow: {
+    width: '100%',
+    alignItems: 'flex-start',
+    paddingHorizontal: Spacing.four,
   },
-  pathPlaque: {
-    backgroundColor: '#8B8680',
-    borderColor: '#6F6A64',
-    borderWidth: 1,
-    borderRadius: Spacing.one,
-    paddingVertical: Spacing.one,
-    paddingHorizontal: Spacing.two,
-    maxWidth: 150,
+  stoneRowAlt: {
+    alignItems: 'flex-end',
+  },
+  stone: {
+    minWidth: 150,
+    maxWidth: 210,
     alignItems: 'center',
+    gap: 2,
+    backgroundColor: '#A9A297',
+    borderColor: '#8C857A',
+    borderWidth: 1,
+    paddingVertical: Spacing.two,
+    paddingHorizontal: Spacing.three,
+    borderTopLeftRadius: 26,
+    borderTopRightRadius: 34,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 22,
+    transform: [{ rotate: '-2deg' }],
   },
-  pathPlaqueText: {
-    color: '#F5F2EC',
+  stoneAlt: {
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 24,
+    borderBottomLeftRadius: 22,
+    borderBottomRightRadius: 30,
+    transform: [{ rotate: '2deg' }],
+  },
+  stoneText: {
+    color: '#3E3A33',
+  },
+  moss: {
+    position: 'absolute',
+    top: -3,
+    left: 14,
+    width: 18,
+    height: 8,
+    borderRadius: 5,
+    backgroundColor: BrandPalette.sage,
+    opacity: 0.8,
+  },
+  pebbles: {
+    flexDirection: 'row',
+    gap: Spacing.one,
+    paddingVertical: Spacing.one,
+  },
+  pebblesRight: {
+    alignSelf: 'flex-end',
+    marginRight: '32%',
+  },
+  pebblesLeft: {
+    alignSelf: 'flex-start',
+    marginLeft: '32%',
+  },
+  pebble: {
+    width: 10,
+    height: 7,
+    borderRadius: 5,
+    backgroundColor: '#B5AEA2',
+  },
+  pebbleSmall: {
+    width: 7,
+    height: 5,
   },
 });

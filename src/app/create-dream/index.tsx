@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { useMutation } from '@tanstack/react-query';
 
 import { DictationButton } from '@/components/dictation-button';
+import { SeedIcon } from '@/components/icons';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -71,7 +72,8 @@ export default function DescribeDreamScreen() {
                     styles.packet,
                     { borderColor: theme.primary, opacity: pressed ? 0.7 : 1 },
                   ]}>
-                  <ThemedText type="small">🌰 {seed}</ThemedText>
+                  <SeedIcon size={15} />
+                  <ThemedText type="small">{seed}</ThemedText>
                 </Pressable>
               ))}
             </View>
@@ -139,6 +141,9 @@ const styles = StyleSheet.create({
     marginTop: Spacing.two,
   },
   packet: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.one,
     borderWidth: 1,
     borderRadius: 999,
     paddingVertical: Spacing.one,

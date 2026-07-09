@@ -245,7 +245,7 @@ export default function MeditationScreen() {
 
       {!isFullBloom ? (
         <Card>
-          <ThemedText type="smallBold">🎁 Our gift to you</ThemedText>
+          <ThemedText type="smallBold">Our gift to you</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
             Your starter dream comes with one personalized meditation, free — choose the length
             that feels right.

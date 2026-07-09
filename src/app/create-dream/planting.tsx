@@ -109,7 +109,7 @@ export default function PlantingCeremonyScreen() {
     return (
       <Screen style={styles.container}>
         <ThemedText type="title" style={styles.affirmation}>
-          Tuck a note inside 💌
+          Tuck a note inside
         </ThemedText>
         <ThemedText type="small" themeColor="textSecondary" style={styles.affirmation}>
           A time capsule, sealed until the day you harvest this dream. Only future-you will read
@@ -124,7 +124,7 @@ export default function PlantingCeremonyScreen() {
             multiline
           />
         </Card>
-        <Button label="Plant my dream 🌱" onPress={() => setPhase('ceremony')} />
+        <Button label="Plant my dream" onPress={() => setPhase('ceremony')} />
         <Button
           label="Plant without a note"
           variant="ghost"
@@ -150,7 +150,7 @@ export default function PlantingCeremonyScreen() {
           {Branding.affirmation}
         </ThemedText>
         <ThemedText themeColor="textSecondary" style={styles.sayAloud}>
-          {Branding.sayItAloudPrompt} 🌱
+          {Branding.sayItAloudPrompt}
         </ThemedText>
       </Animated.View>
 

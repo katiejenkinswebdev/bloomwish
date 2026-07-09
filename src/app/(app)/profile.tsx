@@ -74,7 +74,7 @@ export default function ProfileScreen() {
       <ThemedText themeColor="textSecondary">{user?.email}</ThemedText>
       <View style={styles.planRow}>
         <ThemedText type="smallBold">
-          {isFullBloom ? `${Tiers.full_bloom.name} 🌸` : `${Tiers.seedling.name} 🌱`}
+          {isFullBloom ? Tiers.full_bloom.name : Tiers.seedling.name}
         </ThemedText>
         <ThemedText
           type="linkPrimary"
@@ -191,7 +191,7 @@ export default function ProfileScreen() {
             setEmailNotice(null);
             try {
               await updateEmail(newEmail.trim());
-              setEmailNotice('Confirmation sent — check both inboxes to finish the change. 🌱');
+              setEmailNotice('Confirmation sent — check both inboxes to finish the change.');
               setNewEmail('');
             } catch (err) {
               setEmailNotice(brandedAuthErrorMessage(err));
@@ -253,7 +253,7 @@ export default function ProfileScreen() {
             setPasswordNotice(null);
             try {
               await updatePassword(newPassword);
-              setPasswordNotice('Password updated 🌱');
+              setPasswordNotice('Password updated');
               setNewPassword('');
               setConfirmNewPassword('');
             } catch (err) {

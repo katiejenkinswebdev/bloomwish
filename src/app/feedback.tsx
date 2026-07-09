@@ -15,9 +15,9 @@ import type { FeedbackType } from '@/lib/supabase/database.types';
 import { useTheme } from '@/hooks/use-theme';
 
 const TYPES: { value: FeedbackType; label: string }[] = [
-  { value: 'bug', label: '🐛 Something’s broken' },
-  { value: 'idea', label: '💡 An idea' },
-  { value: 'love', label: '💚 Some love' },
+  { value: 'bug', label: 'Something’s broken' },
+  { value: 'idea', label: 'An idea' },
+  { value: 'love', label: 'Some love' },
 ];
 
 export default function FeedbackScreen() {
@@ -45,7 +45,7 @@ export default function FeedbackScreen() {
     return (
       <Screen style={styles.centeredScreen}>
         <ThemedText type="title" style={styles.centered}>
-          Thank you 🌱
+          Thank you
         </ThemedText>
         <ThemedText themeColor="textSecondary" style={styles.centered}>
           Every note helps the garden grow better.

@@ -5,6 +5,13 @@ import { useAudioPlayer } from 'expo-audio';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { goBackOrHome } from '@/lib/navigation';
+import {
+  BreathIcon,
+  HeadphonesIcon,
+  MoonIcon,
+  PenIcon,
+  SunIcon,
+} from '@/components/icons';
 import { Spark } from '@/components/spark';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
@@ -41,13 +48,28 @@ const DRIFT_DURATIONS = [
 type Mode = 'breathe' | 'listen' | 'speak' | 'write' | 'drift';
 type Phase = 'mode' | 'setup' | 'timer' | 'complete';
 
-const MODES: { key: Mode; emoji: string; title: string; blurb: string }[] = [
-  { key: 'breathe', emoji: '🫧', title: 'Breathe', blurb: 'A quiet timer with a breathing pattern.' },
-  { key: 'listen', emoji: '🎧', title: 'Listen', blurb: 'A guided meditation track.' },
-  { key: 'speak', emoji: '🌤', title: 'Speak', blurb: 'Today’s affirmation, said aloud.' },
-  { key: 'write', emoji: '✍️', title: 'Write', blurb: 'The 369 practice — write it into being.' },
-  { key: 'drift', emoji: '🌙', title: 'Drift', blurb: 'Fall asleep inside your dream.' },
+const MODES: { key: Mode; title: string; blurb: string }[] = [
+  { key: 'breathe', title: 'Breathe', blurb: 'A quiet timer with a breathing pattern.' },
+  { key: 'listen', title: 'Listen', blurb: 'A guided meditation track.' },
+  { key: 'speak', title: 'Speak', blurb: 'Today’s affirmation, said aloud.' },
+  { key: 'write', title: 'Write', blurb: 'The 369 practice — write it into being.' },
+  { key: 'drift', title: 'Drift', blurb: 'Fall asleep inside your dream.' },
 ];
+
+function modeIcon(key: Mode, holeColor: string) {
+  switch (key) {
+    case 'breathe':
+      return <BreathIcon size={30} />;
+    case 'listen':
+      return <HeadphonesIcon size={30} />;
+    case 'speak':
+      return <SunIcon size={30} holeColor={holeColor} />;
+    case 'write':
+      return <PenIcon size={30} holeColor={holeColor} />;
+    case 'drift':
+      return <MoonIcon size={30} holeColor={holeColor} />;
+  }
+}
 
 /** 369: the writing count follows the time of day. */
 function scriptingTarget(): { count: number; period: string } {
@@ -166,7 +188,7 @@ export default function WaterScreen() {
       return (
         <Screen style={[styles.centered, styles.driftScreen]}>
           <ThemedText type="subtitle" style={[styles.centeredText, styles.driftText]}>
-            Sleep well 🌙
+            Sleep well
           </ThemedText>
           <ThemedText type="small" style={[styles.centeredText, styles.driftText]}>
             Your dream will keep growing while you rest.
@@ -380,7 +402,7 @@ export default function WaterScreen() {
               Say it out loud — slowly, like you mean it. Twice if it felt good.
             </ThemedText>
             <Button
-              label="I said it — let it be ✨"
+              label="I said it — let it be"
               loading={completeMutation.isPending}
               onPress={() =>
                 completeMutation.mutate({ activityId: 'affirmation', durationSeconds: 30 })
@@ -428,7 +450,7 @@ export default function WaterScreen() {
             />
           ) : (
             <Button
-              label="Let it be ✨"
+              label="Let it be"
               loading={completeMutation.isPending}
               onPress={() =>
                 completeMutation.mutate({
@@ -448,7 +470,7 @@ export default function WaterScreen() {
     return (
       <Screen style={[styles.centered, styles.driftScreen]}>
         <ThemedText type="title" style={[styles.centeredText, styles.driftText]}>
-          Drift 🌙
+          Drift
         </ThemedText>
         <ThemedText type="small" style={[styles.centeredText, styles.driftText]}>
           Fall asleep inside your dream. Long slow breaths, your scene beneath you, no chime at the
@@ -506,7 +528,7 @@ export default function WaterScreen() {
                 opacity: pressed ? 0.85 : 1,
               },
             ]}>
-            <ThemedText style={styles.modeEmoji}>{candidate.emoji}</ThemedText>
+            {modeIcon(candidate.key, theme.backgroundElement)}
             <View style={styles.modeBody}>
               <ThemedText type="smallBold">{candidate.title}</ThemedText>
               <ThemedText type="small" themeColor="textSecondary">
@@ -567,9 +589,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: Spacing.three,
     padding: Spacing.three,
-  },
-  modeEmoji: {
-    fontSize: 28,
   },
   modeBody: {
     flex: 1,

@@ -41,10 +41,10 @@ export default function StarterDreamScreen() {
       <Card>
         <ThemedText type="smallBold">Small seeds to try</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
-          🚗 A great parking spot right where you need it{'\n'}
-          💵 Finding a dollar on the sidewalk{'\n'}
-          ☕ A stranger’s unexpected kindness{'\n'}
-          📞 A small sale or a happy phone call
+          A great parking spot right where you need it{'\n'}
+          Finding a dollar on the sidewalk{'\n'}
+          A stranger’s unexpected kindness{'\n'}
+          A small sale or a happy phone call
         </ThemedText>
       </Card>
 

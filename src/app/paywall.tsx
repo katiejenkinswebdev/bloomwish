@@ -60,7 +60,7 @@ export default function PaywallScreen() {
     mutationFn: (plan: PaywallPlan) => purchasePlan(plan),
     onSuccess: (completed) => {
       if (completed) {
-        setNotice('Welcome to Full Bloom 🌸 Your whole garden just opened up.');
+        setNotice('Welcome to Full Bloom — your whole garden just opened up.');
       }
     },
     onError: () => setNotice('The purchase couldn’t be completed. You haven’t been charged.'),
@@ -71,7 +71,7 @@ export default function PaywallScreen() {
     onSuccess: (restored) =>
       setNotice(
         restored
-          ? 'Your Full Bloom purchase is restored 🌸'
+          ? 'Your Full Bloom purchase is restored'
           : 'No previous purchase found for this account.'
       ),
     onError: () => setNotice('Couldn’t reach the store to restore. Please try again.'),
@@ -100,7 +100,7 @@ export default function PaywallScreen() {
 
         {isFullBloom ? (
           <Card>
-            <ThemedText type="smallBold">You’re in Full Bloom 🌸</ThemedText>
+            <ThemedText type="smallBold">You’re in Full Bloom</ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
               Everything is unlocked. Manage or cancel anytime in your device’s subscription
               settings — no hoops, ever.

@@ -57,6 +57,13 @@ Not built yet, by design. Architecture stays open for these.
 
 ## Features
 
+- Greenhouse keepsake decor — earnable benches, fountains, trellises, wind
+  chimes placed among the keepsakes. Earned through tending milestones
+  (sessions, harvests, streak-free consistency), never bought or randomized:
+  cosmetic-only per the ethical-design rules. Gives the greenhouse a
+  collection loop and a reason to visit between harvests. Needs: decor
+  catalog, earn rules, a placement/arrangement UI, and a `greenhouse_decor`
+  table.
 - New/full moon rituals
 - Scarecrow unblocking coach (AI conversation for stuck dreams)
 - Walking meditations (UI choice already present at 10/15m, marked coming soon)
