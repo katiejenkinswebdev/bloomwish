@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 
 import { Butterfly } from '@/components/butterfly';
+import { GreenhouseIcon } from '@/components/icons';
 import { PlantGlyph } from '@/components/plant-glyph';
 import { Spark } from '@/components/spark';
 import { ThemedText } from '@/components/themed-text';
@@ -66,20 +67,8 @@ export default function GreenhouseScreen() {
   return (
     <Screen padded={false}>
       <ScrollView contentContainerStyle={styles.content}>
-        {/* The glass gable — an A-frame roof with a spark at the peak. */}
-        <View style={styles.roof} pointerEvents="none">
-          <View style={[styles.glass, styles.glassLeft]} />
-          <View style={[styles.glass, styles.glassRight]} />
-          <View style={[styles.beam, styles.beamLeft]} />
-          <View style={[styles.beam, styles.beamRight]} />
-          <View style={[styles.mullion, styles.mullionLeft]} />
-          <View style={[styles.mullion, styles.mullionCenter]} />
-          <View style={[styles.mullion, styles.mullionRight]} />
-          <View style={styles.eave} />
-          <Spark size={16} style={styles.finial} />
-        </View>
-
         <View style={styles.header}>
+          <GreenhouseIcon size={26} />
           <ThemedText type="title">Greenhouse</ThemedText>
           <Spark size={20} />
         </View>
@@ -116,75 +105,6 @@ const styles = StyleSheet.create({
     padding: Spacing.four,
     gap: Spacing.three,
     paddingBottom: Spacing.six,
-  },
-  roof: {
-    height: 72,
-    marginHorizontal: -Spacing.four,
-    marginBottom: -Spacing.two,
-    overflow: 'hidden',
-  },
-  glass: {
-    position: 'absolute',
-    top: 30,
-    width: '60%',
-    height: 46,
-    backgroundColor: 'rgba(143, 188, 148, 0.14)',
-  },
-  glassLeft: {
-    left: '-4%',
-    transform: [{ rotate: '-12deg' }],
-  },
-  glassRight: {
-    right: '-4%',
-    transform: [{ rotate: '12deg' }],
-  },
-  beam: {
-    position: 'absolute',
-    top: 34,
-    width: '56%',
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: BrandPalette.deepGreen,
-    opacity: 0.75,
-  },
-  beamLeft: {
-    left: '-3%',
-    transform: [{ rotate: '-12deg' }],
-  },
-  beamRight: {
-    right: '-3%',
-    transform: [{ rotate: '12deg' }],
-  },
-  mullion: {
-    position: 'absolute',
-    bottom: 0,
-    width: 3,
-    height: 22,
-    borderRadius: 1.5,
-    backgroundColor: 'rgba(143, 188, 148, 0.45)',
-  },
-  mullionLeft: {
-    left: '18%',
-  },
-  mullionCenter: {
-    left: '50%',
-    height: 30,
-  },
-  mullionRight: {
-    right: '18%',
-  },
-  eave: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 3,
-    backgroundColor: 'rgba(143, 188, 148, 0.5)',
-  },
-  finial: {
-    position: 'absolute',
-    top: 4,
-    alignSelf: 'center',
   },
   header: {
     flexDirection: 'row',
