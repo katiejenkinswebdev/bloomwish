@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import { useMutation } from '@tanstack/react-query';
 
@@ -13,8 +13,20 @@ import { Spacing } from '@/constants/theme';
 import { useDictation } from '@/features/dictation/use-dictation';
 import { fetchDeepeningQuestions } from '@/features/dreams/api';
 import { useDreamDraftStore } from '@/store/dream-draft-store';
+import { useTheme } from '@/hooks/use-theme';
+
+/** Starter seeds — small, believable dreams that make great first practice. */
+const SEED_PACKETS = [
+  'A kind stranger at just the right moment',
+  'The call back I’ve been hoping for',
+  'One truly peaceful Sunday',
+  'An unexpected little windfall',
+  'A compliment that lands deep',
+  'The perfect parking spot',
+];
 
 export default function DescribeDreamScreen() {
+  const theme = useTheme();
   const [dreamText, setDreamText] = useState('');
 
   const dictation = useDictation((finalText) => {
@@ -46,9 +58,23 @@ export default function DescribeDreamScreen() {
           <Card>
             <ThemedText type="smallBold">New to this? Start small.</ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
-              Practice the process on a small dream first — a great parking spot, a small sale,
-              finding a dollar. Then graduate to the big ones.
+              Practice the process on a small dream first, then graduate to the big ones. Tear
+              open a seed packet to begin:
             </ThemedText>
+            <View style={styles.packetRow}>
+              {SEED_PACKETS.map((seed) => (
+                <Pressable
+                  key={seed}
+                  accessibilityRole="button"
+                  onPress={() => setDreamText(`I dream of ${seed.charAt(0).toLowerCase()}${seed.slice(1)}.`)}
+                  style={({ pressed }) => [
+                    styles.packet,
+                    { borderColor: theme.primary, opacity: pressed ? 0.7 : 1 },
+                  ]}>
+                  <ThemedText type="small">🌰 {seed}</ThemedText>
+                </Pressable>
+              ))}
+            </View>
           </Card>
 
           <TextField
@@ -105,5 +131,17 @@ const styles = StyleSheet.create({
   },
   continueButton: {
     marginTop: Spacing.two,
+  },
+  packetRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.two,
+    marginTop: Spacing.two,
+  },
+  packet: {
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingVertical: Spacing.one,
+    paddingHorizontal: Spacing.two,
   },
 });

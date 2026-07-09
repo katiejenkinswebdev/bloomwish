@@ -6,7 +6,8 @@ export type RewardType =
   | 'butterfly_visit'
   | 'legendary_butterfly'
   | 'surprise_bloom'
-  | 'universe_card';
+  | 'universe_card'
+  | 'eleven_eleven';
 
 export interface GrantedReward {
   type: RewardType;
@@ -20,6 +21,7 @@ const RARITY: Record<RewardType, RewardRarity> = {
   butterfly_visit: 'rare',
   surprise_bloom: 'rare',
   legendary_butterfly: 'legendary',
+  eleven_eleven: 'rare',
 };
 
 const DEFAULT_PROBABILITIES: Record<RewardTrigger, Partial<Record<RewardType, number>>> = {
@@ -91,4 +93,24 @@ export async function maybeGrantReward(
   });
 
   return { type: granted, rarity: RARITY[granted], message };
+}
+
+/**
+ * The 11:11 moment — granted when the app is opened at exactly 11:11, once
+ * per day. Not a roll: noticing the synchronicity IS the reward.
+ */
+export async function grantElevenEleven(): Promise<GrantedReward | null> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  await supabase.from('rewards').insert({
+    user_id: user.id,
+    dream_id: null,
+    type: 'eleven_eleven',
+    rarity: RARITY.eleven_eleven,
+  });
+
+  return { type: 'eleven_eleven', rarity: RARITY.eleven_eleven };
 }

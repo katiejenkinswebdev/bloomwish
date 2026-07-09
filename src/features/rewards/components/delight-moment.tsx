@@ -58,6 +58,19 @@ export function DelightMoment({ reward, onClose }: DelightMomentProps) {
             </>
           ) : null}
 
+          {reward.type === 'eleven_eleven' ? (
+            <>
+              <Spark size={32} />
+              <ThemedText type="subtitle" style={styles.centered}>
+                It’s 11:11 — make a wish ✨
+              </ThemedText>
+              <ThemedText type="small" themeColor="textSecondary" style={styles.centered}>
+                You opened your garden at exactly the right moment. Hold your dream in your mind
+                for one breath.
+              </ThemedText>
+            </>
+          ) : null}
+
           {reward.type === 'universe_card' ? (
             <>
               <Spark size={28} />

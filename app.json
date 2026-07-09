@@ -69,7 +69,7 @@
             {
               "name": "GardenWidget",
               "label": "Garden",
-              "description": "Your garden at a glance \u2014 and the dream that needs you most.",
+              "description": "Your garden at a glance — and the dream that needs you most.",
               "minWidth": "160dp",
               "minHeight": "80dp",
               "targetCellWidth": 3,
@@ -85,6 +85,12 @@
         {
           "organization": "REPLACE_WITH_SENTRY_ORG",
           "project": "bloomwish"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Bloomwish uses your location only to mirror today’s weather in your garden. It never leaves your device except to fetch the local forecast."
         }
       ]
     ],

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 
@@ -24,10 +25,12 @@ import { fetchTrophies } from '@/features/harvest/api';
 import { fetchNotificationPrefs, notificationPrefsQueryKey } from '@/features/notifications/prefs';
 import { syncNotifications } from '@/features/notifications/scheduler';
 import { fetchProfile, profileQueryKey } from '@/features/profile/api';
-import { maybeGrantReward, type GrantedReward } from '@/features/rewards/api';
+import { grantElevenEleven, maybeGrantReward, type GrantedReward } from '@/features/rewards/api';
 import { DelightMoment } from '@/features/rewards/components/delight-moment';
 import { seasonalTouch } from '@/features/rewards/season';
 import { useIsFullBloom } from '@/features/purchases/entitlements';
+import { fetchLocalWeather } from '@/features/weather/weather-mirror';
+import { RainOverlay } from '@/components/rain-overlay';
 import { computeGardenWidgetState, syncWidgets } from '@/features/widget/widget-state';
 import type { DreamRow } from '@/lib/supabase/database.types';
 
@@ -55,13 +58,37 @@ export default function GardenScreen() {
     queryKey: notificationPrefsQueryKey,
     queryFn: fetchNotificationPrefs,
   });
+  // Opt-in weather mirror; resolves to null unless enabled AND precipitating.
+  const weatherQuery = useQuery({
+    queryKey: ['local-weather'],
+    queryFn: fetchLocalWeather,
+    staleTime: 1000 * 60 * 30,
+  });
+  const weather = weatherQuery.data;
 
   useEffect(() => {
     if (hasRolledThisLaunch) return;
     hasRolledThisLaunch = true;
-    maybeGrantReward('app_open', { includeLegendary: isFullBloom })
-      .then(setReward)
-      .catch(() => {});
+
+    // The 11:11 moment takes precedence over the random app-open roll —
+    // synchronicity beats chance. Once per day.
+    const now = new Date();
+    const isElevenEleven = now.getHours() % 12 === 11 && now.getMinutes() === 11;
+    const today = now.toDateString();
+    (async () => {
+      if (isElevenEleven) {
+        const lastShown = await AsyncStorage.getItem('bloomwish:1111-shown');
+        if (lastShown !== today) {
+          await AsyncStorage.setItem('bloomwish:1111-shown', today);
+          const moment = await grantElevenEleven();
+          if (moment) {
+            setReward(moment);
+            return;
+          }
+        }
+      }
+      maybeGrantReward('app_open', { includeLegendary: isFullBloom }).then(setReward);
+    })().catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -175,6 +202,10 @@ export default function GardenScreen() {
         }}
         style={styles.plantButton}
       />
+
+      {weather?.isRaining || weather?.isSnowing ? (
+        <RainOverlay snow={!!weather.isSnowing} />
+      ) : null}
 
       <DreamDetailSheet
         dream={selectedDream}

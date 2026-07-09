@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Switch, View } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -14,6 +14,11 @@ import {
   upsertNotificationPrefs,
 } from '@/features/notifications/prefs';
 import { fetchProfile, profileQueryKey, upsertProfile } from '@/features/profile/api';
+import {
+  isWeatherMirrorEnabled,
+  requestWeatherPermission,
+  setWeatherMirrorEnabled,
+} from '@/features/weather/weather-mirror';
 import { goBackOrHome } from '@/lib/navigation';
 import type { ExperienceLevel, TonePreference } from '@/lib/supabase/database.types';
 import { useTheme } from '@/hooks/use-theme';
@@ -56,6 +61,26 @@ export default function PreferencesScreen() {
 
   const profile = profileQuery.data;
   const prefs = prefsQuery.data;
+
+  // Weather mirror is a device-local touch, not a server preference.
+  const [weatherMirror, setWeatherMirror] = useState(false);
+  const [weatherDenied, setWeatherDenied] = useState(false);
+  useEffect(() => {
+    isWeatherMirrorEnabled().then(setWeatherMirror).catch(() => {});
+  }, []);
+  const toggleWeatherMirror = async (next: boolean) => {
+    setWeatherDenied(false);
+    if (next) {
+      const granted = await requestWeatherPermission();
+      if (!granted) {
+        setWeatherDenied(true);
+        return;
+      }
+    }
+    setWeatherMirror(next);
+    await setWeatherMirrorEnabled(next);
+    queryClient.invalidateQueries({ queryKey: ['local-weather'] });
+  };
 
   const value = {
     displayName: edits.displayName ?? profile?.display_name ?? '',
@@ -188,6 +213,28 @@ export default function PreferencesScreen() {
           ))}
         </View>
 
+        <ThemedText type="smallBold">Your garden</ThemedText>
+        <View style={styles.switchRow}>
+          <View style={styles.switchLabel}>
+            <ThemedText type="small">Mirror today’s weather</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              When it rains where you are, it rains gently in your garden too.
+            </ThemedText>
+          </View>
+          <Switch
+            value={weatherMirror}
+            onValueChange={toggleWeatherMirror}
+            accessibilityLabel="Mirror today's weather"
+            trackColor={{ true: theme.primary }}
+          />
+        </View>
+        {weatherDenied ? (
+          <ThemedText type="small" themeColor="danger">
+            Location permission is needed to know your weather. You can allow it in your device
+            settings, then try again.
+          </ThemedText>
+        ) : null}
+
         <ThemedText type="smallBold">Notifications</ThemedText>
         {(
           [
@@ -240,6 +287,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    gap: Spacing.three,
+  },
+  switchLabel: {
+    flex: 1,
+    gap: 2,
   },
   saveButton: {
     marginTop: Spacing.two,
