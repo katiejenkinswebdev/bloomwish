@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Bloomwish — plant a wish, grow a dream</title>
+<meta name="description" content="A gentle manifestation and visualization app. Plant your dreams as seeds, tend them with daily visualization, and harvest them when they come true." />
+<style>
+  :root {
+    --green: #3E7C59; --sage: #8FBC94; --gold: #E9B44C;
+    --pink: #E4A7B0; --cream: #FBF3E7; --plum: #46344E; --brown: #B98A5E;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--cream); color: var(--plum); font-family: Georgia, 'Times New Roman', serif; line-height: 1.6; }
+  .wrap { max-width: 680px; margin: 0 auto; padding: 0 24px; }
+  header { text-align: center; padding: 72px 0 48px; }
+  .mark { width: 140px; height: 140px; margin: 0 auto 16px; }
+  h1 { font-size: 2.6rem; font-weight: 500; letter-spacing: 0.01em; }
+  h1 .spark { color: var(--gold); }
+  .tagline { font-style: italic; color: var(--green); font-size: 1.25rem; margin-top: 8px; }
+  .intro { text-align: center; font-size: 1.1rem; margin: 0 auto 48px; max-width: 540px; }
+  .cards { display: grid; gap: 20px; margin-bottom: 56px; }
+  @media (min-width: 640px) { .cards { grid-template-columns: 1fr 1fr 1fr; } }
+  .card { background: #F3E9DA; border-radius: 16px; padding: 24px 20px; }
+  .card h3 { font-size: 1.05rem; margin-bottom: 8px; color: var(--green); }
+  .card p { font-size: 0.95rem; }
+  .waitlist { background: var(--green); color: var(--cream); border-radius: 20px; padding: 40px 28px; text-align: center; margin-bottom: 56px; }
+  .waitlist h2 { font-weight: 500; margin-bottom: 8px; }
+  .waitlist p { opacity: 0.9; margin-bottom: 20px; font-size: 0.98rem; }
+  form { display: flex; gap: 10px; max-width: 420px; margin: 0 auto; flex-wrap: wrap; justify-content: center; }
+  input[type=email] { flex: 1; min-width: 220px; padding: 13px 16px; border-radius: 12px; border: none; font-size: 1rem; font-family: inherit; }
+  button { background: var(--gold); color: var(--plum); border: none; border-radius: 12px; padding: 13px 22px; font-size: 1rem; font-family: inherit; font-weight: bold; cursor: pointer; }
+  button:hover { filter: brightness(1.05); }
+  .stores { text-align: center; margin-bottom: 64px; color: #7A6B7F; font-size: 0.95rem; }
+  footer { border-top: 1px solid #E6D8C4; padding: 28px 0 48px; text-align: center; font-size: 0.9rem; color: #7A6B7F; }
+  footer a { color: var(--green); text-decoration: none; margin: 0 10px; }
+  footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <svg class="mark" viewBox="0 0 1024 1024" role="img" aria-label="The Wishing Seed">
+      <ellipse cx="500" cy="742" rx="58" ry="44" fill="#B98A5E" transform="rotate(8 500 742)"/>
+      <path d="M 500 724 C 492 640 488 560 506 480 C 516 436 532 408 552 386"
+            stroke="#3E7C59" stroke-width="42" stroke-linecap="round" fill="none"/>
+      <ellipse cx="415" cy="512" rx="95" ry="42" fill="#8FBC94" transform="rotate(32 415 512)"/>
+      <ellipse cx="600" cy="446" rx="85" ry="38" fill="#3E7C59" transform="rotate(-28 600 446)"/>
+      <path fill="#E9B44C" d="M 672 190 Q 692 262 764 282 Q 692 302 672 374 Q 652 302 580 282 Q 652 262 672 190 Z"/>
+      <path fill="#E9B44C" d="M 756 138 Q 765 169 796 178 Q 765 187 756 218 Q 747 187 716 178 Q 747 169 756 138 Z"/>
+    </svg>
+    <h1>bloomwish <span class="spark">✦</span></h1>
+    <p class="tagline">plant a wish, grow a dream</p>
+  </header>
+
+  <p class="intro">
+    Capture a dream in your own words. Plant it as a seed in a garden that's yours alone.
+    Tend it with a few quiet minutes of visualization a day — and when it comes true out
+    there in the world, harvest it and keep it in bloom forever.
+  </p>
+
+  <div class="cards">
+    <div class="card">
+      <h3>🌱 Plant</h3>
+      <p>Speak or write your dream. A gentle coach helps you see it vividly — sight, sound, feeling — until it glows.</p>
+    </div>
+    <div class="card">
+      <h3>💧 Tend</h3>
+      <p>Water it with short visualizations. Feed it with deeper practices. Log real-world signs and watch fireflies gather.</p>
+    </div>
+    <div class="card">
+      <h3>🌾 Harvest</h3>
+      <p>When a dream comes true, celebrate it. A stone plaque joins your garden path, and a butterfly flies there forever.</p>
+    </div>
+  </div>
+
+  <div class="waitlist">
+    <h2>Be first in the garden</h2>
+    <p>Join the waitlist for early access and founding-member pricing — honest and time-limited, like everything we do.</p>
+    <!-- TODO: create a free form at formspree.io and replace YOUR_FORM_ID,
+         or point this at your email tool of choice. -->
+    <form action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
+      <input type="email" name="email" placeholder="you@example.com" required aria-label="Email address" />
+      <button type="submit">Join the waitlist</button>
+    </form>
+  </div>
+
+  <p class="stores">Coming soon to the App Store and Google Play.</p>
+
+  <footer>
+    <a href="privacy.html">Privacy</a> ·
+    <a href="terms.html">Terms</a> ·
+    <a href="mailto:support@bloomwish.app">Support</a>
+    <p style="margin-top:12px">© 2026 Bloomwish. Visualization &amp; mindfulness — never medical advice, never guarantees.</p>
+  </footer>
+
+</div>
+</body>
+</html>

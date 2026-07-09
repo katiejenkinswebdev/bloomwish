@@ -8,6 +8,7 @@ import { PostHogProvider } from 'posthog-react-native';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { identifyUser, posthog, resetAnalytics } from '@/features/analytics/analytics';
+import { identifyCrashUser, initSentry, wrapRoot } from '@/features/analytics/sentry';
 import { fetchProfile, profileQueryKey } from '@/features/profile/api';
 import { endPurchasesSession, initializePurchases } from '@/features/purchases/purchases';
 import { queryClient } from '@/lib/query-client';
@@ -19,6 +20,7 @@ import {
 } from '@/store/auth-store';
 
 SplashScreen.preventAutoHideAsync();
+initSentry();
 
 function RootNavigator() {
   const session = useSession();
@@ -32,9 +34,11 @@ function RootNavigator() {
     if (userId) {
       initializePurchases(userId);
       identifyUser(userId);
+      identifyCrashUser(userId);
     } else {
       endPurchasesSession();
       resetAnalytics();
+      identifyCrashUser(null);
     }
   }, [userId]);
 
@@ -78,7 +82,7 @@ function RootNavigator() {
   );
 }
 
-export default function RootLayout() {
+function RootLayout() {
   const colorScheme = useColorScheme();
 
   useEffect(() => {
@@ -96,3 +100,5 @@ export default function RootLayout() {
   // Autocapture (screens + taps) only when a real PostHog key is configured.
   return posthog ? <PostHogProvider client={posthog}>{app}</PostHogProvider> : app;
 }
+
+export default wrapRoot(RootLayout);

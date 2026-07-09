@@ -88,6 +88,30 @@ The model is set in one place per function (`const MODEL = 'claude-opus-4-8'`) i
 4. Regeneration test: the audio is cached per dream + duration; editing the dream's scene invalidates it, and the next request re-renders.
 5. Replace the placeholder guided tracks in [assets/audio/](assets/audio/README.md) with your studio recordings (the README there is the recording brief — four tracks + the ambient loop).
 
+### 4. PostHog (product analytics — already integrated, off by default)
+
+1. Create a free account at [posthog.com](https://posthog.com) → new project "Bloomwish" (US or EU cloud).
+2. Project Settings → copy the **Project API key** (`phc_…`).
+3. Put it in `.env`: `EXPO_PUBLIC_POSTHOG_KEY=phc_…` (and `EXPO_PUBLIC_POSTHOG_HOST` if you chose EU). With the placeholder value, zero events are sent.
+4. That's it — autocapture (screens/taps), user identify on sign-in, and the eight core events (`onboarding_completed`, `dream_planted`, `session_completed`, `sign_logged`, `meditation_generated`, `paywall_viewed`, `purchase_completed`, `harvest`) start flowing. Build your first funnel: onboarding_completed → dream_planted → session_completed.
+5. Compliance: the privacy-label updates are already written into [docs/store-readiness.md](docs/store-readiness.md).
+
+### 5. Sentry (crash reporting — already integrated, off by default)
+
+1. Create a free account at [sentry.io](https://sentry.io) → create org → create project, platform **React Native**, name `bloomwish`.
+2. Copy the **DSN** from the project settings into `.env`: `EXPO_PUBLIC_SENTRY_DSN=https://…ingest.sentry.io/…`. Placeholder = fully disabled.
+3. Replace `REPLACE_WITH_SENTRY_ORG` in [app.json](app.json) (the `@sentry/react-native/expo` plugin) with your org slug.
+4. For readable stack traces in production builds: Sentry → Settings → Auth Tokens → create one with `project:releases` + `org:read`, then `eas env:create --name SENTRY_AUTH_TOKEN --value <token>` (the Expo plugin uploads source maps during EAS builds automatically).
+5. **Slack alerts into your feedback channel**: Sentry → Settings → Integrations → **Slack** → connect your workspace. Then Alerts → Create Alert → "Issues" → condition "a new issue is created" → action "Send a Slack notification" → pick **#bloomwish-feedback**. Every new crash lands next to your user feedback.
+
+## Landing page (site/)
+
+A self-contained static site lives in [site/](site/): `index.html` (hero, features, waitlist form), plus `privacy.html` and `terms.html` placeholders that satisfy the URLs in `branding.ts` once deployed to your domain.
+
+- **Deploy** (pick one, all free): drag the `site` folder into [netlify.com/drop](https://app.netlify.com/drop); or `npx vercel site`; or Cloudflare Pages pointed at this repo with `site` as the output dir. Then attach your domain.
+- **Waitlist form**: create a free form at [formspree.io](https://formspree.io) and replace `YOUR_FORM_ID` in index.html (submissions arrive by email).
+- **Before launch**: fill the bracketed placeholders in privacy.html/terms.html (they're skeletons, not legal advice) and set the real support email.
+
 ## Path to production (exact order)
 
 1. **Supabase cloud** — create the project; `npx supabase link --project-ref <ref>` then `npx supabase db push`; deploy functions: `npx supabase functions deploy delete-account dream-coach generate-meditation export-data` and `npx supabase functions deploy revenuecat-webhook notify-feedback --no-verify-jwt`; set all secrets (`ANTHROPIC_API_KEY`, `ELEVENLABS_API_KEY`, `ELEVENLABS_VOICE_ID`, `REVENUECAT_WEBHOOK_SECRET`); add auth redirect URLs `bloomwish://reset-password` + `bloomwish://verify-email`; put the project URL + anon key in `.env`.
