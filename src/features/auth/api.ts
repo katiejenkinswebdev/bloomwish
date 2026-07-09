@@ -49,6 +49,13 @@ export async function updatePassword(newPassword: string) {
   if (error) throw error;
 }
 
+/** Change the account email — Supabase sends confirmation links (to both
+ * addresses when double-confirm is enabled). */
+export async function updateEmail(newEmail: string) {
+  const { error } = await supabase.auth.updateUser({ email: newEmail });
+  if (error) throw error;
+}
+
 export async function signOut() {
   const { error } = await supabase.auth.signOut();
   if (error) throw error;

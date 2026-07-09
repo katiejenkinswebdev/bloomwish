@@ -8,16 +8,31 @@ import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
 import { Sheet } from '@/components/ui/sheet';
 import { TextField } from '@/components/ui/text-field';
-import { Branding } from '@/config/branding';
+import { Branding, Tiers } from '@/config/branding';
 import { Spacing } from '@/constants/theme';
-import { brandedAuthErrorMessage, deleteAccount, signOut, updatePassword } from '@/features/auth/api';
+import {
+  brandedAuthErrorMessage,
+  deleteAccount,
+  signOut,
+  updateEmail,
+  updatePassword,
+} from '@/features/auth/api';
+import { useIsFullBloom } from '@/features/purchases/entitlements';
+import { openManageSubscriptions } from '@/features/purchases/manage';
+import { exportMyData } from '@/features/profile/export';
 import { useUser } from '@/store/auth-store';
 
 const DELETE_CONFIRMATION_WORD = 'DELETE';
 
 export default function ProfileScreen() {
   const user = useUser();
+  const isFullBloom = useIsFullBloom();
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [isEmailSheetVisible, setIsEmailSheetVisible] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [isChangingEmail, setIsChangingEmail] = useState(false);
+  const [emailNotice, setEmailNotice] = useState<string | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
   const [isDeleteSheetVisible, setIsDeleteSheetVisible] = useState(false);
   const [isPasswordSheetVisible, setIsPasswordSheetVisible] = useState(false);
   const [newPassword, setNewPassword] = useState('');
@@ -56,9 +71,17 @@ export default function ProfileScreen() {
   return (
     <Screen>
       <ThemedText type="title">Profile</ThemedText>
-      <ThemedText themeColor="textSecondary" style={styles.email}>
-        {user?.email}
-      </ThemedText>
+      <ThemedText themeColor="textSecondary">{user?.email}</ThemedText>
+      <View style={styles.planRow}>
+        <ThemedText type="smallBold">
+          {isFullBloom ? `${Tiers.full_bloom.name} 🌸` : `${Tiers.seedling.name} 🌱`}
+        </ThemedText>
+        <ThemedText
+          type="linkPrimary"
+          onPress={() => (isFullBloom ? openManageSubscriptions() : router.push('/paywall'))}>
+          {isFullBloom ? 'Manage subscription' : 'See Full Bloom'}
+        </ThemedText>
+      </View>
 
       {error ? (
         <ThemedText themeColor="danger" style={styles.error}>
@@ -76,6 +99,31 @@ export default function ProfileScreen() {
         label="Change password"
         variant="secondary"
         onPress={() => setIsPasswordSheetVisible(true)}
+        style={styles.stackedButton}
+      />
+
+      <Button
+        label="Change email"
+        variant="secondary"
+        onPress={() => setIsEmailSheetVisible(true)}
+        style={styles.stackedButton}
+      />
+
+      <Button
+        label="Export my data"
+        variant="secondary"
+        loading={isExporting}
+        onPress={async () => {
+          setIsExporting(true);
+          setError(null);
+          try {
+            await exportMyData();
+          } catch (err) {
+            setError(brandedAuthErrorMessage(err));
+          } finally {
+            setIsExporting(false);
+          }
+        }}
         style={styles.stackedButton}
       />
 
@@ -113,6 +161,55 @@ export default function ProfileScreen() {
         onPress={() => setIsDeleteSheetVisible(true)}
         style={styles.deleteButton}
       />
+
+      <Sheet
+        visible={isEmailSheetVisible}
+        onClose={() => {
+          setIsEmailSheetVisible(false);
+          setNewEmail('');
+          setEmailNotice(null);
+        }}>
+        <ThemedText type="subtitle">Change your email</ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">
+          We’ll send confirmation links — check both your current and new inboxes.
+        </ThemedText>
+        <TextField
+          label="New email"
+          value={newEmail}
+          onChangeText={setNewEmail}
+          autoCapitalize="none"
+          autoComplete="email"
+          keyboardType="email-address"
+        />
+        {emailNotice ? <ThemedText type="small">{emailNotice}</ThemedText> : null}
+        <Button
+          label="Send confirmation"
+          loading={isChangingEmail}
+          disabled={!newEmail.includes('@')}
+          onPress={async () => {
+            setIsChangingEmail(true);
+            setEmailNotice(null);
+            try {
+              await updateEmail(newEmail.trim());
+              setEmailNotice('Confirmation sent — check both inboxes to finish the change. 🌱');
+              setNewEmail('');
+            } catch (err) {
+              setEmailNotice(brandedAuthErrorMessage(err));
+            } finally {
+              setIsChangingEmail(false);
+            }
+          }}
+        />
+        <Button
+          label="Close"
+          variant="ghost"
+          onPress={() => {
+            setIsEmailSheetVisible(false);
+            setNewEmail('');
+            setEmailNotice(null);
+          }}
+        />
+      </Sheet>
 
       <Sheet
         visible={isPasswordSheetVisible}
@@ -217,8 +314,12 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  email: {
+  planRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
     marginBottom: Spacing.four,
+    marginTop: Spacing.one,
   },
   error: {
     marginBottom: Spacing.three,

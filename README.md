@@ -18,6 +18,13 @@ A manifestation and visualization app: plant a wish, grow a dream. Users capture
 - [x] **Signs button** — done: a Sign icon (gold spark on plum) joins Water/Feed in the plant sheet's icon row, and the garden has a "✨ Log a sign" button (goes straight to your dream, or offers a picker when you have several). All paths land on the sun-moment celebration.
 - [ ] **QA pass on device** — run the full flow checklist below on real iPhone + Android dev builds (`npx expo run:ios` / `run:android`). The web preview has validated logic and flows; dictation (on-device), haptics, widgets, purchases, and notifications can only be truly verified on devices.
 - [ ] **Production prep** — follow "Path to production" below in order.
+- [ ] **Catch feedback actively (Slack notifier)** — the `notify-feedback` Edge Function is built; wire it up:
+  1. Create a Slack app at [api.slack.com/apps](https://api.slack.com/apps) → **Incoming Webhooks** → activate → add a webhook for your `#bloomwish-feedback` channel; copy the URL.
+  2. `npx supabase functions deploy notify-feedback --no-verify-jwt`
+  3. `npx supabase secrets set SLACK_FEEDBACK_WEBHOOK_URL=https://hooks.slack.com/services/… FEEDBACK_WEBHOOK_SECRET=<random string>`
+  4. Supabase dashboard → **Database → Webhooks → Create**: table `feedback`, event **INSERT**, HTTP request → the function's URL, and add an `Authorization` header set to that same secret.
+  5. Submit a test from the app's feedback form — it should pop into Slack within a second.
+- [ ] **Analytics (when >~50 active users)** — PostHog for funnels/retention (see the feedback section below); until then, usage lives in your own tables (dreams, sessions, signs) and RevenueCat covers revenue.
 
 > **Testing reminder:** browser sessions now persist, so you won't see the sign-in screens again until you **sign out (Profile → Sign out)**. Do that before QA'ing the auth flows (sign-in, sign-up, password reset) — item 9 of the checklist.
 
@@ -83,7 +90,7 @@ The model is set in one place per function (`const MODEL = 'claude-opus-4-8'`) i
 
 ## Path to production (exact order)
 
-1. **Supabase cloud** — create the project; `npx supabase link --project-ref <ref>` then `npx supabase db push`; deploy functions: `npx supabase functions deploy delete-account dream-coach generate-meditation` and `npx supabase functions deploy revenuecat-webhook --no-verify-jwt`; set all secrets (`ANTHROPIC_API_KEY`, `ELEVENLABS_API_KEY`, `ELEVENLABS_VOICE_ID`, `REVENUECAT_WEBHOOK_SECRET`); add auth redirect URLs `bloomwish://reset-password` + `bloomwish://verify-email`; put the project URL + anon key in `.env`.
+1. **Supabase cloud** — create the project; `npx supabase link --project-ref <ref>` then `npx supabase db push`; deploy functions: `npx supabase functions deploy delete-account dream-coach generate-meditation export-data` and `npx supabase functions deploy revenuecat-webhook notify-feedback --no-verify-jwt`; set all secrets (`ANTHROPIC_API_KEY`, `ELEVENLABS_API_KEY`, `ELEVENLABS_VOICE_ID`, `REVENUECAT_WEBHOOK_SECRET`); add auth redirect URLs `bloomwish://reset-password` + `bloomwish://verify-email`; put the project URL + anon key in `.env`.
 2. **Apple Developer** — enroll; register `com.bloomwish.app` with Sign in with Apple + the `group.com.bloomwish.app` app group; replace `REPLACE_WITH_APPLE_TEAM_ID` in [app.json](app.json) and [eas.json](eas.json); configure the Apple provider in Supabase Auth.
 3. **Google** — OAuth client IDs (iOS + Web) at [console.cloud.google.com](https://console.cloud.google.com/apis/credentials) into `.env`; Web client ID also into Supabase's Google provider; Play Console account + service-account JSON for submission.
 4. **RevenueCat** — app + products (`monthly` $23.99, `annual` $149.99 w/ 7-day trial, `founding_lifetime` $199), all attached to the `full_bloom` entitlement and a default offering; public SDK keys into `.env`; webhook pointed at the deployed function with the shared secret in the Authorization header.
@@ -128,6 +135,12 @@ npm run preflight   # the whole gate: typecheck, lint (zero warnings), expo-doct
 Run it before every production build. CI runs the same script on every push
 and pull request (.github/workflows/ci.yml) — a red ✗ fails the pipeline;
 ⚠ warnings list what must be resolved before store submission.
+
+## Feedback & learning how users use the app
+
+Every submission from the in-app form (bug / idea / love + message + email-consent flag + user id) lands as a row in the **`feedback` table** in Supabase. You can read it anytime in **Supabase Studio → Table Editor → feedback** (locally that's http://127.0.0.1:54323; in production, your project's dashboard). It's durable and queryable — but nothing tells you it arrived: wire the Slack notifier (see the To-do list above) to get pinged the moment feedback lands.
+
+For behavioral analytics (onboarding funnels, retention, paths), the recommended tool is **PostHog** — generous free tier, Expo SDK, privacy-respectful. Note: adding it requires updating the Apple privacy nutrition labels and Google Data Safety answers to declare usage-data collection (still no ATT prompt — there's no cross-app tracking). Your own database already answers core-loop questions (plants per user, sessions per week, sign rates) with plain SQL, and RevenueCat's dashboards cover revenue metrics once purchases are live.
 
 ## Ethical design ground rules
 
