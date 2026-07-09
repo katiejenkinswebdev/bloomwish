@@ -26,12 +26,12 @@ import { SessionComplete } from '@/features/activities/components/session-comple
 import { fetchDreams } from '@/features/dreams/api';
 import {
   fetchMeditation,
-  meditationAudioUrl,
   MeditationGateError,
   MEDITATION_MINUTES,
   requestMeditation,
   type MeditationMinutes,
 } from '@/features/meditations/api';
+import { getPlayableMeditationUri } from '@/features/meditations/audio-cache';
 import { useIsFullBloom } from '@/features/purchases/entitlements';
 import { useTheme } from '@/hooks/use-theme';
 import type { DreamRow } from '@/lib/supabase/database.types';
@@ -136,7 +136,9 @@ export default function MeditationScreen() {
 
   useEffect(() => {
     if (meditation?.status === 'ready' && meditation.audio_url && !audioUrl) {
-      meditationAudioUrl(meditation.audio_url).then(setAudioUrl).catch(console.error);
+      // Downloads once on native (then plays the local file forever);
+      // streams a signed URL on web.
+      getPlayableMeditationUri(meditation).then(setAudioUrl).catch(console.error);
     }
   }, [meditation, audioUrl]);
 

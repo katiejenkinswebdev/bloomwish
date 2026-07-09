@@ -123,8 +123,8 @@ Ranked by savings-per-effort. Unit economics today: each paying user costs ~$3�
 2. **Compressed audio instead of WAV** (~10× smaller files → egress and storage drop
    ~10×) — the Edge runtime has no ffmpeg, so either (a) encode MP3 in-function with
    a pure-JS encoder (lamejs), keeping the ambient mix, or (b) move rendering to a
-   tiny worker service with real ffmpeg. Interim quick win: **cache audio on-device
-   after first play** so repeat listens cost zero egress.
+   tiny worker service with real ffmpeg. Interim quick win — **done**: audio is cached on-device
+   after first download, so repeat listens cost zero egress and play offline.
 3. **Cheaper Claude tier for the coach** — `const MODEL` in
    [dream-coach](supabase/functions/dream-coach/index.ts): Sonnet is ~3–5× cheaper,
    Haiku ~10×. Consider a split: keep Opus for meditation *scripts* (the premium

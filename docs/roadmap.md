@@ -20,7 +20,7 @@ Not built yet, by design. Architecture stays open for these.
 ## Cost levers (see README for detail)
 
 - ElevenLabs Flash model (~50% voice-render savings; A/B against the clone first)
-- Compressed meditation audio: MP3-in-function (lamejs) or an ffmpeg worker service; interim on-device audio caching after first play
+- Compressed meditation audio: MP3-in-function (lamejs) or an ffmpeg worker service; interim on-device audio caching ✅ shipped
 - Coach on Sonnet (keep Opus for meditation scripts) — 3–5× cheaper coaching
 - Meditation length-mix nudges (shorter defaults; 15-min as deliberate choice)
 
