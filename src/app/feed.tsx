@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 
@@ -11,7 +11,10 @@ import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
 import { Spacing } from '@/constants/theme';
 import { completeSession, fetchFeedActivities, type CompletedSession } from '@/features/activities/api';
+import { CompostMoment } from '@/features/activities/components/compost-moment';
 import { SessionComplete } from '@/features/activities/components/session-complete';
+import { fetchDreams, fetchFutureLetter } from '@/features/dreams/api';
+import { Card } from '@/components/ui/card';
 import { useDictation } from '@/features/dictation/use-dictation';
 import { TextField } from '@/components/ui/text-field';
 import { useTheme } from '@/hooks/use-theme';
@@ -51,6 +54,8 @@ export default function FeedScreen() {
   const [reflection, setReflection] = useState('');
   const [result, setResult] = useState<CompletedSession | null>(null);
   const [startedAt] = useState(() => Date.now());
+  const [isComposting, setIsComposting] = useState(false);
+  const [rampageSecondsLeft, setRampageSecondsLeft] = useState<number | null>(null);
 
   const dictation = useDictation((finalText) => {
     setReflection((current) => (current ? `${current} ${finalText}` : finalText));
@@ -61,15 +66,34 @@ export default function FeedScreen() {
     queryFn: fetchFeedActivities,
   });
 
+  const dreamsQuery = useQuery({ queryKey: ['dreams'], queryFn: fetchDreams });
+  const dream = dreamsQuery.data?.find((d) => d.id === dreamId);
+
+  const letterQuery = useQuery({
+    queryKey: ['future-letter', dreamId],
+    queryFn: () => fetchFutureLetter(dream?.title ?? '', dream?.scene_text ?? undefined),
+    enabled: activity?.key === 'future_letter' && !!dream,
+    staleTime: Infinity,
+  });
+
+  // Rampage countdown.
+  useEffect(() => {
+    if (rampageSecondsLeft === null || rampageSecondsLeft <= 0) return;
+    const t = setInterval(() => setRampageSecondsLeft((v) => (v ?? 1) - 1), 1000);
+    return () => clearInterval(t);
+  }, [rampageSecondsLeft]);
+
   const completeMutation = useMutation({
-    mutationFn: () =>
+    // Optional override because React state set in the same tick (e.g. the
+    // future letter) wouldn't be visible to this closure yet.
+    mutationFn: (vars?: { reflectionText?: string }) =>
       completeSession({
         dreamId: dreamId!,
         type: 'feed',
         activityId: activity!.key,
         durationSeconds: Math.round((Date.now() - startedAt) / 1000),
         baseBoost: activity!.health_boost,
-        reflection: reflection.trim() || undefined,
+        reflection: (vars?.reflectionText ?? reflection).trim() || undefined,
       }),
     onSuccess: (session) => {
       setResult(session);
@@ -93,6 +117,151 @@ export default function FeedScreen() {
             router.push({ pathname: '/add-sign', params: { dreamId: dreamId! } });
           }}
         />
+      </Screen>
+    );
+  }
+
+  const resetActivity = () => {
+    setActivity(null);
+    setReflection('');
+    setIsComposting(false);
+    setRampageSecondsLeft(null);
+    if (dictation.isListening) dictation.stop();
+  };
+
+  // ── A letter from your future self ────────────────────────────────────────
+  if (activity?.key === 'future_letter') {
+    return (
+      <Screen padded={false}>
+        <ScrollView contentContainerStyle={styles.detail}>
+          <ThemedText type="title">{activity.title}</ThemedText>
+          {letterQuery.isLoading ? (
+            <ThemedText themeColor="textSecondary">
+              Your future self is writing to you…
+            </ThemedText>
+          ) : letterQuery.error ? (
+            <>
+              <ThemedText themeColor="danger">
+                The letter couldn’t arrive just now. Please try again.
+              </ThemedText>
+              <Button label="Try again" onPress={() => letterQuery.refetch()} />
+            </>
+          ) : (
+            <>
+              <Card>
+                <ThemedText type="small" style={styles.letter}>
+                  {letterQuery.data?.letterText}
+                </ThemedText>
+              </Card>
+              <Button
+                label="Take it to heart 💌"
+                loading={completeMutation.isPending}
+                onPress={() =>
+                  completeMutation.mutate({ reflectionText: letterQuery.data?.letterText })
+                }
+              />
+            </>
+          )}
+          <Button label="Back" variant="ghost" onPress={resetActivity} />
+        </ScrollView>
+      </Screen>
+    );
+  }
+
+  // ── Compost a doubt ────────────────────────────────────────────────────────
+  if (activity?.key === 'compost_doubts') {
+    if (isComposting) {
+      return (
+        <Screen style={styles.centered}>
+          <CompostMoment doubtText={reflection} onDone={() => completeMutation.mutate(undefined)} />
+        </Screen>
+      );
+    }
+    return (
+      <Screen padded={false}>
+        <ScrollView contentContainerStyle={styles.detail} keyboardShouldPersistTaps="handled">
+          <ThemedText type="title">{activity.title}</ThemedText>
+          <ThemedText themeColor="textSecondary">{activity.description}</ThemedText>
+          <TextField
+            label="The doubt"
+            placeholder="Write the worry exactly as it sounds in your head…"
+            value={dictation.isListening && dictation.transcript ? dictation.transcript : reflection}
+            onChangeText={setReflection}
+            multiline
+            editable={!dictation.isListening}
+            errorText={dictation.error ?? undefined}
+          />
+          <DictationButton
+            isListening={dictation.isListening}
+            onPress={() => (dictation.isListening ? dictation.stop() : dictation.start())}
+          />
+          <Button
+            label="Compost it 🍂"
+            disabled={reflection.trim().length < 3 || dictation.isListening}
+            onPress={() => setIsComposting(true)}
+          />
+          <Button label="Back" variant="ghost" onPress={resetActivity} />
+        </ScrollView>
+      </Screen>
+    );
+  }
+
+  // ── Rampage of appreciation ────────────────────────────────────────────────
+  if (activity?.key === 'rampage') {
+    const running = rampageSecondsLeft !== null && rampageSecondsLeft > 0;
+    const finished = rampageSecondsLeft === 0;
+    return (
+      <Screen padded={false}>
+        <ScrollView contentContainerStyle={styles.detail} keyboardShouldPersistTaps="handled">
+          <ThemedText type="title">{activity.title}</ThemedText>
+          <ThemedText themeColor="textSecondary">{activity.description}</ThemedText>
+
+          {rampageSecondsLeft === null ? (
+            <Button
+              label="Start the 60 seconds ⚡"
+              onPress={() => {
+                setRampageSecondsLeft(60);
+                dictation.start();
+              }}
+            />
+          ) : (
+            <>
+              <ThemedText type="title" style={styles.rampageClock}>
+                {finished ? 'Beautiful.' : `0:${String(rampageSecondsLeft).padStart(2, '0')}`}
+              </ThemedText>
+              <TextField
+                label="Everything you appreciate"
+                placeholder="Say it or type it — don’t stop, don’t edit…"
+                value={
+                  dictation.isListening && dictation.transcript
+                    ? dictation.transcript
+                    : reflection
+                }
+                onChangeText={setReflection}
+                multiline
+                editable={!dictation.isListening}
+                errorText={dictation.error ?? undefined}
+              />
+              {running ? (
+                <DictationButton
+                  isListening={dictation.isListening}
+                  onPress={() => (dictation.isListening ? dictation.stop() : dictation.start())}
+                />
+              ) : null}
+              {finished ? (
+                <Button
+                  label="Let it be ✨"
+                  loading={completeMutation.isPending}
+                  onPress={() => {
+                    if (dictation.isListening) dictation.stop();
+                    completeMutation.mutate(undefined);
+                  }}
+                />
+              ) : null}
+            </>
+          )}
+          <Button label="Back" variant="ghost" onPress={resetActivity} />
+        </ScrollView>
       </Screen>
     );
   }
@@ -142,16 +311,13 @@ export default function FeedScreen() {
             disabled={
               dictation.isListening || (needsReflection && reflection.trim().length < 3)
             }
-            onPress={() => completeMutation.mutate()}
+            onPress={() => completeMutation.mutate(undefined)}
             style={styles.completeButton}
           />
           <Button
             label="Back"
             variant="ghost"
-            onPress={() => {
-              setActivity(null);
-              setReflection('');
-            }}
+            onPress={resetActivity}
           />
         </ScrollView>
       </Screen>
@@ -218,5 +384,15 @@ const styles = StyleSheet.create({
   },
   completeButton: {
     marginTop: Spacing.two,
+  },
+  centered: {
+    justifyContent: 'center',
+  },
+  letter: {
+    fontStyle: 'italic',
+    lineHeight: 22,
+  },
+  rampageClock: {
+    textAlign: 'center',
   },
 });
