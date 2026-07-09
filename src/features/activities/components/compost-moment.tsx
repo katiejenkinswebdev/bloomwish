@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
   },
   doubtCard: {
     backgroundColor: '#EDE0CC',
-    borderRadius: Spacing.two,
+    borderRadius: Spacing.three,
     padding: Spacing.three,
     maxWidth: 280,
     zIndex: 1,

@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 2,
     backgroundColor: '#8B8680',
-    borderRadius: Spacing.two,
+    borderRadius: Spacing.one,
     paddingVertical: Spacing.two,
     paddingHorizontal: Spacing.four,
     borderWidth: 2,

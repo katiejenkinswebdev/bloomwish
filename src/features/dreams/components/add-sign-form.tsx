@@ -98,6 +98,6 @@ const styles = StyleSheet.create({
   photoPreview: {
     width: '100%',
     height: 160,
-    borderRadius: Spacing.two,
+    borderRadius: Spacing.three,
   },
 });

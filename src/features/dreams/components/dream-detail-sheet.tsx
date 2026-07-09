@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   statusChip: {
-    borderRadius: Spacing.four,
+    borderRadius: 999,
     paddingVertical: Spacing.one,
     paddingHorizontal: Spacing.three,
   },
@@ -285,6 +285,6 @@ const styles = StyleSheet.create({
   photoPreview: {
     width: '100%',
     height: 160,
-    borderRadius: Spacing.two,
+    borderRadius: Spacing.three,
   },
 });

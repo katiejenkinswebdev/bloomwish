@@ -6,6 +6,7 @@ import { goBackOrHome } from '@/lib/navigation';
 import { useQuery } from '@tanstack/react-query';
 
 import { PlantGlyph } from '@/components/plant-glyph';
+import { useTheme } from '@/hooks/use-theme';
 import { SunMoment } from '@/features/dreams/components/sun-moment';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
@@ -17,6 +18,7 @@ import type { AddedSign } from '@/features/dreams/signs';
 
 /** Standalone Add-a-Sign screen — where the post-session nudge lands. */
 export default function AddSignScreen() {
+  const theme = useTheme();
   const { dreamId: dreamIdParam } = useLocalSearchParams<{ dreamId?: string }>();
   const [pickedDreamId, setPickedDreamId] = useState<string | null>(null);
   const [saved, setSaved] = useState<AddedSign | null>(null);
@@ -57,7 +59,14 @@ export default function AddSignScreen() {
               key={candidate.id}
               accessibilityRole="button"
               onPress={() => setPickedDreamId(candidate.id)}
-              style={({ pressed }) => [styles.dreamOption, { opacity: pressed ? 0.8 : 1 }]}>
+              style={({ pressed }) => [
+                styles.dreamOption,
+                {
+                  backgroundColor: theme.backgroundElement,
+                  borderColor: theme.border,
+                  opacity: pressed ? 0.85 : 1,
+                },
+              ]}>
               <PlantGlyph state={candidate.state} health={candidate.health} size={48} />
               <ThemedText type="small" style={styles.dreamOptionTitle} numberOfLines={2}>
                 {candidate.title}
@@ -91,11 +100,12 @@ const styles = StyleSheet.create({
   content: {
     padding: Spacing.four,
     gap: Spacing.three,
+    paddingBottom: Spacing.six,
   },
   centered: {
     justifyContent: 'center',
     alignItems: 'stretch',
-    gap: Spacing.three,
+    gap: Spacing.four,
   },
   centeredText: {
     textAlign: 'center',
@@ -107,7 +117,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.three,
-    paddingVertical: Spacing.two,
+    borderWidth: 1,
+    borderRadius: Spacing.three,
+    padding: Spacing.three,
   },
   dreamOptionTitle: {
     flex: 1,

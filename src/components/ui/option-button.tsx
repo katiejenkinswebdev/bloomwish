@@ -34,7 +34,7 @@ export function OptionButton({ label, selected, onPress }: OptionButtonProps) {
 const styles = StyleSheet.create({
   option: {
     borderWidth: 1,
-    borderRadius: Spacing.two,
+    borderRadius: Spacing.three,
     paddingVertical: Spacing.three,
     paddingHorizontal: Spacing.three,
   },

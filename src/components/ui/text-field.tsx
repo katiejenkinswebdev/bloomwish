@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
   },
   input: {
     minHeight: 48,
-    borderRadius: Spacing.two,
+    borderRadius: Spacing.three,
     borderWidth: 1,
     paddingHorizontal: Spacing.three,
     fontSize: 16,

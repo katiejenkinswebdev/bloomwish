@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
   },
   capsule: {
     backgroundColor: '#F3E9DA',
-    borderRadius: Spacing.two,
+    borderRadius: Spacing.three,
     padding: Spacing.three,
     gap: Spacing.one,
   },

@@ -121,10 +121,11 @@ const styles = StyleSheet.create({
   content: {
     padding: Spacing.four,
     gap: Spacing.three,
+    paddingBottom: Spacing.six,
   },
   centeredScreen: {
     justifyContent: 'center',
-    gap: Spacing.three,
+    gap: Spacing.four,
   },
   centered: {
     textAlign: 'center',
@@ -134,7 +135,7 @@ const styles = StyleSheet.create({
   },
   typeChip: {
     borderWidth: 1,
-    borderRadius: Spacing.two,
+    borderRadius: Spacing.three,
     paddingVertical: Spacing.three,
     paddingHorizontal: Spacing.three,
   },

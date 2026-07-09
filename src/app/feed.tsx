@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 
 import { goBackOrHome } from '@/lib/navigation';
@@ -19,6 +19,18 @@ import { useDictation } from '@/features/dictation/use-dictation';
 import { TextField } from '@/components/ui/text-field';
 import { useTheme } from '@/hooks/use-theme';
 import type { FeedActivityRow } from '@/lib/supabase/database.types';
+
+/** Icons for the feed practices — same visual language as the Water modes. */
+const FEED_EMOJI: Record<string, string> = {
+  past_tense_writing: '📖',
+  tell_someone: '💬',
+  voice_note: '🎙',
+  gratitude_list: '🌻',
+  act_as_if: '🎭',
+  compost_doubts: '🍂',
+  rampage: '⚡',
+  future_letter: '💌',
+};
 
 /** Per-activity input coaching: a quiet label, a placeholder that points the
  * heart in the right direction. Activities listed here require the input. */
@@ -368,10 +380,13 @@ export default function FeedScreen() {
                 opacity: pressed ? 0.85 : 1,
               },
             ]}>
-            <ThemedText type="smallBold">{item.title}</ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              {item.description}
-            </ThemedText>
+            <ThemedText style={styles.activityEmoji}>{FEED_EMOJI[item.key] ?? '🌿'}</ThemedText>
+            <View style={styles.activityBody}>
+              <ThemedText type="smallBold">{item.title}</ThemedText>
+              <ThemedText type="small" themeColor="textSecondary">
+                {item.description}
+              </ThemedText>
+            </View>
           </Pressable>
         ))}
 
@@ -389,16 +404,27 @@ const styles = StyleSheet.create({
   list: {
     padding: Spacing.four,
     gap: Spacing.three,
+    paddingBottom: Spacing.six,
   },
   activityCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
     borderWidth: 1,
-    borderRadius: Spacing.two,
+    borderRadius: Spacing.three,
     padding: Spacing.three,
-    gap: Spacing.one,
+  },
+  activityEmoji: {
+    fontSize: 28,
+  },
+  activityBody: {
+    flex: 1,
+    gap: 2,
   },
   detail: {
     padding: Spacing.four,
     gap: Spacing.three,
+    paddingBottom: Spacing.six,
   },
   reflectionInput: {
     minHeight: 140,

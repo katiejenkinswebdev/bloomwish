@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
   },
   durationChip: {
     borderWidth: 1,
-    borderRadius: Spacing.four,
+    borderRadius: 999,
     paddingVertical: Spacing.two,
     paddingHorizontal: Spacing.four,
   },

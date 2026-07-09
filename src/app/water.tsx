@@ -525,6 +525,7 @@ const styles = StyleSheet.create({
   setup: {
     padding: Spacing.four,
     gap: Spacing.three,
+    paddingBottom: Spacing.six,
   },
   centered: {
     justifyContent: 'center',
@@ -544,13 +545,13 @@ const styles = StyleSheet.create({
   },
   chip: {
     borderWidth: 1,
-    borderRadius: Spacing.four,
+    borderRadius: 999,
     paddingVertical: Spacing.two,
     paddingHorizontal: Spacing.three,
   },
   optionCard: {
     borderWidth: 1,
-    borderRadius: Spacing.two,
+    borderRadius: Spacing.three,
     padding: Spacing.three,
     gap: Spacing.one,
   },
