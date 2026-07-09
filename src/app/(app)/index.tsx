@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 
 import { Butterfly } from '@/components/butterfly';
@@ -51,6 +51,16 @@ export default function GardenScreen() {
   // Track the selected dream by id so the sheet always shows fresh data —
   // including growth that happened while a Water/Feed/Sign flow was on top.
   const [selectedDreamId, setSelectedDreamId] = useState<string | null>(null);
+  // The sheet is an RN Modal, which floats above every navigator screen —
+  // so it must hide while a Water/Feed/Sign flow is pushed on top, then
+  // reappear (with fresh data) when the garden regains focus.
+  const [isFocused, setIsFocused] = useState(true);
+  useFocusEffect(
+    useCallback(() => {
+      setIsFocused(true);
+      return () => setIsFocused(false);
+    }, [])
+  );
   const [reward, setReward] = useState<GrantedReward | null>(null);
   const isFullBloom = useIsFullBloom();
 
@@ -227,7 +237,7 @@ export default function GardenScreen() {
       ) : null}
 
       <DreamDetailSheet
-        dream={selectedDream}
+        dream={isFocused ? selectedDream : null}
         effectiveHealth={selectedDream ? healthFor(selectedDream) : null}
         onClose={() => setSelectedDreamId(null)}
       />
