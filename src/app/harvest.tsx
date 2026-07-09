@@ -82,9 +82,11 @@ export default function HarvestScreen() {
             <Animated.View entering={FadeInUp.delay(1700).duration(700)} style={styles.capsule}>
               <View style={styles.capsuleHeader}>
                 <EnvelopeIcon size={18} holeColor="#F3E9DA" />
-                <ThemedText type="smallBold">From the day you planted this:</ThemedText>
+                <ThemedText type="smallBold" style={styles.capsuleInk}>
+                  From the day you planted this:
+                </ThemedText>
               </View>
-              <ThemedText type="small" style={styles.capsuleText}>
+              <ThemedText type="small" style={[styles.capsuleText, styles.capsuleInk]}>
                 “{capsuleText}”
               </ThemedText>
             </Animated.View>
@@ -190,5 +192,10 @@ const styles = StyleSheet.create({
   },
   capsuleText: {
     fontStyle: 'italic',
+  },
+  // The card's paper is always cream, so the ink must always be dark —
+  // theme text color goes light in dark mode and vanishes here.
+  capsuleInk: {
+    color: '#4A4036',
   },
 });

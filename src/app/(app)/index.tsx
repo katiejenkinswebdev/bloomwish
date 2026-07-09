@@ -36,13 +36,28 @@ import type { DreamRow } from '@/lib/supabase/database.types';
 
 const PLANT_AREA = 132;
 
-/** The trail's winding rhythm — segments drift left, center, right. */
-const PATH_DRIFT = [
-  { align: 'flex-start', rotate: '-5deg' },
-  { align: 'center', rotate: '3deg' },
-  { align: 'flex-end', rotate: '-3deg' },
-  { align: 'center', rotate: '4deg' },
+/** Deterministic star spots in the grove's dusk sky (percent-based). */
+const STAR_SPOTS = [
+  { top: '12%', left: '46%', size: 10 },
+  { top: '30%', left: '72%', size: 8 },
+  { top: '8%', left: '84%', size: 12 },
+  { top: '38%', left: '55%', size: 7 },
+  { top: '18%', left: '63%', size: 9 },
+  { top: '10%', left: '30%', size: 8 },
+  { top: '34%', left: '88%', size: 9 },
+  { top: '24%', left: '38%', size: 7 },
+  { top: '6%', left: '55%', size: 8 },
+  { top: '28%', left: '25%', size: 7 },
 ] as const;
+
+/** Charms hang at varied string lengths so the garland feels hand-tied. */
+const CHARM_DROPS = [10, 22, 14, 26, 18];
+
+function chunk<T>(items: T[], size: number): T[][] {
+  const rows: T[][] = [];
+  for (let i = 0; i < items.length; i += size) rows.push(items.slice(i, i + size));
+  return rows;
+}
 
 // One app-open delight roll per launch, not per navigation.
 let hasRolledThisLaunch = false;
@@ -54,6 +69,7 @@ export default function GardenScreen() {
   // The sheet is an RN Modal, which floats above every navigator screen —
   // so it must hide while a Water/Feed/Sign flow is pushed on top, then
   // reappear (with fresh data) when the garden regains focus.
+  const [charmTrophyId, setCharmTrophyId] = useState<string | null>(null);
   const [isFocused, setIsFocused] = useState(true);
   useFocusEffect(
     useCallback(() => {
@@ -176,33 +192,73 @@ export default function GardenScreen() {
           ))}
 
           {trophies.length > 0 ? (
-            <View style={styles.gardenPath}>
-              {trophies.map((trophy, index) => {
-                const drift = PATH_DRIFT[index % PATH_DRIFT.length];
-                return (
-                  <View
-                    key={trophy.id}
-                    accessibilityLabel={`Garden path stone: ${trophy.dream_title}, came true ${new Date(trophy.harvested_at).toLocaleDateString()}`}
-                    style={[
-                      styles.pathSegment,
-                      { alignSelf: drift.align, transform: [{ rotate: drift.rotate }] },
-                    ]}>
-                    <View style={[styles.tuft, styles.tuftLeft]} />
-                    <View style={[styles.tuft, styles.tuftRight]} />
-                    <View style={styles.stone}>
-                      <View style={styles.moss} />
-                      <ThemedText type="smallBold" numberOfLines={1} style={styles.stoneText}>
-                        {trophy.dream_title}
-                      </ThemedText>
-                      <ThemedText type="small" style={styles.stoneText}>
-                        {new Date(trophy.harvested_at).toLocaleDateString()}
-                      </ThemedText>
-                    </View>
+            <Pressable
+              accessibilityLabel={`The wishing grove: ${trophies.length} dream${trophies.length === 1 ? '' : 's'} came true`}
+              onPress={() => setCharmTrophyId(null)}
+              style={styles.grove}>
+              {/* Stars — one appears for every harvested dream. */}
+              {STAR_SPOTS.slice(0, trophies.length).map((spot, i) => (
+                <Spark
+                  key={i}
+                  size={spot.size}
+                  style={[styles.groveStar, { top: spot.top, left: spot.left }]}
+                />
+              ))}
+
+              {/* The wishing tree, anchoring the garlands. */}
+              <View style={styles.tree} pointerEvents="none">
+                <View style={[styles.canopy, styles.canopyA]} />
+                <View style={[styles.canopy, styles.canopyB]} />
+                <View style={[styles.canopy, styles.canopyC]} />
+                <View style={styles.trunk} />
+              </View>
+
+              {/* Garland strings of charms — one gold charm per harvest. */}
+              <View style={styles.garlands} pointerEvents="box-none">
+                {chunk(trophies, 5).map((row, rowIndex) => (
+                  <View key={rowIndex} style={styles.garland} pointerEvents="box-none">
+                    {row.map((trophy, i) => (
+                      <Pressable
+                        key={trophy.id}
+                        accessibilityRole="button"
+                        accessibilityLabel={`${trophy.dream_title}, came true ${new Date(trophy.harvested_at).toLocaleDateString()}`}
+                        onPress={() =>
+                          setCharmTrophyId(charmTrophyId === trophy.id ? null : trophy.id)
+                        }
+                        style={styles.charm}>
+                        <View style={[styles.charmString, { height: CHARM_DROPS[i % CHARM_DROPS.length] }]} />
+                        <View
+                          style={[
+                            styles.charmTag,
+                            charmTrophyId === trophy.id && styles.charmTagActive,
+                            { transform: [{ rotate: i % 2 === 0 ? '-7deg' : '6deg' }] },
+                          ]}
+                        />
+                      </Pressable>
+                    ))}
                   </View>
-                );
-              })}
-              <View style={[styles.pathSegment, styles.pathTaper]} />
-            </View>
+                ))}
+              </View>
+
+              {/* Fireflies drifting through the grove. */}
+              <View style={styles.groveFireflies} pointerEvents="none">
+                <Fireflies count={Math.min(trophies.length + 2, 7)} areaSize={110} />
+              </View>
+
+              {(() => {
+                const charm = trophies.find((t) => t.id === charmTrophyId);
+                return charm ? (
+                  <View style={styles.charmCard}>
+                    <ThemedText type="smallBold" numberOfLines={2} style={styles.charmCardInk}>
+                      {charm.dream_title}
+                    </ThemedText>
+                    <ThemedText type="small" style={styles.charmCardInk}>
+                      Came true {new Date(charm.harvested_at).toLocaleDateString()}
+                    </ThemedText>
+                  </View>
+                ) : null;
+              })()}
+            </Pressable>
           ) : null}
         </ScrollView>
       )}
@@ -297,74 +353,111 @@ const styles = StyleSheet.create({
     gap: Spacing.three,
     paddingVertical: Spacing.two,
   },
-  gardenPath: {
+  grove: {
     width: '100%',
-    paddingTop: Spacing.five,
-    paddingHorizontal: Spacing.two,
+    minHeight: 190,
+    marginTop: Spacing.five,
+    borderRadius: Spacing.three,
+    backgroundColor: '#2E2438',
+    overflow: 'hidden',
+    paddingBottom: Spacing.three,
   },
-  pathSegment: {
-    width: '64%',
-    minWidth: 220,
-    alignItems: 'center',
-    paddingVertical: Spacing.two,
-    paddingHorizontal: Spacing.two,
-    backgroundColor: '#E6D8B8',
-    borderWidth: 2,
-    borderColor: '#CDBB92',
-    borderRadius: 36,
-    marginTop: -12,
-  },
-  pathTaper: {
-    alignSelf: 'center',
-    width: 72,
-    minWidth: 72,
-    height: 26,
-    borderRadius: 14,
-    opacity: 0.55,
-    transform: [{ rotate: '2deg' }],
-  },
-  tuft: {
+  groveStar: {
     position: 'absolute',
-    width: 18,
-    height: 8,
-    borderRadius: 5,
-    backgroundColor: BrandPalette.sage,
+    opacity: 0.85,
   },
-  tuftLeft: {
-    left: -8,
-    top: 14,
-    transform: [{ rotate: '-28deg' }],
+  tree: {
+    position: 'absolute',
+    left: 10,
+    bottom: 0,
+    width: 96,
+    height: 130,
   },
-  tuftRight: {
-    right: -8,
-    bottom: 14,
-    transform: [{ rotate: '28deg' }],
+  canopy: {
+    position: 'absolute',
+    backgroundColor: BrandPalette.deepGreen,
+    borderRadius: 999,
   },
-  stone: {
+  canopyA: {
+    width: 74,
+    height: 58,
+    top: 8,
+    left: 8,
+  },
+  canopyB: {
+    width: 54,
+    height: 44,
+    top: 0,
+    left: 34,
+    backgroundColor: '#4E8A66',
+  },
+  canopyC: {
+    width: 46,
+    height: 38,
+    top: 30,
+    left: 0,
+    backgroundColor: '#356B4D',
+  },
+  trunk: {
+    position: 'absolute',
+    bottom: 0,
+    left: 42,
+    width: 10,
+    height: 56,
+    borderRadius: 4,
+    backgroundColor: BrandPalette.warmBrown,
+  },
+  garlands: {
+    paddingTop: Spacing.four,
+    paddingLeft: 104,
+    paddingRight: Spacing.three,
+    gap: Spacing.four,
+  },
+  garland: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderTopWidth: 1.5,
+    borderTopColor: 'rgba(233, 180, 76, 0.45)',
+    paddingHorizontal: Spacing.two,
+  },
+  charm: {
+    alignItems: 'center',
+    paddingHorizontal: Spacing.one,
+  },
+  charmString: {
+    width: 1.5,
+    backgroundColor: 'rgba(233, 180, 76, 0.45)',
+  },
+  charmTag: {
+    width: 16,
+    height: 20,
+    borderRadius: 4,
+    backgroundColor: BrandPalette.gold,
+  },
+  charmTagActive: {
+    borderWidth: 2,
+    borderColor: '#FFF3D6',
+  },
+  groveFireflies: {
+    position: 'absolute',
+    right: 6,
+    bottom: -6,
+    width: 110,
+    height: 110,
+  },
+  charmCard: {
+    alignSelf: 'center',
     alignItems: 'center',
     gap: 2,
-    maxWidth: '94%',
-    backgroundColor: '#A9A297',
-    borderColor: '#8C857A',
-    borderWidth: 1,
+    marginTop: Spacing.three,
+    marginHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
     paddingHorizontal: Spacing.three,
-    borderTopLeftRadius: 26,
-    borderTopRightRadius: 34,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 22,
+    borderRadius: Spacing.three,
+    backgroundColor: '#F6EFE3',
   },
-  stoneText: {
-    color: '#3E3A33',
-  },
-  moss: {
-    position: 'absolute',
-    top: -3,
-    left: 14,
-    width: 18,
-    height: 8,
-    borderRadius: 5,
-    backgroundColor: BrandPalette.sage,
-    opacity: 0.8,
+  charmCardInk: {
+    color: '#4A4036',
+    textAlign: 'center',
   },
 });
