@@ -112,6 +112,28 @@ A self-contained static site lives in [site/](site/): `index.html` (hero, featur
 - **Waitlist form**: create a free form at [formspree.io](https://formspree.io) and replace `YOUR_FORM_ID` in index.html (submissions arrive by email).
 - **Before launch**: fill the bracketed placeholders in privacy.html/terms.html (they're skeletons, not legal advice) and set the real support email.
 
+## Cost levers (when the AI bill matters)
+
+Ranked by savings-per-effort. Unit economics today: each paying user costs ~$3–4/mo (mostly voice rendering); these cut that to ~$1 or less.
+
+1. **ElevenLabs Flash model** (~50% off every character) — change `model_id` in
+   [generate-meditation](supabase/functions/generate-meditation/index.ts) from
+   `eleven_multilingual_v2` to `eleven_flash_v2_5`. One line. Trade-off: slightly
+   lower voice fidelity — A/B it with the real cloned voice before committing.
+2. **Compressed audio instead of WAV** (~10× smaller files → egress and storage drop
+   ~10×) — the Edge runtime has no ffmpeg, so either (a) encode MP3 in-function with
+   a pure-JS encoder (lamejs), keeping the ambient mix, or (b) move rendering to a
+   tiny worker service with real ffmpeg. Interim quick win: **cache audio on-device
+   after first play** so repeat listens cost zero egress.
+3. **Cheaper Claude tier for the coach** — `const MODEL` in
+   [dream-coach](supabase/functions/dream-coach/index.ts): Sonnet is ~3–5× cheaper,
+   Haiku ~10×. Consider a split: keep Opus for meditation *scripts* (the premium
+   product), Sonnet for questions/scenes/scores. Two lines. Re-read a few outputs
+   for warmth before shipping.
+4. **Meditation length mix** — a 15-minute render costs ~3× a 5-minute one. The UI
+   already defaults to 5 minutes and caches per dream+duration; keep nudging toward
+   shorter defaults and let 15-minute be a deliberate choice.
+
 ## Domain + email (recommendation)
 
 1. **Buy the domain at [Cloudflare Registrar](https://dash.cloudflare.com)** (~$10–12/yr for `bloomwish.app`, at-cost pricing, free WHOIS privacy). Bonus: **Cloudflare Pages** can then host the landing site free, straight from this repo (`site/` as the output directory), all in one dashboard. Note: `.app` domains require HTTPS — Pages/Netlify handle that automatically.
