@@ -112,6 +112,14 @@ A self-contained static site lives in [site/](site/): `index.html` (hero, featur
 - **Waitlist form**: create a free form at [formspree.io](https://formspree.io) and replace `YOUR_FORM_ID` in index.html (submissions arrive by email).
 - **Before launch**: fill the bracketed placeholders in privacy.html/terms.html (they're skeletons, not legal advice) and set the real support email.
 
+## Domain + email (recommendation)
+
+1. **Buy the domain at [Cloudflare Registrar](https://dash.cloudflare.com)** (~$10–12/yr for `bloomwish.app`, at-cost pricing, free WHOIS privacy). Bonus: **Cloudflare Pages** can then host the landing site free, straight from this repo (`site/` as the output directory), all in one dashboard. Note: `.app` domains require HTTPS — Pages/Netlify handle that automatically.
+   - *Runner-up:* [Porkbun](https://porkbun.com) — also at-cost domains, free email forwarding, and a $2/mo hosted mailbox if you want a real inbox in one place immediately.
+2. **Email, stage 1 (receive, free, 5 minutes):** Cloudflare dashboard → your domain → **Email → Email Routing** → forward `support@bloomwish.app` to your personal Gmail. You can receive support mail from day one.
+3. **Email, stage 2 (send, when you start replying):** add [Google Workspace](https://workspace.google.com) ($7/user/mo) for a real `support@bloomwish.app` mailbox — or Zoho Mail's free tier for $0.
+4. **After the domain is live:** deploy `site/` (see "Landing page" above), confirm `https://bloomwish.app/privacy` and `/terms` resolve, and update `supportEmail` in [src/config/branding.ts](src/config/branding.ts) if it differs — that clears the last preflight warning.
+
 ## Path to production (exact order)
 
 1. **Supabase cloud** — create the project; `npx supabase link --project-ref <ref>` then `npx supabase db push`; deploy functions: `npx supabase functions deploy delete-account dream-coach generate-meditation export-data` and `npx supabase functions deploy revenuecat-webhook notify-feedback --no-verify-jwt`; set all secrets (`ANTHROPIC_API_KEY`, `ELEVENLABS_API_KEY`, `ELEVENLABS_VOICE_ID`, `REVENUECAT_WEBHOOK_SECRET`); add auth redirect URLs `bloomwish://reset-password` + `bloomwish://verify-email`; put the project URL + anon key in `.env`.
