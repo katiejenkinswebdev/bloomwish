@@ -135,24 +135,18 @@ export default function FeedScreen() {
       <Screen padded={false}>
         <ScrollView contentContainerStyle={styles.detail}>
           <ThemedText type="title">{activity.title}</ThemedText>
-          {letterQuery.isLoading ? (
-            <ThemedText themeColor="textSecondary">
-              Your future self is writing to you…
-            </ThemedText>
-          ) : letterQuery.error ? (
-            <>
-              <ThemedText themeColor="danger">
-                The letter couldn’t arrive just now. Please try again.
-              </ThemedText>
-              <Button label="Try again" onPress={() => letterQuery.refetch()} />
-            </>
-          ) : (
+          {letterQuery.data ? (
             <>
               <Card>
                 <ThemedText type="small" style={styles.letter}>
-                  {letterQuery.data?.letterText}
+                  {letterQuery.data.letterText}
                 </ThemedText>
               </Card>
+              {completeMutation.error ? (
+                <ThemedText themeColor="danger">
+                  Couldn’t save your session. Please try again.
+                </ThemedText>
+              ) : null}
               <Button
                 label="Take it to heart 💌"
                 loading={completeMutation.isPending}
@@ -161,6 +155,17 @@ export default function FeedScreen() {
                 }
               />
             </>
+          ) : letterQuery.error ? (
+            <>
+              <ThemedText themeColor="danger">
+                The letter couldn’t arrive just now. Please try again.
+              </ThemedText>
+              <Button label="Try again" onPress={() => letterQuery.refetch()} />
+            </>
+          ) : (
+            <ThemedText themeColor="textSecondary">
+              Your future self is writing to you…
+            </ThemedText>
           )}
           <Button label="Back" variant="ghost" onPress={resetActivity} />
         </ScrollView>
@@ -174,6 +179,14 @@ export default function FeedScreen() {
       return (
         <Screen style={styles.centered}>
           <CompostMoment doubtText={reflection} onDone={() => completeMutation.mutate(undefined)} />
+          {completeMutation.error ? (
+            <>
+              <ThemedText themeColor="danger" style={styles.rampageClock}>
+                Couldn’t save your session.
+              </ThemedText>
+              <Button label="Try again" onPress={() => completeMutation.mutate(undefined)} />
+            </>
+          ) : null}
         </Screen>
       );
     }
@@ -242,21 +255,31 @@ export default function FeedScreen() {
                 editable={!dictation.isListening}
                 errorText={dictation.error ?? undefined}
               />
-              {running ? (
+              {running || dictation.isListening ? (
                 <DictationButton
                   isListening={dictation.isListening}
                   onPress={() => (dictation.isListening ? dictation.stop() : dictation.start())}
                 />
               ) : null}
               {finished ? (
-                <Button
-                  label="Let it be ✨"
-                  loading={completeMutation.isPending}
-                  onPress={() => {
-                    if (dictation.isListening) dictation.stop();
-                    completeMutation.mutate(undefined);
-                  }}
-                />
+                <>
+                  {dictation.isListening ? (
+                    <ThemedText type="small" themeColor="textSecondary" style={styles.rampageClock}>
+                      Tap the mic to finish, so every word lands.
+                    </ThemedText>
+                  ) : null}
+                  {completeMutation.error ? (
+                    <ThemedText themeColor="danger">
+                      Couldn’t save your session. Please try again.
+                    </ThemedText>
+                  ) : null}
+                  <Button
+                    label="Let it be ✨"
+                    loading={completeMutation.isPending}
+                    disabled={dictation.isListening}
+                    onPress={() => completeMutation.mutate(undefined)}
+                  />
+                </>
               ) : null}
             </>
           )}
