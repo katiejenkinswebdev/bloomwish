@@ -121,12 +121,13 @@ targets/widget/   iOS WidgetKit target
 ## Checks
 
 ```bash
-npx tsc --noEmit   # typecheck
-npx expo lint      # lint
-npx expo-doctor    # project health
+npm run preflight   # the whole gate: typecheck, lint (zero warnings), expo-doctor,
+                    # iOS+web bundle smoke test, secret hygiene, launch-placeholder warnings
 ```
 
-All three pass clean as of the last commit, and the iOS/web bundles export without errors.
+Run it before every production build. CI runs the same script on every push
+and pull request (.github/workflows/ci.yml) — a red ✗ fails the pipeline;
+⚠ warnings list what must be resolved before store submission.
 
 ## Ethical design ground rules
 

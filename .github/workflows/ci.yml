@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Preflight (typecheck, lint, doctor, bundle smoke, secret hygiene)
+        run: bash scripts/preflight.sh
+        env:
+          # Bundling needs the public env vars to exist; CI uses inert values.
+          EXPO_PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
+          EXPO_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key
+          EXPO_PUBLIC_REVENUECAT_IOS_API_KEY: appl_placeholder
+          EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY: goog_placeholder
+          EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID: placeholder.apps.googleusercontent.com
+          EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: placeholder.apps.googleusercontent.com
+
+  # ── Next pipeline stage (uncomment when EAS is set up) ─────────────────────
+  # Real native builds on every release tag. Requires an Expo access token
+  # (expo.dev → Account settings → Access tokens) saved as the EXPO_TOKEN
+  # repository secret.
+  #
+  # build-preview:
+  #   needs: preflight
+  #   if: github.ref == 'refs/heads/master'
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-node@v4
+  #       with: { node-version: 22, cache: npm }
+  #     - run: npm ci
+  #     - uses: expo/expo-github-action@v8
+  #       with:
+  #         eas-version: latest
+  #         token: ${{ secrets.EXPO_TOKEN }}
+  #     - run: eas build --profile preview --platform all --non-interactive --no-wait
