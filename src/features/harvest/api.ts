@@ -1,3 +1,4 @@
+import { track } from '@/features/analytics/analytics';
 import { supabase } from '@/lib/supabase/client';
 import type { TrophyRow } from '@/lib/supabase/database.types';
 
@@ -45,6 +46,7 @@ export async function harvestDream(dreamId: string): Promise<TrophyRow> {
     .select()
     .single();
   if (trophyError) throw trophyError;
+  track('harvest', { total_sessions: trophy.total_sessions });
   return trophy;
 }
 

@@ -21,6 +21,7 @@ import { Screen } from '@/components/ui/screen';
 import { Branding } from '@/config/branding';
 import { BrandPalette } from '@/constants/brand-palette';
 import { Spacing } from '@/constants/theme';
+import { track } from '@/features/analytics/analytics';
 import { plantDream } from '@/features/dreams/api';
 import { useDreamDraftStore } from '@/store/dream-draft-store';
 
@@ -41,8 +42,9 @@ export default function PlantingCeremonyScreen() {
       const title = dreamText.length > 60 ? `${dreamText.slice(0, 57)}…` : dreamText;
       return plantDream({ title, sceneText, vividnessScore: vividnessScore ?? 0 });
     },
-    onSuccess: () => {
+    onSuccess: (dream) => {
       queryClient.invalidateQueries({ queryKey: ['dreams'] });
+      track('dream_planted', { starter: dream.is_starter_dream });
     },
   });
 

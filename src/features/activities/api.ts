@@ -1,3 +1,4 @@
+import { track } from '@/features/analytics/analytics';
 import { supabase } from '@/lib/supabase/client';
 import type {
   DreamHealth,
@@ -143,6 +144,13 @@ export async function completeSession(params: {
     })
     .eq('id', params.dreamId);
   if (updateError) throw updateError;
+
+  track('session_completed', {
+    type: params.type,
+    activity: params.activityId,
+    duration_seconds: params.durationSeconds,
+    state_advanced: newState !== dream.state,
+  });
 
   return { grantedBoost, newState, stateAdvanced: newState !== dream.state };
 }

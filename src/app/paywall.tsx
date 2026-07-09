@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 
@@ -6,6 +6,7 @@ import { goBackOrHome } from '@/lib/navigation';
 import * as WebBrowser from 'expo-web-browser';
 import { useMutation, useQuery } from '@tanstack/react-query';
 
+import { track } from '@/features/analytics/analytics';
 import { Spark } from '@/components/spark';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
@@ -42,6 +43,10 @@ export default function PaywallScreen() {
   const isFullBloom = useIsFullBloom();
   const isConfigured = usePurchasesStore((s) => s.isConfigured);
   const [notice, setNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    track('paywall_viewed');
+  }, []);
 
   const plansQuery = useQuery({
     queryKey: ['paywall-plans'],

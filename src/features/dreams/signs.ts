@@ -1,5 +1,6 @@
 import * as Crypto from 'expo-crypto';
 
+import { track } from '@/features/analytics/analytics';
 import { supabase } from '@/lib/supabase/client';
 import { completeSession, type CompletedSession } from '@/features/activities/api';
 import type { SessionRow, SignRow } from '@/lib/supabase/database.types';
@@ -85,6 +86,8 @@ export async function addSign(params: {
     durationSeconds: 0,
     baseBoost: signBoost,
   });
+
+  track('sign_logged', { has_photo: !!photoUrl });
 
   return { sign, growth };
 }

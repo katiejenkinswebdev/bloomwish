@@ -1,3 +1,4 @@
+import { track } from '@/features/analytics/analytics';
 import { supabase } from '@/lib/supabase/client';
 import type { MeditationRow } from '@/lib/supabase/database.types';
 
@@ -27,6 +28,7 @@ export async function requestMeditation(
     }
     throw error;
   }
+  track('meditation_generated', { minutes: durationMinutes });
   return data.meditationId as string;
 }
 

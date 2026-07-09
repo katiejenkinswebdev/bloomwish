@@ -5,6 +5,7 @@ import Purchases, {
 } from 'react-native-purchases';
 import { create } from 'zustand';
 
+import { track } from '@/features/analytics/analytics';
 import { FULL_BLOOM_ENTITLEMENT_ID } from '@/config/branding';
 
 interface PurchasesState {
@@ -97,6 +98,7 @@ export async function purchasePlan(plan: PaywallPlan): Promise<boolean> {
   try {
     const { customerInfo } = await Purchases.purchasePackage(plan.rcPackage);
     usePurchasesStore.setState({ isFullBloom: hasFullBloom(customerInfo) });
+    track('purchase_completed', { plan: plan.offeringId });
     return true;
   } catch (err) {
     if ((err as { userCancelled?: boolean }).userCancelled) return false;

@@ -49,16 +49,19 @@ Declare **Data linked to you**:
 | Audio: none stored — dictation is on-device, transcript only | — | — |
 | Purchase history (via RevenueCat) | Purchases | App functionality |
 | User ID (Supabase uid) | Identifiers | App functionality |
+| Product interaction (screens viewed, core actions) via PostHog | Usage data | Analytics (app functionality improvement — no ads, no tracking) |
 
 Data **not** collected: location, browsing history, search history, contacts,
-health data, financial info, diagnostics/analytics identifiers.
+health data, financial info.
 
-Tracking: **none**.
+Tracking (ATT sense): **none** — PostHog usage analytics are first-party
+product analytics with no cross-app tracking or ad identifiers, so no ATT
+prompt is required.
 
 ## Google Play Data safety answers
 
 - Collects data: **yes** (email, optional name, user content, purchase history, user id)
-- Shared with third parties: **RevenueCat** (purchase processing), **Anthropic / ElevenLabs** (dream text and scenes are sent server-side to generate coaching content and meditation audio — disclose as "app functionality"; no ads, no marketing use)
+- Shared with third parties: **RevenueCat** (purchase processing), **Anthropic / ElevenLabs** (dream text and scenes are sent server-side to generate coaching content and meditation audio — disclose as "app functionality"; no ads, no marketing use), **PostHog** (usage analytics — screens and core actions, tied to the app user id; no ads)
 - Data encrypted in transit: **yes** (TLS everywhere)
 - Users can request deletion: **yes** (in-app account deletion)
 - Audio: microphone used for on-device speech-to-text only; recordings never leave the device

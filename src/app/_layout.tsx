@@ -4,7 +4,10 @@ import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { QueryClientProvider, useQuery } from '@tanstack/react-query';
 
+import { PostHogProvider } from 'posthog-react-native';
+
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
+import { identifyUser, posthog, resetAnalytics } from '@/features/analytics/analytics';
 import { fetchProfile, profileQueryKey } from '@/features/profile/api';
 import { endPurchasesSession, initializePurchases } from '@/features/purchases/purchases';
 import { queryClient } from '@/lib/query-client';
@@ -28,8 +31,10 @@ function RootNavigator() {
   useEffect(() => {
     if (userId) {
       initializePurchases(userId);
+      identifyUser(userId);
     } else {
       endPurchasesSession();
+      resetAnalytics();
     }
   }, [userId]);
 
@@ -80,11 +85,14 @@ export default function RootLayout() {
     useAuthStore.getState().initialize();
   }, []);
 
-  return (
+  const app = (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <RootNavigator />
       </ThemeProvider>
     </QueryClientProvider>
   );
+
+  // Autocapture (screens + taps) only when a real PostHog key is configured.
+  return posthog ? <PostHogProvider client={posthog}>{app}</PostHogProvider> : app;
 }

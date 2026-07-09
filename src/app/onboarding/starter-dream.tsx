@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Screen } from '@/components/ui/screen';
 import { Spacing } from '@/constants/theme';
+import { track } from '@/features/analytics/analytics';
 import { upsertProfile, profileQueryKey } from '@/features/profile/api';
 
 /**
@@ -21,6 +22,7 @@ export default function StarterDreamScreen() {
     mutationFn: () => upsertProfile({ onboarding_completed_at: new Date().toISOString() }),
     onSuccess: async (profile, _variables, _context) => {
       queryClient.setQueryData(profileQueryKey, profile);
+      track('onboarding_completed');
       // The guard flips to the main app; land on the garden, then open the
       // starter dream flow on top of it.
       router.replace('/');
