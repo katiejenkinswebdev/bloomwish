@@ -24,6 +24,7 @@ import { BrandPalette } from '@/constants/brand-palette';
 import { Spacing } from '@/constants/theme';
 import { useDictation } from '@/features/dictation/use-dictation';
 import { fetchDreams, releaseDream } from '@/features/dreams/api';
+import { markGardenNourished } from '@/features/dreams/nourish-signal';
 import type { DreamRow } from '@/lib/supabase/database.types';
 
 /**
@@ -91,9 +92,10 @@ export default function ReleaseScreen() {
 
   const releaseMutation = useMutation({
     mutationFn: () => releaseDream({ dreamId: dreamId! }),
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['dreams'] });
       queryClient.invalidateQueries({ queryKey: ['sign-counts'] });
+      if (result.survivors > 0) markGardenNourished();
     },
   });
 

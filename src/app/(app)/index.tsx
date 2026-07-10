@@ -1,5 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withDelay,
+  withSequence,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router, useFocusEffect } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
@@ -14,6 +23,7 @@ import { FreeTierLimits } from '@/config/branding';
 import { Spacing } from '@/constants/theme';
 import { fetchDreams } from '@/features/dreams/api';
 import { DreamDetailSheet } from '@/features/dreams/components/dream-detail-sheet';
+import { consumeGardenNourished } from '@/features/dreams/nourish-signal';
 import {
   deriveHealth,
   fetchHealthDecayConfig,
@@ -38,6 +48,57 @@ import type { DreamRow } from '@/lib/supabase/database.types';
 
 const PLANT_AREA = 132;
 
+/**
+ * Wraps a plant so the whole garden can respond in a staggered wave when a
+ * released dream's energy feeds the survivors.
+ */
+function NourishablePlant({
+  index,
+  signal,
+  children,
+}: {
+  index: number;
+  signal: number;
+  children: React.ReactNode;
+}) {
+  const reducedMotion = useReducedMotion();
+  const scale = useSharedValue(1);
+  const sparkle = useSharedValue(0);
+
+  useEffect(() => {
+    if (!signal || reducedMotion) return;
+    scale.value = withDelay(
+      index * 150,
+      withSequence(
+        withSpring(1.14, { damping: 7, stiffness: 260 }),
+        withSpring(1, { damping: 12, stiffness: 220 })
+      )
+    );
+    sparkle.value = withDelay(
+      index * 150,
+      withSequence(withTiming(1, { duration: 420 }), withTiming(0, { duration: 700 }))
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [signal]);
+
+  const plantStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+  const sparkleStyle = useAnimatedStyle(() => ({
+    opacity: sparkle.value,
+    transform: [{ translateY: -6 - sparkle.value * 14 }],
+  }));
+
+  return (
+    <Animated.View style={plantStyle}>
+      {children}
+      <Animated.View pointerEvents="none" style={[styles.nourishSpark, sparkleStyle]}>
+        <Spark size={14} />
+      </Animated.View>
+    </Animated.View>
+  );
+}
+
 // One app-open delight roll per launch, not per navigation.
 let hasRolledThisLaunch = false;
 
@@ -49,9 +110,12 @@ export default function GardenScreen() {
   // so it must hide while a Water/Feed/Sign flow is pushed on top, then
   // reappear (with fresh data) when the garden regains focus.
   const [isFocused, setIsFocused] = useState(true);
+  // The garden's thank-you wave after a release fed the surviving plants.
+  const [nourishSignal, setNourishSignal] = useState(0);
   useFocusEffect(
     useCallback(() => {
       setIsFocused(true);
+      if (consumeGardenNourished()) setNourishSignal((n) => n + 1);
       return () => setIsFocused(false);
     }, [])
   );
@@ -212,7 +276,9 @@ export default function GardenScreen() {
                 { opacity: pressed ? 0.8 : 1 },
               ]}>
               <View style={styles.plantWrapper}>
-                <PlantGlyph state={dream.state} health={healthFor(dream)} size={96} />
+                <NourishablePlant index={index} signal={nourishSignal}>
+                  <PlantGlyph state={dream.state} health={healthFor(dream)} size={96} />
+                </NourishablePlant>
                 <Fireflies count={signCounts[dream.id] ?? 0} areaSize={PLANT_AREA} />
               </View>
               <ThemedText type="small" numberOfLines={1} style={styles.plantTitle}>
@@ -332,6 +398,11 @@ const styles = StyleSheet.create({
   },
   plotOffset: {
     marginTop: Spacing.four,
+  },
+  nourishSpark: {
+    position: 'absolute',
+    top: -4,
+    alignSelf: 'center',
   },
   plantWrapper: {
     width: PLANT_AREA,
