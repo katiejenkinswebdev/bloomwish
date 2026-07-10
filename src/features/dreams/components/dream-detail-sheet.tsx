@@ -65,8 +65,10 @@ export function DreamDetailSheet({ dream, effectiveHealth, onClose }: DreamDetai
     signs: false,
     history: false,
   });
-  const signsOpen = sections.id === dream?.id && sections.signs;
-  const historyOpen = sections.id === dream?.id && sections.history;
+  // Defensive ?? — hot-reload sequences have been seen nulling preserved
+  // state mid-session; a fresh mount can never hit this.
+  const signsOpen = (sections?.id ?? null) === (dream?.id ?? undefined) && !!sections?.signs;
+  const historyOpen = (sections?.id ?? null) === (dream?.id ?? undefined) && !!sections?.history;
   const toggleSigns = () =>
     setSections({ id: dream!.id, signs: !signsOpen, history: historyOpen });
   const toggleHistory = () =>
