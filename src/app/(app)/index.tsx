@@ -144,6 +144,10 @@ export default function GardenScreen() {
   const trophies = trophiesQuery.data ?? [];
   const healthFor = (dream: DreamRow) => deriveHealth(dream, configQuery.data);
   const selectedDream = dreams.find((d) => d.id === selectedDreamId) ?? null;
+  // The daily ritual returns to the dream that's waited longest for you.
+  const returnDream = [...dreams].sort(
+    (a, b) => new Date(a.last_interacted_at).getTime() - new Date(b.last_interacted_at).getTime()
+  )[0];
 
   return (
     <Screen>
@@ -151,6 +155,31 @@ export default function GardenScreen() {
         <ThemedText type="title">Your garden</ThemedText>
         <Spark size={20} />
       </View>
+
+      {returnDream ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Step inside ${returnDream.title} - a ninety-second immersion`}
+          onPress={() =>
+            router.push({ pathname: '/immerse', params: { dreamId: returnDream.id } })
+          }
+          style={({ pressed }) => [styles.hero, { opacity: pressed ? 0.9 : 1 }]}>
+          <View style={styles.heroGlowA} pointerEvents="none" />
+          <View style={styles.heroGlowB} pointerEvents="none" />
+          <View style={styles.heroBody}>
+            <ThemedText type="small" style={styles.heroKicker}>
+              Return to the feeling
+            </ThemedText>
+            <ThemedText type="subtitle" numberOfLines={2} style={styles.heroTitle}>
+              {returnDream.title}
+            </ThemedText>
+            <ThemedText type="small" style={styles.heroHint}>
+              Step inside for 90 seconds - feel it as already real.
+            </ThemedText>
+          </View>
+          <Spark size={26} />
+        </Pressable>
+      ) : null}
 
       {trophies.length > 0 ? (
         <View style={styles.trophyButterflies} pointerEvents="none">
@@ -309,6 +338,52 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.two,
     paddingTop: Spacing.three,
+  },
+  hero: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
+    marginTop: Spacing.three,
+    padding: Spacing.four,
+    borderRadius: Spacing.three,
+    backgroundColor: '#241C36',
+    overflow: 'hidden',
+  },
+  heroGlowA: {
+    position: 'absolute',
+    width: 190,
+    height: 190,
+    borderRadius: 95,
+    backgroundColor: BrandPalette.deepGreen,
+    opacity: 0.3,
+    top: -70,
+    left: -50,
+  },
+  heroGlowB: {
+    position: 'absolute',
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    backgroundColor: BrandPalette.dustyPink,
+    opacity: 0.16,
+    bottom: -60,
+    right: -30,
+  },
+  heroBody: {
+    flex: 1,
+    gap: 2,
+  },
+  heroKicker: {
+    color: '#B9A8C6',
+    textTransform: 'uppercase',
+    letterSpacing: 1.2,
+    fontSize: 11,
+  },
+  heroTitle: {
+    color: '#F2ECF7',
+  },
+  heroHint: {
+    color: '#9E8FAB',
   },
   empty: {
     flex: 1,

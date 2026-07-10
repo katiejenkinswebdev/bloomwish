@@ -164,6 +164,12 @@ export function DreamDetailSheet({ dream, effectiveHealth, onClose }: DreamDetai
                 </View>
                 <View style={styles.actions}>
                   <Button
+                    label="Step inside the dream"
+                    onPress={() =>
+                      router.push({ pathname: '/immerse', params: { dreamId: dream.id } })
+                    }
+                  />
+                  <Button
                     label="Personalized meditation ✦"
                     variant="secondary"
                     onPress={() =>

@@ -63,6 +63,7 @@ function RootNavigator() {
           <Stack.Screen name="create-dream" options={{ presentation: 'modal' }} />
           <Stack.Screen name="paywall" options={{ presentation: 'modal' }} />
           <Stack.Screen name="revive" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="immerse" options={{ presentation: 'fullScreenModal' }} />
           <Stack.Screen name="water" options={{ presentation: 'modal' }} />
           <Stack.Screen name="feed" options={{ presentation: 'modal' }} />
           <Stack.Screen name="meditation" options={{ presentation: 'modal' }} />
