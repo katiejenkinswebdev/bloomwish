@@ -66,7 +66,11 @@ export function Fireflies({ count, areaSize = 120 }: FirefliesProps) {
   const visible = Math.min(count, MAX_VISIBLE_FIREFLIES);
 
   return (
-    <View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.container]}>
+    <View
+      pointerEvents="none"
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      style={[StyleSheet.absoluteFill, styles.container]}>
       {Array.from({ length: visible }, (_, i) => (
         <Firefly key={i} index={i} areaSize={areaSize} />
       ))}

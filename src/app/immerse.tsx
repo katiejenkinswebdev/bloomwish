@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { AccessibilityInfo, Pressable, StyleSheet, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -16,6 +16,7 @@ import { Spacing } from '@/constants/theme';
 import { completeSession, type CompletedSession } from '@/features/activities/api';
 import { fetchDreams } from '@/features/dreams/api';
 import { sceneLines } from '@/features/dreams/scene-lines';
+import { useScreenReaderEnabled } from '@/hooks/use-screen-reader';
 
 /**
  * The immersion ritual — the heart of the app. ~90 seconds that walk you
@@ -43,6 +44,7 @@ export default function ImmerseScreen() {
   const { dreamId } = useLocalSearchParams<{ dreamId: string }>();
   const queryClient = useQueryClient();
   const reducedMotion = useReducedMotion();
+  const screenReader = useScreenReaderEnabled();
 
   const [phase, setPhase] = useState<Phase>('arrive');
   const [lineIndex, setLineIndex] = useState(0);
@@ -82,9 +84,20 @@ export default function ImmerseScreen() {
     }
   };
 
-  // The ritual's quiet clock: each phase flows onward on its own, and a tap
-  // anywhere moves at the reader's pace instead.
+  // Announce each line so screen-reader users hear the ritual unfold.
   useEffect(() => {
+    if (!screenReader) return;
+    if (phase === 'scene' && lines[lineIndex]) {
+      AccessibilityInfo.announceForAccessibility(lines[lineIndex]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [screenReader, phase, lineIndex]);
+
+  // The ritual's quiet clock: each phase flows onward on its own, and a tap
+  // anywhere moves at the reader's pace instead. With a screen reader on,
+  // arrive/scene never auto-advance (WCAG 2.2.2) — the reader taps through.
+  useEffect(() => {
+    if (screenReader && (phase === 'arrive' || phase === 'scene')) return;
     if (phase === 'arrive') {
       const t = setTimeout(() => setPhase('scene'), 7000);
       return () => clearTimeout(t);
@@ -98,7 +111,7 @@ export default function ImmerseScreen() {
       return () => clearTimeout(t);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase, lineIndex]);
+  }, [phase, lineIndex, screenReader]);
 
   const chooseBodySpot = (spot: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
@@ -161,6 +174,7 @@ export default function ImmerseScreen() {
                 <Pressable
                   key={spot}
                   accessibilityRole="button"
+                  hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
                   onPress={() => chooseBodySpot(spot)}
                   style={({ pressed }) => [styles.bodyChip, { opacity: pressed ? 0.7 : 1 }]}>
                   <ThemedText type="small" style={styles.bodyChipText}>

@@ -71,7 +71,10 @@ export function Butterfly({
   };
 
   return (
-    <Animated.View style={[styles.container, { width: size, height: size }, body]}>
+    <Animated.View
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      style={[styles.container, { width: size, height: size }, body]}>
       <Animated.View style={[wing, leftWing]} />
       <View
         style={{

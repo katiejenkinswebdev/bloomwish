@@ -317,6 +317,7 @@ export default function WaterScreen() {
                   key={option.seconds}
                   accessibilityRole="button"
                   accessibilityState={{ selected }}
+                  hitSlop={{ top: 8, bottom: 8, left: 6, right: 6 }}
                   onPress={() => gateDuration(option.seconds) && setDurationSeconds(option.seconds)}
                   style={[
                     styles.chip,
@@ -535,6 +536,7 @@ export default function WaterScreen() {
                 key={option.seconds}
                 accessibilityRole="button"
                 accessibilityState={{ selected }}
+                hitSlop={{ top: 8, bottom: 8, left: 6, right: 6 }}
                 onPress={() => gateDuration(option.seconds) && setDurationSeconds(option.seconds)}
                 style={[
                   styles.chip,

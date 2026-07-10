@@ -69,6 +69,7 @@ export default function DescribeDreamScreen() {
                 <Pressable
                   key={seed}
                   accessibilityRole="button"
+                  hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
                   onPress={() => setDreamText(`I dream of ${seed.charAt(0).toLowerCase()}${seed.slice(1)}.`)}
                   style={({ pressed }) => [
                     styles.packet,

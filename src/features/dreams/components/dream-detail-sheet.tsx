@@ -154,7 +154,7 @@ export function DreamDetailSheet({ dream, effectiveHealth, onClose }: DreamDetai
                   <ActionIconButton
                     label="Water"
                     accessibilityLabel="Water this dream"
-                    backgroundColor="#5D9DC4"
+                    backgroundColor="#41799E"
                     onPress={() =>
                       router.push({ pathname: '/water', params: { dreamId: dream.id } })
                     }>

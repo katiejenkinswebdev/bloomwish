@@ -62,7 +62,11 @@ export function RainOverlay({ snow = false }: { snow?: boolean }) {
   const reducedMotion = useReducedMotion();
   if (reducedMotion) return null;
   return (
-    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+    <View
+      style={StyleSheet.absoluteFill}
+      pointerEvents="none"
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants">
       {drops.map((d, i) => (
         <Drop key={i} left={d.left} delay={d.delay} duration={d.duration} snow={snow} />
       ))}

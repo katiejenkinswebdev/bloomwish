@@ -55,6 +55,8 @@ export function AuroraOrb({
   return (
     <Animated.View
       pointerEvents="none"
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
       style={[
         {
           position: 'absolute',
@@ -92,7 +94,14 @@ export function BreathGlow() {
     opacity: 0.1 + breath.value * 0.08,
   }));
 
-  return <Animated.View pointerEvents="none" style={[styles.glow, style]} />;
+  return (
+    <Animated.View
+      pointerEvents="none"
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      style={[styles.glow, style]}
+    />
+  );
 }
 
 

@@ -246,7 +246,11 @@ export default function GardenScreen() {
       ) : null}
 
       {trophies.length > 0 ? (
-        <View style={styles.trophyButterflies} pointerEvents="none">
+        <View
+          style={styles.trophyButterflies}
+          pointerEvents="none"
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants">
           {trophies.slice(0, 6).map((trophy, index) => (
             <Butterfly key={trophy.id} size={18} index={index} />
           ))}
@@ -267,7 +271,7 @@ export default function GardenScreen() {
             <Pressable
               key={dream.id}
               accessibilityRole="button"
-              accessibilityLabel={`${dream.title}, ${dream.state}, ${healthFor(dream)}`}
+              accessibilityLabel={`${dream.title}, ${dream.state}, ${healthFor(dream)}${(signCounts[dream.id] ?? 0) > 0 ? `, ${signCounts[dream.id]} sign${signCounts[dream.id] === 1 ? '' : 's'} noticed` : ''}`}
               onPress={() => setSelectedDreamId(dream.id)}
               style={({ pressed }) => [
                 styles.plot,

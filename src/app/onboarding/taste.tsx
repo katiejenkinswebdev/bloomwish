@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { AccessibilityInfo, Pressable, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeIn, FadeOut, useReducedMotion } from 'react-native-reanimated';
@@ -9,6 +9,7 @@ import { Spark } from '@/components/spark';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
 import { Spacing } from '@/constants/theme';
+import { useScreenReaderEnabled } from '@/hooks/use-screen-reader';
 
 /**
  * The taste of the magic, before we've asked for anything: thirty seconds
@@ -24,14 +25,22 @@ const STEPS = [
 
 export default function TasteScreen() {
   const reducedMotion = useReducedMotion();
+  const screenReader = useScreenReaderEnabled();
   const [step, setStep] = useState(0);
   const finished = step >= STEPS.length;
 
+  // Screen readers hear each step and advance by tap only (WCAG 2.2.2).
   useEffect(() => {
-    if (finished) return;
+    if (screenReader && !finished) {
+      AccessibilityInfo.announceForAccessibility(STEPS[step].replace('\n', ' '));
+    }
+  }, [screenReader, step, finished]);
+
+  useEffect(() => {
+    if (finished || screenReader) return;
     const t = setTimeout(() => setStep((n) => n + 1), 6500);
     return () => clearTimeout(t);
-  }, [step, finished]);
+  }, [step, finished, screenReader]);
 
   const advance = () => {
     if (finished) return;

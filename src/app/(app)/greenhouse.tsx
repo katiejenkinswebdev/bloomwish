@@ -97,6 +97,8 @@ export default function GreenhouseScreen() {
       <Pressable
         key={trophy.id}
         accessibilityRole="button"
+        accessibilityLabel={`${trophy.dream_title}, came true ${date}, tended ${trophy.total_sessions} times`}
+        accessibilityHint="Shows the dream's scene"
         accessibilityState={{ expanded }}
         onPress={() => setExpandedId(expanded ? null : trophy.id)}
         style={styles.keepsake}>
@@ -152,7 +154,11 @@ export default function GreenhouseScreen() {
               </View>
             ) : null}
 
-            <View style={styles.tree} pointerEvents="none">
+            <View
+              style={styles.tree}
+              pointerEvents="none"
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants">
               <View style={[styles.canopy, styles.canopyA]} />
               <View style={[styles.canopy, styles.canopyB]} />
               <View style={[styles.canopy, styles.canopyC]} />
@@ -174,6 +180,7 @@ export default function GreenhouseScreen() {
                       key={trophy.id}
                       accessibilityRole="button"
                       accessibilityLabel={`${trophy.dream_title}, came true ${new Date(trophy.harvested_at).toLocaleDateString()}`}
+                      hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}
                       onPress={() =>
                         setCharmTrophyId(charmTrophyId === trophy.id ? null : trophy.id)
                       }
@@ -197,7 +204,11 @@ export default function GreenhouseScreen() {
               ))}
             </View>
 
-            <View style={styles.groveFireflies} pointerEvents="none">
+            <View
+              style={styles.groveFireflies}
+              pointerEvents="none"
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants">
               <Fireflies count={Math.min(trophies.length + 2, 7)} areaSize={110} />
             </View>
 
@@ -427,12 +438,12 @@ const styles = StyleSheet.create({
   plaque: {
     alignItems: 'center',
     gap: 2,
-    backgroundColor: '#8B8680',
+    backgroundColor: '#6F6A64',
     borderRadius: Spacing.one,
     paddingVertical: Spacing.two,
     paddingHorizontal: Spacing.two,
     borderWidth: 2,
-    borderColor: '#6F6A64',
+    borderColor: '#57534E',
   },
   plaqueText: {
     color: '#F5F2EC',

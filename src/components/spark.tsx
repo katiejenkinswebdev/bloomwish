@@ -20,7 +20,11 @@ export function Spark({ size = 16, color = BrandPalette.gold, style, ...rest }: 
   const armThickness = Math.max(2, size / 5);
 
   return (
-    <View style={[{ width: size, height: size }, styles.container, style]} {...rest}>
+    <View
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      style={[{ width: size, height: size }, styles.container, style]}
+      {...rest}>
       <View
         style={[
           styles.arm,

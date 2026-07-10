@@ -15,11 +15,12 @@ export const Colors = {
     background: BrandPalette.cream,
     backgroundElement: '#F3E9DA',
     backgroundSelected: '#EADCC6',
-    textSecondary: '#7A6B7F',
+    // Measured for WCAG AA (>=4.5:1) on both cream and card surfaces.
+    textSecondary: '#685A6D',
     primary: BrandPalette.deepGreen,
     primarySoft: BrandPalette.sage,
-    accent: BrandPalette.gold,
-    danger: '#C1554A',
+    accent: '#83641A',
+    danger: '#AC4237',
     border: '#E6D8C4',
   },
   dark: {
