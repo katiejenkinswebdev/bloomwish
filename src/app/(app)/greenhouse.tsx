@@ -17,6 +17,7 @@ import { PlantGlyph } from '@/components/plant-glyph';
 import { Spark } from '@/components/spark';
 import { ThemedText } from '@/components/themed-text';
 import { Screen } from '@/components/ui/screen';
+import { ScreenHeader } from '@/components/ui/screen-header';
 import { BrandPalette } from '@/constants/brand-palette';
 import { Spacing } from '@/constants/theme';
 import { fetchHarvestedDreams, type HarvestedDream } from '@/features/harvest/api';
@@ -127,12 +128,7 @@ export default function GreenhouseScreen() {
   return (
     <Screen padded={false}>
       <ScrollView contentContainerStyle={styles.content}>
-        <ThemedText type="title" style={styles.header}>
-          Greenhouse
-        </ThemedText>
-        <ThemedText themeColor="textSecondary">
-          In bloom forever.
-        </ThemedText>
+        <ScreenHeader title="Greenhouse" subtitle="In bloom forever." />
 
         {trophies.length > 0 ? (
           <Pressable
@@ -393,9 +389,6 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     gap: Spacing.three,
     paddingBottom: Spacing.six,
-  },
-  header: {
-    paddingTop: Spacing.three,
   },
   empty: {
     paddingTop: Spacing.six,

@@ -6,6 +6,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
+import { ScreenHeader } from '@/components/ui/screen-header';
 import { Sheet } from '@/components/ui/sheet';
 import { TextField } from '@/components/ui/text-field';
 import { Branding, Tiers } from '@/config/branding';
@@ -70,10 +71,7 @@ export default function ProfileScreen() {
 
   return (
     <Screen>
-      <ThemedText type="title" style={styles.header}>
-        Profile
-      </ThemedText>
-      <ThemedText themeColor="textSecondary">{user?.email}</ThemedText>
+      <ScreenHeader title="Profile" subtitle={user?.email} />
       <View style={styles.planRow}>
         <ThemedText type="smallBold">
           {isFullBloom ? Tiers.full_bloom.name : Tiers.seedling.name}
@@ -316,15 +314,12 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    paddingTop: Spacing.three,
-  },
   planRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.three,
     marginBottom: Spacing.four,
-    marginTop: Spacing.one,
+    marginTop: Spacing.three,
   },
   error: {
     marginBottom: Spacing.three,

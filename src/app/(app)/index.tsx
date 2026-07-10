@@ -19,6 +19,7 @@ import { PlantGlyph } from '@/components/plant-glyph';
 import { Spark } from '@/components/spark';
 import { ThemedText } from '@/components/themed-text';
 import { Screen } from '@/components/ui/screen';
+import { ScreenHeader } from '@/components/ui/screen-header';
 import { FreeTierLimits } from '@/config/branding';
 import { Spacing } from '@/constants/theme';
 import { fetchDreams } from '@/features/dreams/api';
@@ -211,14 +212,7 @@ export default function GardenScreen() {
 
   return (
     <Screen>
-      <ThemedText type="title" style={styles.header}>
-        Your wish garden
-      </ThemedText>
-      {pulseLine ? (
-        <ThemedText type="small" themeColor="textSecondary">
-          {pulseLine}
-        </ThemedText>
-      ) : null}
+      <ScreenHeader title="Your wish garden" subtitle={pulseLine} />
 
       {returnDream ? (
         <Pressable
@@ -328,9 +322,6 @@ export default function GardenScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    paddingTop: Spacing.three,
-  },
   hero: {
     flexDirection: 'row',
     alignItems: 'center',
