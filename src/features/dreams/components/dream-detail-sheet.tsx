@@ -1,4 +1,5 @@
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 
@@ -15,6 +16,7 @@ import { BrandPalette } from '@/constants/brand-palette';
 import { Spacing } from '@/constants/theme';
 import { bloomColorFor } from '@/features/dreams/bloom-color';
 import { fetchSessions, fetchSigns } from '@/features/dreams/signs';
+import { useTheme } from '@/hooks/use-theme';
 import { useDreamDraftStore } from '@/store/dream-draft-store';
 import type { DreamHealth, DreamRow } from '@/lib/supabase/database.types';
 
@@ -55,6 +57,21 @@ export interface DreamDetailSheetProps {
 }
 
 export function DreamDetailSheet({ dream, effectiveHealth, onClose }: DreamDetailSheetProps) {
+  const theme = useTheme();
+  // Collapsible sections, keyed to the open dream so a different plant
+  // always starts tidy (no effect needed — stale ids read as collapsed).
+  const [sections, setSections] = useState({
+    id: null as string | null,
+    signs: false,
+    history: false,
+  });
+  const signsOpen = sections.id === dream?.id && sections.signs;
+  const historyOpen = sections.id === dream?.id && sections.history;
+  const toggleSigns = () =>
+    setSections({ id: dream!.id, signs: !signsOpen, history: historyOpen });
+  const toggleHistory = () =>
+    setSections({ id: dream!.id, signs: signsOpen, history: !historyOpen });
+
   const signsQuery = useQuery({
     queryKey: ['signs', dream?.id],
     queryFn: () => fetchSigns(dream!.id),
@@ -220,32 +237,66 @@ export function DreamDetailSheet({ dream, effectiveHealth, onClose }: DreamDetai
                 }
               />
 
-              <ThemedText type="smallBold" style={styles.sectionTitle}>
-                Signs it’s growing
-              </ThemedText>
-              {signsQuery.data?.length ? (
-                signsQuery.data.map((sign) => (
-                  <View key={sign.id} style={styles.signRow}>
-                    <Spark size={12} style={styles.signSpark} />
-                    <View style={styles.signBody}>
-                      <ThemedText type="small">{sign.text}</ThemedText>
-                      <ThemedText type="small" themeColor="textSecondary">
-                        {new Date(sign.created_at).toLocaleDateString()}
-                      </ThemedText>
-                    </View>
-                  </View>
-                ))
-              ) : (
-                <ThemedText type="small" themeColor="textSecondary">
-                  Noticed any signs lately? Log the small wins and synchronicities here.
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ expanded: signsOpen }}
+                accessibilityLabel={`Signs it's growing, ${signsQuery.data?.length ?? 0} logged`}
+                hitSlop={{ top: 8, bottom: 8 }}
+                onPress={toggleSigns}
+                style={styles.sectionHeader}>
+                <ThemedText type="smallBold">
+                  Signs it’s growing{signsQuery.data?.length ? ` (${signsQuery.data.length})` : ''}
                 </ThemedText>
-              )}
+                <View
+                  style={[
+                    styles.chevron,
+                    { borderColor: theme.textSecondary },
+                    signsOpen && styles.chevronOpen,
+                  ]}
+                />
+              </Pressable>
+              {signsOpen ? (
+                signsQuery.data?.length ? (
+                  signsQuery.data.map((sign) => (
+                    <View key={sign.id} style={styles.signRow}>
+                      <Spark size={12} style={styles.signSpark} />
+                      <View style={styles.signBody}>
+                        <ThemedText type="small">{sign.text}</ThemedText>
+                        <ThemedText type="small" themeColor="textSecondary">
+                          {new Date(sign.created_at).toLocaleDateString()}
+                        </ThemedText>
+                      </View>
+                    </View>
+                  ))
+                ) : (
+                  <ThemedText type="small" themeColor="textSecondary">
+                    Noticed any signs lately? Log the small wins and synchronicities here.
+                  </ThemedText>
+                )
+              ) : null}
 
-              <ThemedText type="smallBold" style={styles.sectionTitle}>
-                Session history
-              </ThemedText>
-              {sessionsQuery.data?.length ? (
-                sessionsQuery.data.map((session) => (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ expanded: historyOpen }}
+                accessibilityLabel={`Session history, ${sessionsQuery.data?.length ?? 0} sessions`}
+                hitSlop={{ top: 8, bottom: 8 }}
+                onPress={toggleHistory}
+                style={styles.sectionHeader}>
+                <ThemedText type="smallBold">
+                  Session history
+                  {sessionsQuery.data?.length ? ` (${sessionsQuery.data.length})` : ''}
+                </ThemedText>
+                <View
+                  style={[
+                    styles.chevron,
+                    { borderColor: theme.textSecondary },
+                    historyOpen && styles.chevronOpen,
+                  ]}
+                />
+              </Pressable>
+              {historyOpen ? (
+                sessionsQuery.data?.length ? (
+                  sessionsQuery.data.map((session) => (
                   <View key={session.id} style={styles.sessionRow}>
                     {session.type === 'water' ? (
                       <DropletIcon size={11} color="#5D9DC4" />
@@ -257,12 +308,13 @@ export function DreamDetailSheet({ dream, effectiveHealth, onClose }: DreamDetai
                       {new Date(session.completed_at).toLocaleDateString()}
                     </ThemedText>
                   </View>
-                ))
-              ) : (
-                <ThemedText type="small" themeColor="textSecondary">
-                  Sessions you complete will appear here.
-                </ThemedText>
-              )}
+                  ))
+                ) : (
+                  <ThemedText type="small" themeColor="textSecondary">
+                    Sessions you complete will appear here.
+                  </ThemedText>
+                )
+              ) : null}
 
         </ScrollView>
       ) : null}
@@ -302,8 +354,23 @@ const styles = StyleSheet.create({
   actions: {
     gap: Spacing.two,
   },
-  sectionTitle: {
+  sectionHeader: {
     marginTop: Spacing.two,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: Spacing.one,
+  },
+  chevron: {
+    width: 9,
+    height: 9,
+    borderRightWidth: 2,
+    borderBottomWidth: 2,
+    transform: [{ rotate: '45deg' }],
+    marginRight: Spacing.one,
+  },
+  chevronOpen: {
+    transform: [{ rotate: '225deg' }],
   },
   sessionRow: {
     flexDirection: 'row',
