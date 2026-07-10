@@ -62,6 +62,11 @@ interface LetterRequest {
   profile?: UserProfileContext;
 }
 
+interface TitleRequest {
+  action: 'title';
+  dreamText: string;
+}
+
 interface ActRequest {
   action: 'act';
   dreamText: string;
@@ -105,6 +110,7 @@ type CoachRequest =
   | ReviewRequest
   | AffirmationRequest
   | LetterRequest
+  | TitleRequest
   | ActRequest
   | ReframeRequest
   | NudgeRequest;
@@ -183,6 +189,19 @@ const LETTER_SCHEMA = {
     },
   },
   required: ['letterText'],
+  additionalProperties: false,
+} as const;
+
+const TITLE_SCHEMA = {
+  type: 'object',
+  properties: {
+    shortTitle: {
+      type: 'string',
+      description:
+        "A 2-5 word summary of the wish, in the user's own key words — a name for the dream, not a sentence. Title case not required. No ending punctuation, no quotes.",
+    },
+  },
+  required: ['shortTitle'],
   additionalProperties: false,
 } as const;
 
@@ -306,6 +325,10 @@ Deno.serve(async (req) => {
                 letterText:
                   'Dear you,\n\nI still remember when we were wishing for this — how big it felt, how far away. I want you to know: it arrived. Not all at once, but in small ordinary mornings that slowly became the life we pictured. Keep tending it the way you are. The watering matters more than you know.\n\n[Demo letter — connect an Anthropic key to receive the real one, written from your own scene.]\n\n— You, a little further down the path',
               }
+            : body.action === 'title'
+              ? {
+                  shortTitle: body.dreamText.split(/\s+/).slice(0, 4).join(' '),
+                }
             : body.action === 'act'
               ? {
                   actionIdea:
@@ -421,6 +444,14 @@ Deno.serve(async (req) => {
       }
       prompt = `Someone is doing the practice "${body.activityTitle}" (${body.activityDescription}).${body.dreamText ? `\n\nTheir dream: "${body.dreamText}"` : ''}\n\nThey wrote this about what they actually did today:\n\n"${body.answer}"\n\nAssess whether this reflects genuine, embodied engagement: something specific they really did, with real feeling in it. It does NOT need to be long — short but detailed and heartfelt passes. What does not pass: vague generalities ("I acted positive today"), going through the motions, keyboard mashing, copy-paste filler, or answers that dodge the practice entirely.\n\nIf it passes, affirm something specific and true from their words. If it doesn't, coach them warmly to try again: invite them to really go there — back into the moment, back into the feeling in their body — and describe what actually happened. Never shame them.`;
       schema = REVIEW_SCHEMA;
+      break;
+    }
+    case 'title': {
+      if (!body.dreamText?.trim()) {
+        return new Response('dreamText is required', { status: 400 });
+      }
+      prompt = `Someone described this wish:\n\n"${body.dreamText}"\n\nGive it a short name: 2-5 words that capture the heart of THEIR wish using their own key words where possible. It labels a plant in their garden, so it must read instantly. Examples of the spirit: "New jobs for my friends", "The gallery show", "Easy Sunday mornings". No ending punctuation.`;
+      schema = TITLE_SCHEMA;
       break;
     }
     case 'act': {

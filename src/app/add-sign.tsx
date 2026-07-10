@@ -36,7 +36,7 @@ export default function AddSignScreen() {
           A new firefly
         </ThemedText>
         <ThemedText themeColor="textSecondary" style={styles.centeredText}>
-          The sun leaned in — real-world signs feed your plant like nothing else.
+          The sun leaned in — signs feed your plant like nothing else.
         </ThemedText>
         {saved.growth.stateAdvanced ? (
           <ThemedText type="smallBold" themeColor="accent" style={styles.centeredText}>

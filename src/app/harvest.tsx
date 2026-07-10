@@ -99,8 +99,7 @@ export default function HarvestScreen() {
               {Branding.affirmation}
             </ThemedText>
             <ThemedText type="small" themeColor="textSecondary" style={styles.centered}>
-              A gold charm now hangs in your wishing grove, and a butterfly will fly in your
-              greenhouse forever. That is a {Branding.appName}.
+              A charm in your grove. A butterfly, forever.
             </ThemedText>
           </Animated.View>
         </View>

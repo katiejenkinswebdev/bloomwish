@@ -109,7 +109,8 @@ export default function FeedScreen() {
 
   const letterQuery = useQuery({
     queryKey: ['future-letter', dreamId],
-    queryFn: () => fetchFutureLetter(dream?.title ?? '', dream?.scene_text ?? undefined),
+    queryFn: () =>
+      fetchFutureLetter(dream?.wish_text ?? dream?.title ?? '', dream?.scene_text ?? undefined),
     enabled: activity?.key === 'future_letter' && !!dream,
     staleTime: Infinity,
   });
@@ -117,7 +118,8 @@ export default function FeedScreen() {
   // Today's tiny noticing-prompt for this dream — one per day, cached.
   const nudgeQuery = useQuery({
     queryKey: ['nudge', dreamId, dayKey],
-    queryFn: () => fetchDailyNudge(dream?.title ?? '', dream?.scene_text ?? undefined),
+    queryFn: () =>
+      fetchDailyNudge(dream?.wish_text ?? dream?.title ?? '', dream?.scene_text ?? undefined),
     enabled: !!dream && !activity,
     staleTime: Infinity,
   });
@@ -125,7 +127,8 @@ export default function FeedScreen() {
   // A concrete act-as-if micro-action for this dream — fresh each day.
   const actIdeaQuery = useQuery({
     queryKey: ['act-idea', dreamId, dayKey],
-    queryFn: () => fetchActIdea(dream?.title ?? '', dream?.scene_text ?? undefined),
+    queryFn: () =>
+      fetchActIdea(dream?.wish_text ?? dream?.title ?? '', dream?.scene_text ?? undefined),
     enabled: activity?.key === 'act_as_if' && !!dream,
     staleTime: Infinity,
   });
@@ -142,7 +145,7 @@ export default function FeedScreen() {
 
   // The nourishment a composted doubt becomes.
   const reframeMutation = useMutation({
-    mutationFn: () => fetchDoubtReframe(reflection, dream?.title),
+    mutationFn: () => fetchDoubtReframe(reflection, dream?.wish_text ?? dream?.title),
   });
 
   // Rampage countdown.
@@ -473,7 +476,7 @@ export default function FeedScreen() {
       <ScrollView contentContainerStyle={styles.list}>
         <ThemedText type="title">Feed your dream</ThemedText>
         <ThemedText themeColor="textSecondary">
-          Deeper nourishment — pick one that calls to you today.
+          Pick what calls to you today.
         </ThemedText>
 
         {nudgeQuery.data ? (

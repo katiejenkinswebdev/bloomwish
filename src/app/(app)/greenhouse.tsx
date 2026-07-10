@@ -136,7 +136,7 @@ export default function GreenhouseScreen() {
           <Spark size={20} />
         </View>
         <ThemedText themeColor="textSecondary">
-          Every dream that came true, kept in bloom forever.
+          Every wish that came true, in bloom forever.
         </ThemedText>
 
         {trophies.length > 0 ? (

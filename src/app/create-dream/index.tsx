@@ -53,14 +53,13 @@ export default function DescribeDreamScreen() {
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <ThemedText type="title">What do you dream of?</ThemedText>
           <ThemedText themeColor="textSecondary">
-            Describe it in your own words — speak it or type it.
+            Speak it or type it.
           </ThemedText>
 
           <Card>
             <ThemedText type="smallBold">New to this? Start small.</ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
-              Practice the process on a small dream first, then graduate to the big ones. Tear
-              open a seed packet to begin:
+              Tear open a seed packet:
             </ThemedText>
             <View style={styles.packetRow}>
               {SEED_PACKETS.map((seed) => (

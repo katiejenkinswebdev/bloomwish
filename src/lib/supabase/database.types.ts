@@ -39,6 +39,8 @@ export type DreamRow = {
   id: string;
   user_id: string;
   title: string;
+  /** The user's full original wish; title is the short coach-written summary. */
+  wish_text: string | null;
   scene_text: string | null;
   vividness_score: number | null;
   state: DreamState;

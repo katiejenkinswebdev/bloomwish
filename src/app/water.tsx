@@ -124,7 +124,8 @@ export default function WaterScreen() {
 
   const affirmationQuery = useQuery({
     queryKey: ['affirmation', dreamId],
-    queryFn: () => fetchAffirmation(dream?.title ?? '', dream?.scene_text ?? undefined),
+    queryFn: () =>
+      fetchAffirmation(dream?.wish_text ?? dream?.title ?? '', dream?.scene_text ?? undefined),
     enabled: mode === 'speak' && !!dream,
     staleTime: 1000 * 60 * 60 * 12, // one affirmation per day-ish
   });
@@ -523,8 +524,7 @@ export default function WaterScreen() {
           Drift
         </ThemedText>
         <ThemedText type="small" style={[styles.centeredText, styles.driftText]}>
-          Fall asleep inside your dream. Long slow breaths, your scene beneath you, no chime at the
-          end.
+          Long slow breaths, your scene beneath you, no chime at the end.
         </ThemedText>
         <View style={styles.chipRow}>
           {DRIFT_DURATIONS.map((option) => {

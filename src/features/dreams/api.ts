@@ -118,6 +118,8 @@ export async function fetchDreams(): Promise<DreamRow[]> {
 
 export async function plantDream(params: {
   title: string;
+  /** The full original wish, kept for coach context. */
+  wishText: string;
   sceneText: string;
   vividnessScore: number;
   /** Optional note, sealed until harvest day. */
@@ -139,6 +141,7 @@ export async function plantDream(params: {
       user_id: user.id,
       title: params.title,
       scene_text: params.sceneText,
+      wish_text: params.wishText,
       vividness_score: params.vividnessScore,
       capsule_text: params.capsuleText ?? null,
       state: 'seed',
@@ -198,4 +201,13 @@ export async function fetchDailyNudge(
     sceneText,
     profile: await coachProfileContext(),
   });
+}
+
+export interface CoachShortTitle {
+  shortTitle: string;
+}
+
+/** A 2-5 word name for the wish — labels the plant in the garden. */
+export async function fetchShortTitle(dreamText: string): Promise<CoachShortTitle> {
+  return invokeCoach<CoachShortTitle>({ action: 'title', dreamText });
 }

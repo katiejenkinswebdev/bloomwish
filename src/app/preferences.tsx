@@ -143,7 +143,7 @@ export default function PreferencesScreen() {
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <ThemedText type="title">Your preferences</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
-          The coach, your reminders, and your meditations all listen to these.
+          Everything personal listens to these.
         </ThemedText>
 
         <TextField

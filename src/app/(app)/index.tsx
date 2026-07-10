@@ -150,7 +150,7 @@ export default function GardenScreen() {
               {returnDream.title}
             </ThemedText>
             <ThemedText type="small" style={styles.heroHint}>
-              Step inside for 90 seconds - feel it as already real.
+              90 seconds inside the feeling.
             </ThemedText>
           </View>
           <Spark size={26} />

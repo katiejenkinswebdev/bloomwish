@@ -24,7 +24,7 @@ import { Branding } from '@/config/branding';
 import { BrandPalette } from '@/constants/brand-palette';
 import { Spacing } from '@/constants/theme';
 import { track } from '@/features/analytics/analytics';
-import { plantDream } from '@/features/dreams/api';
+import { fetchShortTitle, plantDream } from '@/features/dreams/api';
 import { useDreamDraftStore } from '@/store/dream-draft-store';
 
 const SEED_DROP_DISTANCE = 260;
@@ -43,9 +43,14 @@ export default function PlantingCeremonyScreen() {
   const plantMutation = useMutation({
     mutationFn: async () => {
       const { dreamText, sceneText, vividnessScore } = useDreamDraftStore.getState();
-      const title = dreamText.length > 60 ? `${dreamText.slice(0, 57)}…` : dreamText;
+      // The coach names the wish in 2-5 words; fall back to truncation so
+      // planting never fails because of the AI.
+      const title = await fetchShortTitle(dreamText)
+        .then((r) => r.shortTitle.trim() || dreamText)
+        .catch(() => (dreamText.length > 60 ? `${dreamText.slice(0, 57)}…` : dreamText));
       return plantDream({
         title,
+        wishText: dreamText,
         sceneText,
         vividnessScore: vividnessScore ?? 0,
         capsuleText: capsuleText.trim() || undefined,
@@ -112,8 +117,7 @@ export default function PlantingCeremonyScreen() {
           Tuck a note inside
         </ThemedText>
         <ThemedText type="small" themeColor="textSecondary" style={styles.affirmation}>
-          A time capsule, sealed until the day you harvest this dream. Only future-you will read
-          it.
+          Sealed until harvest day. Only future-you will read it.
         </ThemedText>
         <Card>
           <TextField
