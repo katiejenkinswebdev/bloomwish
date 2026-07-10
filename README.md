@@ -13,33 +13,50 @@ A manifestation and visualization app: plant a wish, grow a dream. Users capture
 - **Payments:** RevenueCat
 - **AI:** Anthropic API (text) + ElevenLabs (voice) — called **only** from Supabase Edge Functions, never from the client
 
-## To do
+## To do (path to launch)
 
-- [x] **Signs button** — done: a Sign icon (gold spark on plum) joins Water/Feed in the plant sheet's icon row, and the garden has a "✨ Log a sign" button (goes straight to your dream, or offers a picker when you have several). All paths land on the sun-moment celebration.
-- [ ] **QA pass on device** — run the full flow checklist below on real iPhone + Android dev builds (`npx expo run:ios` / `run:android`). The web preview has validated logic and flows; dictation (on-device), haptics, widgets, purchases, and notifications can only be truly verified on devices.
-- [ ] **Production prep** — follow "Path to production" below in order.
-- [ ] **Catch feedback actively (Slack notifier)** — the `notify-feedback` Edge Function is built; wire it up:
-  1. Create a Slack app at [api.slack.com/apps](https://api.slack.com/apps) → **Incoming Webhooks** → activate → add a webhook for your `#bloomwish-feedback` channel; copy the URL.
+- [ ] **Device QA pass** — run the flow checklist below on real iPhone + Android
+      dev builds (`npx expo run:ios` / `run:android`). Web has validated logic;
+      dictation, haptics, share sheet, rating prompt, widgets, purchases, and
+      notifications only verify on devices.
+- [ ] **Voice** — record the ElevenLabs voice + the four guided tracks
+      (brief in assets/audio/README.md); then add the 15-second paywall
+      voice sample (see Launch playbook).
+- [ ] **Production prep** — follow "Path to production" below, in order.
+- [ ] **Slack feedback notifier** — function is built; wire it:
+  1. Slack app → Incoming Webhooks → add one for `#bloomwish-feedback`; copy the URL.
   2. `npx supabase functions deploy notify-feedback --no-verify-jwt`
-  3. `npx supabase secrets set SLACK_FEEDBACK_WEBHOOK_URL=https://hooks.slack.com/services/… FEEDBACK_WEBHOOK_SECRET=<random string>`
-  4. Supabase dashboard → **Database → Webhooks → Create**: table `feedback`, event **INSERT**, HTTP request → the function's URL, and add an `Authorization` header set to that same secret.
-  5. Submit a test from the app's feedback form — it should pop into Slack within a second.
-- [ ] **Analytics (when >~50 active users)** — PostHog for funnels/retention (see the feedback section below); until then, usage lives in your own tables (dreams, sessions, signs) and RevenueCat covers revenue.
+  3. `npx supabase secrets set SLACK_FEEDBACK_WEBHOOK_URL=… FEEDBACK_WEBHOOK_SECRET=<random>`
+  4. Supabase dashboard → Database → Webhooks: table `feedback`, INSERT → function URL, `Authorization` header = that secret.
+  5. Submit a test from the in-app form.
+- [ ] **Analytics + crashes live** — real PostHog key and Sentry DSN in the
+      production env (both are wired and no-op on placeholders).
+- [ ] **Founding Member** — set the honest end date in branding.ts and the
+      real prices in RevenueCat (strategy: $9.99 monthly / $49.99 annual with
+      7-day trial / $79.99 founding lifetime, limited).
+- [ ] **Native tab icons** — export the Wishing Seed icon set as image assets
+      for NativeTabs (custom icons are web-only today; SF Symbols on native).
+- [ ] **Accessibility verification** — real-device VoiceOver walkthrough of
+      the immersion ritual + a web keyboard-nav pass (code-level AA work is
+      done; see the accessibility commit).
 
-> **Testing reminder:** browser sessions now persist, so you won't see the sign-in screens again until you **sign out (Profile → Sign out)**. Do that before QA'ing the auth flows (sign-in, sign-up, password reset) — item 9 of the checklist.
+> **Testing reminder:** browser sessions persist — **sign out (Profile →
+> Sign out)** before QA'ing auth flows.
 
 ### QA flow checklist (run on device)
 
-1. Sign up → onboarding intro → quiz → notification pre-prompt → starter dream
-2. Dream creation: dictate + type, edit answers backwards, tweak/regenerate scene, plant, paywall appears once and dismisses
-3. Garden: plant renders per state/health; tap plant → hero + status chip; water (rain lands on plant), feed (gold motes), each with haptic icon pops
-4. Signs: add from sheet and from post-session nudge; sun moment; firefly appears; growth points granted
-5. Stale dreams: wilting chip + revive ritual on a dormant dream
-6. Harvest → celebration → Greenhouse keepsake + garden-path plaque + butterfly
-7. Meditation: gift on starter dream, "being grown…" state, playback, completion
-8. Gates: >5-minute timer, premium tracks, second dream slot, second meditation → paywall; purchase + restore on a sandbox account
-9. Auth: sign out/in, password reset email deep link, account deletion
-10. Widgets on both platforms; daily reminder + wilting alert fire; feedback form + shake-to-report (dev build)
+1. Onboarding: sign up → intro → the taste (aurora, tap-paced, skippable) → quiz → notifications → starter dream
+2. Dream creation, both paths: full (dictate + type, edit answers backwards, tweak scene, capsule, ceremony, coach-named title) and fast ("Plant it now" → later "Make it vivid ✦" deepens the same dream)
+3. Garden: re-entry pulse line, hero card → immersion ritual end-to-end (arrive/scene/body/warm/seal; body memory saved), plants per state/health with per-dream bloom colors, FAB gates dream #2 to paywall (founder emails bypass)
+4. Water, all five modes: Breathe (pattern picker + breathe-the-scene lines), Listen, Speak (affirmation + body-memory line), Write (369 count follows clock, remembers your line), Drift (dimmed, silent ending)
+5. Feed: Today's nudge, act-as-if suggested action, compost → reframe reveal → "let it take root", witnesses counter, rampage countdown + dictation, future-self letter
+6. Signs: from sheet + post-session nudge; sun moment in the dream's bloom color; fireflies; collapsible sections on the plant card
+7. Endings: wilting → revive ritual; release ritual (thank → sink → survivors boosted → nourish wave on return); harvest (capsule reveal, share card tap-to-share, rating prompt fires exactly once)
+8. Greenhouse: shelves + pots, wishing grove (charms tappable, stars, moon, one random delight per visit)
+9. Gates: >3-minute timers, premium tracks, meditation gift-then-gate → paywall; sandbox purchase + restore
+10. Auth: sign out/in, password reset deep link, export data, account deletion
+11. Ambient: widgets both platforms, daily reminder carries the nudge + dream name, wilting alert, delight notifications, 11:11 moment, weather mirror opt-in (location prompt, rain overlay)
+12. Accessibility: VoiceOver through the garden, plant card, and immersion (no auto-advance with a screen reader)
 
 ## Getting started (local development)
 
@@ -147,7 +164,7 @@ Ranked by savings-per-effort. Unit economics today: each paying user costs ~$3�
 1. **Supabase cloud** — create the project; `npx supabase link --project-ref <ref>` then `npx supabase db push`; deploy functions: `npx supabase functions deploy delete-account dream-coach generate-meditation export-data` and `npx supabase functions deploy revenuecat-webhook notify-feedback --no-verify-jwt`; set all secrets (`ANTHROPIC_API_KEY`, `ELEVENLABS_API_KEY`, `ELEVENLABS_VOICE_ID`, `REVENUECAT_WEBHOOK_SECRET`); add auth redirect URLs `bloomwish://reset-password` + `bloomwish://verify-email`; put the project URL + anon key in `.env`.
 2. **Apple Developer** — enroll; register `com.bloomwish.app` with Sign in with Apple + the `group.com.bloomwish.app` app group; replace `REPLACE_WITH_APPLE_TEAM_ID` in [app.json](app.json) and [eas.json](eas.json); configure the Apple provider in Supabase Auth.
 3. **Google** — OAuth client IDs (iOS + Web) at [console.cloud.google.com](https://console.cloud.google.com/apis/credentials) into `.env`; Web client ID also into Supabase's Google provider; Play Console account + service-account JSON for submission.
-4. **RevenueCat** — app + products (`monthly` $23.99, `annual` $149.99 w/ 7-day trial, `founding_lifetime` $199), all attached to the `full_bloom` entitlement and a default offering; public SDK keys into `.env`; webhook pointed at the deployed function with the shared secret in the Authorization header.
+4. **RevenueCat** — app + products per the pricing strategy (`monthly` $9.99, `annual` $49.99 with a 7-day trial — the highlighted anchor, `founding_lifetime` $79.99, genuinely limited), all attached to the `full_bloom` entitlement and a default offering; public SDK keys into `.env`; webhook pointed at the deployed function with the shared secret in the Authorization header.
 5. **Content & legal** — record the four guided tracks + ambient loop (brief in [assets/audio/README.md](assets/audio/README.md)); upload `ambient-bed.wav` to meditation-assets; set the honest `FOUNDING_OFFER_END_DATE` in [src/config/branding.ts](src/config/branding.ts); publish real privacy policy + terms at the URLs in branding.ts.
 6. **Device QA** — `npx expo run:ios` / `run:android` against the production backend; run the full QA flow checklist above, including sandbox purchases and restore.
 7. **Build & submit** — `eas init` (fills the project ID), `eas build --profile production --platform all`, complete the store listings using [docs/store-readiness.md](docs/store-readiness.md) (privacy nutrition labels, Data Safety answers, screenshots), then `eas submit`.

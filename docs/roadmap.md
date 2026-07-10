@@ -55,6 +55,23 @@ Not built yet, by design. Architecture stays open for these.
   being optional; revisit the review machinery then
 - Social sharing cards for harvested dreams
 
+## Daily-delight backlog (post-launch, in rough priority)
+
+- Time-of-day garden atmosphere — dew sparkles at morning, golden-hour tint
+  at dusk, fireflies at night; the garden looks different every visit
+- Idle plant life — occasional sway, a leaf turning toward the sun; tap a
+  plant for a tiny wiggle + spark (haptic)
+- Weekly bloom letter — Sunday note from the garden: sessions, where the
+  dream lived in the body, signs noticed; warm summary, never a streak
+- Capsule anniversaries — one month after planting, the garden re-shows
+  what you wrote ("remember why you planted this")
+- On-this-day signs — resurface an old sign as quiet evidence
+- Sound identity — a soft seal chime + optional garden ambience loop
+- Name your butterfly — each harvest's butterfly can be given a name in the
+  greenhouse
+- Haptic breathing — Breathe mode pulses the haptic engine with the pattern
+  (device-only)
+
 ## Features
 
 - Greenhouse keepsake decor — earnable benches, fountains, trellises, wind
