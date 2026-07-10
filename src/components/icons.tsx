@@ -621,6 +621,33 @@ export function EnvelopeIcon({
   );
 }
 
+/** Plus — plant something new. */
+export function PlusIcon({ size = 24, color = '#FFFFFF', ...rest }: IconProps) {
+  const bar = Math.max(2.5, size * 0.12);
+  return (
+    <Box size={size} {...rest}>
+      <View
+        style={{
+          position: 'absolute',
+          width: bar,
+          height: size * 0.78,
+          borderRadius: bar / 2,
+          backgroundColor: color,
+        }}
+      />
+      <View
+        style={{
+          position: 'absolute',
+          width: size * 0.78,
+          height: bar,
+          borderRadius: bar / 2,
+          backgroundColor: color,
+        }}
+      />
+    </Box>
+  );
+}
+
 /** A seed — the beginning of everything here. */
 export function SeedIcon({ size = 24, color = BrandPalette.warmBrown, ...rest }: IconProps) {
   return (

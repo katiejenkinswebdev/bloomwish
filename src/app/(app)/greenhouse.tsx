@@ -91,11 +91,7 @@ export default function GreenhouseScreen() {
   const charm = trophies.find((t) => t.id === charmTrophyId);
 
   const renderKeepsake = ({ trophy, sceneText }: HarvestedDream, index: number) => {
-    const date = new Date(trophy.harvested_at).toLocaleDateString(undefined, {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-    });
+    const date = new Date(trophy.harvested_at).toLocaleDateString();
     const expanded = expandedId === trophy.id;
     return (
       <Pressable
@@ -114,8 +110,7 @@ export default function GreenhouseScreen() {
             {trophy.dream_title}
           </ThemedText>
           <ThemedText type="small" style={styles.plaqueText}>
-            Came true {date} · tended {trophy.total_sessions} time
-            {trophy.total_sessions === 1 ? '' : 's'}
+            {date} · tended ×{trophy.total_sessions}
           </ThemedText>
         </View>
         {expanded && sceneText ? (
@@ -136,7 +131,7 @@ export default function GreenhouseScreen() {
           <Spark size={20} />
         </View>
         <ThemedText themeColor="textSecondary">
-          Every wish that came true, in bloom forever.
+          In bloom forever.
         </ThemedText>
 
         {trophies.length > 0 ? (
@@ -226,7 +221,7 @@ export default function GreenhouseScreen() {
             <ThemedText themeColor="textSecondary" style={styles.centered}>
               {harvestedQuery.isLoading
                 ? 'Opening the greenhouse…'
-                : 'When a dream comes true out in the world, harvest it — it will live here as a keepsake.'}
+                : 'Harvest a wish and it blooms here forever.'}
             </ThemedText>
           </View>
         ) : (

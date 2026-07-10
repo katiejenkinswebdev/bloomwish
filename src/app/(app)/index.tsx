@@ -9,7 +9,6 @@ import { Fireflies } from '@/components/fireflies';
 import { PlantGlyph } from '@/components/plant-glyph';
 import { Spark } from '@/components/spark';
 import { ThemedText } from '@/components/themed-text';
-import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
 import { FreeTierLimits } from '@/config/branding';
 import { Spacing } from '@/constants/theme';
@@ -25,9 +24,11 @@ import { fetchTrophies } from '@/features/harvest/api';
 import { fetchNotificationPrefs, notificationPrefsQueryKey } from '@/features/notifications/prefs';
 import { syncNotifications } from '@/features/notifications/scheduler';
 import { fetchProfile, profileQueryKey } from '@/features/profile/api';
+import { useIsFounder } from '@/features/profile/founder';
 import { grantElevenEleven, maybeGrantReward, type GrantedReward } from '@/features/rewards/api';
 import { DelightMoment } from '@/features/rewards/components/delight-moment';
 import { useIsFullBloom } from '@/features/purchases/entitlements';
+import { PlusIcon } from '@/components/icons';
 import { BrandPalette } from '@/constants/brand-palette';
 import { fetchLocalWeather } from '@/features/weather/weather-mirror';
 import { RainOverlay } from '@/components/rain-overlay';
@@ -55,6 +56,7 @@ export default function GardenScreen() {
   );
   const [reward, setReward] = useState<GrantedReward | null>(null);
   const isFullBloom = useIsFullBloom();
+  const isFounder = useIsFounder();
 
   const dreamsQuery = useQuery({ queryKey: ['dreams'], queryFn: fetchDreams });
   const configQuery = useQuery({
@@ -170,7 +172,7 @@ export default function GardenScreen() {
           <ThemedText themeColor="textSecondary" style={styles.emptyText}>
             {dreamsQuery.isLoading
               ? 'Tending the soil…'
-              : 'Your dreams will take root here once you plant your first one.'}
+              : 'Tap + to plant your first dream.'}
           </ThemedText>
         </View>
       ) : (
@@ -199,30 +201,23 @@ export default function GardenScreen() {
         </ScrollView>
       )}
 
-      {dreams.length > 0 ? (
-        <Button
-          label="Log a sign"
-          variant="secondary"
-          onPress={() =>
-            dreams.length === 1
-              ? router.push({ pathname: '/add-sign', params: { dreamId: dreams[0].id } })
-              : router.push('/add-sign')
-          }
-          style={styles.signButton}
-        />
-      ) : null}
-      <Button
-        label="Plant a dream"
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Plant a dream"
         onPress={() => {
-          // Free tier: one active dream slot; more slots live in Full Bloom.
-          if (!isFullBloom && dreams.length >= FreeTierLimits.activeDreamSlots) {
+          // Free tier: one active dream slot; founders and Full Bloom are open.
+          if (!isFullBloom && !isFounder && dreams.length >= FreeTierLimits.activeDreamSlots) {
             router.push('/paywall');
           } else {
             router.push('/create-dream');
           }
         }}
-        style={styles.plantButton}
-      />
+        style={({ pressed }) => [
+          styles.fab,
+          { transform: [{ scale: pressed ? 0.94 : 1 }], opacity: pressed ? 0.9 : 1 },
+        ]}>
+        <PlusIcon size={26} />
+      </Pressable>
 
       {weather?.isRaining || weather?.isSnowing ? (
         <RainOverlay snow={!!weather.isSnowing} />
@@ -323,11 +318,21 @@ const styles = StyleSheet.create({
   plantTitle: {
     maxWidth: PLANT_AREA,
   },
-  signButton: {
-    marginBottom: Spacing.two,
-  },
-  plantButton: {
-    marginBottom: Spacing.five,
+  fab: {
+    position: 'absolute',
+    right: Spacing.four,
+    bottom: Spacing.four,
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: BrandPalette.deepGreen,
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
   },
   trophyButterflies: {
     flexDirection: 'row',
