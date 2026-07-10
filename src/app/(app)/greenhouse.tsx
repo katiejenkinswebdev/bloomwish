@@ -12,7 +12,7 @@ import Animated, {
 
 import { Butterfly } from '@/components/butterfly';
 import { Fireflies } from '@/components/fireflies';
-import { GreenhouseIcon, MoonIcon } from '@/components/icons';
+import { MoonIcon } from '@/components/icons';
 import { PlantGlyph } from '@/components/plant-glyph';
 import { Spark } from '@/components/spark';
 import { ThemedText } from '@/components/themed-text';
@@ -125,11 +125,9 @@ export default function GreenhouseScreen() {
   return (
     <Screen padded={false}>
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.header}>
-          <GreenhouseIcon size={26} />
-          <ThemedText type="title">Greenhouse</ThemedText>
-          <Spark size={20} />
-        </View>
+        <ThemedText type="title" style={styles.header}>
+          Greenhouse
+        </ThemedText>
         <ThemedText themeColor="textSecondary">
           In bloom forever.
         </ThemedText>
@@ -386,9 +384,6 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.six,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.two,
     paddingTop: Spacing.three,
   },
   empty: {

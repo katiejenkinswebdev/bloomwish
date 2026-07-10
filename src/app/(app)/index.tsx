@@ -211,10 +211,9 @@ export default function GardenScreen() {
 
   return (
     <Screen>
-      <View style={styles.header}>
-        <ThemedText type="title">Your wish garden</ThemedText>
-        <Spark size={20} />
-      </View>
+      <ThemedText type="title" style={styles.header}>
+        Your wish garden
+      </ThemedText>
       {pulseLine ? (
         <ThemedText type="small" themeColor="textSecondary">
           {pulseLine}
@@ -326,9 +325,6 @@ export default function GardenScreen() {
 
 const styles = StyleSheet.create({
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.two,
     paddingTop: Spacing.three,
   },
   hero: {
