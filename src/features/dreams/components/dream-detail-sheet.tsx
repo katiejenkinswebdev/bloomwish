@@ -13,6 +13,7 @@ import { Card } from '@/components/ui/card';
 import { Sheet } from '@/components/ui/sheet';
 import { BrandPalette } from '@/constants/brand-palette';
 import { Spacing } from '@/constants/theme';
+import { bloomColorFor } from '@/features/dreams/bloom-color';
 import { fetchSessions, fetchSigns } from '@/features/dreams/signs';
 import { useDreamDraftStore } from '@/store/dream-draft-store';
 import type { DreamHealth, DreamRow } from '@/lib/supabase/database.types';
@@ -83,7 +84,11 @@ export function DreamDetailSheet({ dream, effectiveHealth, onClose }: DreamDetai
             <VividnessSeed
               score={dream.vividness_score ?? 0}
               size={88}
-              plant={{ state: dream.state, health: effectiveHealth ?? dream.health }}
+              plant={{
+                state: dream.state,
+                health: effectiveHealth ?? dream.health,
+                bloomColor: bloomColorFor(dream.id),
+              }}
             />
             <ThemedText type="subtitle" style={styles.heroTitle}>
               {dream.title}

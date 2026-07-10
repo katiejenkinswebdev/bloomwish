@@ -24,6 +24,7 @@ import { FreeTierLimits } from '@/config/branding';
 import { Spacing } from '@/constants/theme';
 import { fetchDreams } from '@/features/dreams/api';
 import { DreamDetailSheet } from '@/features/dreams/components/dream-detail-sheet';
+import { bloomColorFor } from '@/features/dreams/bloom-color';
 import { consumeGardenNourished } from '@/features/dreams/nourish-signal';
 import {
   deriveHealth,
@@ -274,7 +275,12 @@ export default function GardenScreen() {
               ]}>
               <View style={styles.plantWrapper}>
                 <NourishablePlant index={index} signal={nourishSignal}>
-                  <PlantGlyph state={dream.state} health={healthFor(dream)} size={96} />
+                  <PlantGlyph
+                    state={dream.state}
+                    health={healthFor(dream)}
+                    bloomColor={bloomColorFor(dream.id)}
+                    size={96}
+                  />
                 </NourishablePlant>
                 <Fireflies count={signCounts[dream.id] ?? 0} areaSize={PLANT_AREA} />
               </View>

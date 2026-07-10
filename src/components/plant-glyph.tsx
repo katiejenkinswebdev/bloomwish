@@ -8,6 +8,8 @@ export interface PlantGlyphProps {
   state: DreamState;
   health: DreamHealth;
   size?: number;
+  /** The dream's own petal color (see bloom-color.ts). Defaults to the signature pink. */
+  bloomColor?: string;
 }
 
 /**
@@ -16,13 +18,13 @@ export interface PlantGlyphProps {
  * deep green stems, sage leaves, dusty-pink blooms, gold spark when thriving.
  * TODO(phase 8): swap for animated Lottie plants.
  */
-export function PlantGlyph({ state, health, size = 96 }: PlantGlyphProps) {
+export function PlantGlyph({ state, health, size = 96, bloomColor: bloomProp }: PlantGlyphProps) {
   const wilting = health === 'wilting';
   const dormant = health === 'dormant';
 
   const stemColor = dormant ? '#8C8577' : BrandPalette.deepGreen;
   const leafColor = dormant ? '#A39B8B' : BrandPalette.sage;
-  const bloomColor = dormant ? '#B8A9A0' : BrandPalette.dustyPink;
+  const bloomColor = dormant ? '#B8A9A0' : (bloomProp ?? BrandPalette.dustyPink);
 
   const stemHeight =
     state === 'seed' ? 0 : state === 'sprout' ? size * 0.28 : state === 'growing' ? size * 0.46 : size * 0.56;

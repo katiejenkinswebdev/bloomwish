@@ -16,6 +16,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { PlantGlyph } from '@/components/plant-glyph';
+import { bloomColorFor } from '@/features/dreams/bloom-color';
 import { Spark } from '@/components/spark';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
@@ -128,7 +129,12 @@ export function SessionComplete({
           {[0, 1, 2, 3, 4].map((i) =>
             variant === 'feed' ? <NourishMote key={i} index={i} /> : <Droplet key={i} index={i} />
           )}
-          <PlantGlyph state={plantState} health="thriving" size={120} />
+          <PlantGlyph
+            state={plantState}
+            health="thriving"
+            bloomColor={dreamId ? bloomColorFor(dreamId) : undefined}
+            size={120}
+          />
         </View>
       </View>
 

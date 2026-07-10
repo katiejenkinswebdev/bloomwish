@@ -5,6 +5,7 @@ import { PlantGlyph } from '@/components/plant-glyph';
 import { Spark } from '@/components/spark';
 import { ThemedText } from '@/components/themed-text';
 import { Branding } from '@/config/branding';
+import { bloomColorFor } from '@/features/dreams/bloom-color';
 import { BrandPalette } from '@/constants/brand-palette';
 import { Spacing } from '@/constants/theme';
 import type { TrophyRow } from '@/lib/supabase/database.types';
@@ -44,7 +45,12 @@ export const HarvestShareCard = forwardRef<View, HarvestShareCardProps>(
             IT CAME TRUE
           </ThemedText>
 
-          <PlantGlyph state="blooming" health="thriving" size={92} />
+          <PlantGlyph
+            state="blooming"
+            health="thriving"
+            bloomColor={bloomColorFor(trophy.dream_id)}
+            size={92}
+          />
 
           <ThemedText type="subtitle" style={styles.title} numberOfLines={3}>
             {trophy.dream_title}

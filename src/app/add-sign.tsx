@@ -6,6 +6,7 @@ import { goBackOrHome } from '@/lib/navigation';
 import { useQuery } from '@tanstack/react-query';
 
 import { PlantGlyph } from '@/components/plant-glyph';
+import { bloomColorFor } from '@/features/dreams/bloom-color';
 import { useTheme } from '@/hooks/use-theme';
 import { SunMoment } from '@/features/dreams/components/sun-moment';
 import { ThemedText } from '@/components/themed-text';
@@ -67,7 +68,12 @@ export default function AddSignScreen() {
                   opacity: pressed ? 0.85 : 1,
                 },
               ]}>
-              <PlantGlyph state={candidate.state} health={candidate.health} size={48} />
+              <PlantGlyph
+                state={candidate.state}
+                health={candidate.health}
+                bloomColor={bloomColorFor(candidate.id)}
+                size={48}
+              />
               <ThemedText type="small" style={styles.dreamOptionTitle} numberOfLines={2}>
                 {candidate.title}
               </ThemedText>

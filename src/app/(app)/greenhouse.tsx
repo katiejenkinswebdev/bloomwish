@@ -20,6 +20,7 @@ import { Screen } from '@/components/ui/screen';
 import { ScreenHeader } from '@/components/ui/screen-header';
 import { BrandPalette } from '@/constants/brand-palette';
 import { Spacing } from '@/constants/theme';
+import { bloomColorFor } from '@/features/dreams/bloom-color';
 import { fetchHarvestedDreams, type HarvestedDream } from '@/features/harvest/api';
 
 /** Deterministic star spots in the grove's dusk sky (percent-based). */
@@ -104,7 +105,12 @@ export default function GreenhouseScreen() {
         onPress={() => setExpandedId(expanded ? null : trophy.id)}
         style={styles.keepsake}>
         <View style={styles.keepsakeTop}>
-          <PlantGlyph state="blooming" health="thriving" size={72} />
+          <PlantGlyph
+            state="blooming"
+            health="thriving"
+            bloomColor={bloomColorFor(trophy.dream_id)}
+            size={72}
+          />
           <Butterfly size={20} index={index} />
         </View>
         <View style={styles.pot} />

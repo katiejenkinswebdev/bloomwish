@@ -15,6 +15,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { PlantGlyph } from '@/components/plant-glyph';
+import { bloomColorFor } from '@/features/dreams/bloom-color';
 import { Spark } from '@/components/spark';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
@@ -57,7 +58,12 @@ function GrowingIndicator({ dream }: { dream?: DreamRow }) {
   return (
     <View style={styles.growingArea}>
       <Animated.View style={style}>
-        <PlantGlyph state={dream?.state ?? 'sprout'} health="thriving" size={120} />
+        <PlantGlyph
+          state={dream?.state ?? 'sprout'}
+          health="thriving"
+          bloomColor={dream ? bloomColorFor(dream.id) : undefined}
+          size={120}
+        />
       </Animated.View>
       <ThemedText type="subtitle" style={styles.centered}>
         Your meditation is being grown…
@@ -89,7 +95,12 @@ function Player({
 
   return (
     <View style={styles.playerArea}>
-      <PlantGlyph state={dream?.state ?? 'sprout'} health="thriving" size={110} />
+      <PlantGlyph
+        state={dream?.state ?? 'sprout'}
+        health="thriving"
+        bloomColor={dream ? bloomColorFor(dream.id) : undefined}
+        size={110}
+      />
       <ThemedText type="subtitle" style={styles.centered}>
         {dream?.title ?? 'Your dream'} · {minutes} min
       </ThemedText>

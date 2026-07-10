@@ -24,6 +24,7 @@ import { BrandPalette } from '@/constants/brand-palette';
 import { Spacing } from '@/constants/theme';
 import { useDictation } from '@/features/dictation/use-dictation';
 import { fetchDreams, releaseDream } from '@/features/dreams/api';
+import { bloomColorFor } from '@/features/dreams/bloom-color';
 import { markGardenNourished } from '@/features/dreams/nourish-signal';
 import type { DreamRow } from '@/lib/supabase/database.types';
 
@@ -63,7 +64,12 @@ function ReleaseMoment({ dream, onDone }: { dream: DreamRow; onDone: () => void 
   return (
     <View style={styles.momentArea}>
       <Animated.View style={plantStyle}>
-        <PlantGlyph state={dream.state} health="healthy" size={110} />
+        <PlantGlyph
+          state={dream.state}
+          health="healthy"
+          bloomColor={bloomColorFor(dream.id)}
+          size={110}
+        />
       </Animated.View>
       <View style={styles.soil} />
       <ThemedText type="small" themeColor="textSecondary" style={styles.centeredText}>
@@ -167,7 +173,12 @@ export default function ReleaseScreen() {
         </ThemedText>
 
         <View style={styles.plantRow}>
-          <PlantGlyph state={dream!.state} health="healthy" size={72} />
+          <PlantGlyph
+            state={dream!.state}
+            health="healthy"
+            bloomColor={bloomColorFor(dream!.id)}
+            size={72}
+          />
           <ThemedText type="smallBold" style={styles.plantTitle} numberOfLines={2}>
             {dream!.title}
           </ThemedText>

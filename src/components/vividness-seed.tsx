@@ -19,7 +19,7 @@ export interface VividnessSeedProps {
   score: number;
   size?: number;
   /** When set, the glow surrounds the dream's actual plant instead of the seed. */
-  plant?: { state: DreamState; health: DreamHealth };
+  plant?: { state: DreamState; health: DreamHealth; bloomColor?: string };
 }
 
 /**
@@ -65,7 +65,12 @@ export function VividnessSeed({ score, size = 120, plant }: VividnessSeedProps) 
         ]}
       />
       {plant ? (
-        <PlantGlyph state={plant.state} health={plant.health} size={size * 1.1} />
+        <PlantGlyph
+          state={plant.state}
+          health={plant.health}
+          bloomColor={plant.bloomColor}
+          size={size * 1.1}
+        />
       ) : (
         <>
           <View
