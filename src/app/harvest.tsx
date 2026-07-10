@@ -1,9 +1,13 @@
-import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Platform, ScrollView, StyleSheet, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router, useLocalSearchParams } from 'expo-router';
 
 import { goBackOrHome } from '@/lib/navigation';
 import * as Haptics from 'expo-haptics';
+import * as Sharing from 'expo-sharing';
+import * as StoreReview from 'expo-store-review';
+import { captureRef } from 'react-native-view-shot';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 
@@ -18,6 +22,7 @@ import { BrandPalette } from '@/constants/brand-palette';
 import { Spacing } from '@/constants/theme';
 import { fetchDreams } from '@/features/dreams/api';
 import { harvestDream } from '@/features/harvest/api';
+import { HarvestShareCard } from '@/features/harvest/components/harvest-share-card';
 import type { TrophyRow } from '@/lib/supabase/database.types';
 
 export default function HarvestScreen() {
@@ -25,14 +30,17 @@ export default function HarvestScreen() {
   const queryClient = useQueryClient();
   const [trophy, setTrophy] = useState<TrophyRow | null>(null);
   const [capsuleText, setCapsuleText] = useState<string | null>(null);
+  const [plantedAt, setPlantedAt] = useState<string | null>(null);
+  const shareCardRef = useRef<View>(null);
 
   const dreamsQuery = useQuery({ queryKey: ['dreams'], queryFn: fetchDreams });
   const dream = dreamsQuery.data?.find((d) => d.id === dreamId);
 
   const harvestMutation = useMutation({
     mutationFn: () => {
-      // Capture the sealed note before the dream leaves the active list.
+      // Capture keepsake facts before the dream leaves the active list.
       setCapsuleText(dream?.capsule_text ?? null);
+      setPlantedAt(dream?.planted_at ?? null);
       return harvestDream(dreamId!);
     },
     onSuccess: (awarded) => {
@@ -44,6 +52,36 @@ export default function HarvestScreen() {
     },
   });
 
+  // The one moment we ever ask for a rating: mid-celebration, once per
+  // lifetime, never after an error. No-ops where unsupported (web).
+  useEffect(() => {
+    if (!trophy) return;
+    const t = setTimeout(async () => {
+      try {
+        const asked = await AsyncStorage.getItem('bloomwish:rating-asked');
+        if (asked) return;
+        if (!(await StoreReview.isAvailableAsync())) return;
+        await AsyncStorage.setItem('bloomwish:rating-asked', 'yes');
+        await StoreReview.requestReview();
+      } catch {
+        // Never let a review prompt disturb the celebration.
+      }
+    }, 3500);
+    return () => clearTimeout(t);
+  }, [trophy]);
+
+  const shareBloom = async () => {
+    try {
+      const uri = await captureRef(shareCardRef, { format: 'png', quality: 1 });
+      await Sharing.shareAsync(uri.startsWith('file') ? uri : `file://${uri}`, {
+        mimeType: 'image/png',
+        dialogTitle: 'Share this bloom',
+      });
+    } catch {
+      // User dismissed the sheet, or capture failed — stay quiet either way.
+    }
+  };
+
   if (trophy) {
     const date = new Date(trophy.harvested_at).toLocaleDateString(undefined, {
       month: 'long',
@@ -51,7 +89,8 @@ export default function HarvestScreen() {
       year: 'numeric',
     });
     return (
-      <Screen style={styles.container}>
+      <Screen padded={false}>
+        <ScrollView contentContainerStyle={styles.celebrationScroll}>
         <View style={styles.celebration}>
           <Animated.View entering={FadeInDown.duration(700)} style={styles.butterflies}>
             <Butterfly size={30} color={BrandPalette.gold} index={0} />
@@ -104,6 +143,19 @@ export default function HarvestScreen() {
           </Animated.View>
         </View>
 
+        <Animated.View
+          entering={FadeInUp.delay(capsuleText ? 3000 : 2300).duration(700)}
+          style={styles.shareSection}>
+          <HarvestShareCard ref={shareCardRef} trophy={trophy} plantedAt={plantedAt} />
+          {Platform.OS !== 'web' ? (
+            <Button label="Share this bloom" variant="secondary" onPress={shareBloom} />
+          ) : (
+            <ThemedText type="small" themeColor="textSecondary" style={styles.centered}>
+              Screenshot the card to share your bloom.
+            </ThemedText>
+          )}
+        </Animated.View>
+
         <Button
           label="Visit the greenhouse"
           onPress={() => {
@@ -112,6 +164,7 @@ export default function HarvestScreen() {
           }}
         />
         <Button label="Back to the garden" variant="ghost" onPress={() => goBackOrHome()} />
+        </ScrollView>
       </Screen>
     );
   }
@@ -149,6 +202,16 @@ const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
     gap: Spacing.three,
+  },
+  celebrationScroll: {
+    padding: Spacing.four,
+    paddingTop: Spacing.six,
+    paddingBottom: Spacing.six,
+    gap: Spacing.three,
+  },
+  shareSection: {
+    gap: Spacing.two,
+    marginBottom: Spacing.two,
   },
   centered: {
     textAlign: 'center',

@@ -46,7 +46,7 @@ export default function OnboardingIntroScreen() {
 
   const handleNext = () => {
     if (isLastPage) {
-      router.push('/onboarding/quiz');
+      router.push('/onboarding/taste');
     } else {
       goToPage(pageIndex + 1);
     }

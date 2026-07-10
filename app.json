@@ -92,7 +92,8 @@
         {
           "locationWhenInUsePermission": "Bloomwish uses your location only to mirror today’s weather in your garden. It never leaves your device except to fetch the local forecast."
         }
-      ]
+      ],
+      "expo-sharing"
     ],
     "experiments": {
       "typedRoutes": true,

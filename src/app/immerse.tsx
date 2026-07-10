@@ -3,20 +3,10 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import Animated, {
-  Easing,
-  FadeIn,
-  FadeInDown,
-  FadeOut,
-  useAnimatedStyle,
-  useReducedMotion,
-  useSharedValue,
-  withDelay,
-  withRepeat,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInDown, FadeOut, useReducedMotion } from 'react-native-reanimated';
 
 import { goBackOrHome } from '@/lib/navigation';
+import { AuroraOrb, BreathGlow } from '@/components/aurora';
 import { Spark } from '@/components/spark';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
@@ -48,83 +38,6 @@ const OPENINGS = [
 ];
 
 const BODY_SPOTS = ['My chest', 'My stomach', 'My throat', 'My hands', 'Everywhere'];
-
-/** One slow-drifting aurora orb of the night backdrop. */
-function AuroraOrb({
-  size,
-  color,
-  opacity,
-  top,
-  left,
-  duration,
-  delay,
-}: {
-  size: number;
-  color: string;
-  opacity: number;
-  top: number;
-  left: number;
-  duration: number;
-  delay: number;
-}) {
-  const reducedMotion = useReducedMotion();
-  const drift = useSharedValue(0);
-
-  useEffect(() => {
-    if (reducedMotion) return;
-    drift.value = withDelay(
-      delay,
-      withRepeat(withTiming(1, { duration, easing: Easing.inOut(Easing.sin) }), -1, true)
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const style = useAnimatedStyle(() => ({
-    transform: [{ translateY: drift.value * 44 }, { translateX: drift.value * -26 }],
-  }));
-
-  return (
-    <Animated.View
-      pointerEvents="none"
-      style={[
-        {
-          position: 'absolute',
-          width: size,
-          height: size,
-          borderRadius: size / 2,
-          backgroundColor: color,
-          opacity,
-          top,
-          left,
-        },
-        style,
-      ]}
-    />
-  );
-}
-
-/** The breathing glow behind the words. */
-function BreathGlow() {
-  const reducedMotion = useReducedMotion();
-  const breath = useSharedValue(0);
-
-  useEffect(() => {
-    if (reducedMotion) return;
-    breath.value = withRepeat(
-      withTiming(1, { duration: 5600, easing: Easing.inOut(Easing.sin) }),
-      -1,
-      true
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const style = useAnimatedStyle(() => ({
-    transform: [{ scale: 0.92 + breath.value * 0.16 }],
-    opacity: 0.1 + breath.value * 0.08,
-  }));
-
-  return <Animated.View pointerEvents="none" style={[styles.glow, style]} />;
-}
 
 export default function ImmerseScreen() {
   const { dreamId } = useLocalSearchParams<{ dreamId: string }>();

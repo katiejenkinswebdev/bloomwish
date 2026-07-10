@@ -196,6 +196,46 @@ Every submission from the in-app form (bug / idea / love + message + email-conse
 
 For behavioral analytics (onboarding funnels, retention, paths), the recommended tool is **PostHog** — generous free tier, Expo SDK, privacy-respectful. Note: adding it requires updating the Apple privacy nutrition labels and Google Data Safety answers to declare usage-data collection (still no ATT prompt — there's no cross-app tracking). Your own database already answers core-loop questions (plants per user, sessions per week, sign rates) with plain SQL, and RevenueCat's dashboards cover revenue metrics once purchases are live.
 
+## Launch playbook
+
+Full product logic reference: [docs/product-guide.md](docs/product-guide.md).
+
+### Your voice, live at launch (highest paywall lever)
+
+1. Finish recording the ElevenLabs voice (see "Plugging in the AI powers").
+2. Add a **15-second sample on the paywall** ("hear a moment of yours") —
+   an unheard voice is an unfelt promise. Generate one sample meditation
+   opening with the real voice, ship it as a bundled asset, wire a play
+   button on the paywall. (~half a day once the voice exists.)
+
+### Launch blockers (the preflight warnings ARE this checklist)
+
+- [ ] Privacy + terms pages live at the real domain (site/ is ready to deploy)
+- [ ] Apple Team ID in app.json; submit config in eas.json
+- [ ] Founding Member end date in branding.ts — it's load-bearing copy now:
+      the paywall's limited-time claim must be true
+- [ ] Real PostHog key + Sentry DSN in production env
+- [ ] Hosted Supabase: `supabase db push` (carries the security migrations)
+      and redeploy all Edge Functions (they contain the AI budget checks)
+- [ ] RevenueCat products created; webhook deployed with secret
+- [ ] TestFlight round: ~20 people from manifestation communities for a
+      week — the first App Store reviews will echo whatever they experience
+
+### Launch motion
+
+- **Micro-influencers over big accounts**: seed 10–20 creators in the
+  manifestation/scripting niche (10–50k followers — higher trust, cheaper,
+  better conversion) with Founding Member codes.
+- **ASO**: target what people actually search — "manifestation app",
+  "369 method", "scripting journal", "visualization", "vision board". The
+  app genuinely contains all of these; say so in the subtitle/keywords.
+- **Store creative**: screenshots lead with the garden and the immersion
+  screen (feelings, not feature lists); 15–30s preview video of
+  plant → immerse → bloom.
+- **Product Hunt** mid-week after TestFlight feedback lands.
+- **Organic engine**: the harvest share card — every real harvest is a
+  testimonial in someone's story feed.
+
 ## Security posture
 
 Audited 2026-07-09 (full read of migrations, Edge Functions, auth, storage,
