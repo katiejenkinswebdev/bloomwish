@@ -196,6 +196,46 @@ Every submission from the in-app form (bug / idea / love + message + email-conse
 
 For behavioral analytics (onboarding funnels, retention, paths), the recommended tool is **PostHog** — generous free tier, Expo SDK, privacy-respectful. Note: adding it requires updating the Apple privacy nutrition labels and Google Data Safety answers to declare usage-data collection (still no ATT prompt — there's no cross-app tracking). Your own database already answers core-loop questions (plants per user, sessions per week, sign rates) with plain SQL, and RevenueCat's dashboards cover revenue metrics once purchases are live.
 
+## Security posture
+
+Audited 2026-07-09 (full read of migrations, Edge Functions, auth, storage,
+secrets). Two hardening changes shipped in
+`supabase/migrations/20260710010000_security_hardening.sql`:
+
+**1. `anon` can no longer touch any table.** An earlier grants migration gave
+the anonymous role full DML on all tables — and on all *future* tables — with
+RLS as the only gate. All table privileges are now revoked from `anon`
+(including the default-privileges rule), because the app never queries public
+tables before sign-in. Impact:
+
+- No behavior change for the app: every read/write happens signed in as
+  `authenticated`; sign-in/sign-up use the auth endpoints, not public tables.
+- The blast radius of a future mistake shrinks: a new table that forgets RLS
+  is now exposed only to signed-in users instead of anyone on the internet
+  holding the public anon key.
+- **Rule for every future table:** `alter table ... enable row level
+  security;` in the same migration that creates it. No exceptions. (The
+  `authenticated` role still has default table grants, so RLS is still what
+  protects users from each other.)
+
+**2. Server-side daily budget on AI spend.** Every paid AI call in
+`dream-coach` and `generate-meditation` first bumps a per-user, per-day
+counter (`ai_usage`, service-role-only, atomic upsert via
+`increment_ai_usage()`), and returns a friendly 429 past the ceiling. Limits
+live in `app_config` key `ai_daily_limits` (`{"coach": 50, "meditation": 10}`)
+— tune them in the table, no redeploy. Sizing: a heavy legitimate day is ~30
+coach calls (dream creation ≈6, plus affirmations/nudges/reframes/letters
+across dreams); 50 leaves headroom while stopping loops. Meditations carry
+ElevenLabs audio cost, and caching means only true generations count; 10/day
+covers every real pattern.
+
+Accepted risks (deliberate, revisit if scope changes): growth mechanics are
+client-authoritative (a user can only inflate their *own* garden — becomes
+real severity if any public/social surface ships); web sessions persist in
+localStorage (standard); webhook secrets use plain string compare (timing
+side channel, low practical risk — constant-time compare is a cheap future
+fix).
+
 ## Ethical design ground rules
 
 No fake urgency or artificial scarcity. No shame-based notifications. Plants never permanently die (dormancy is always reversible). The free tier is genuinely useful. Cancellation is easy and never hidden. Pricing is transparent before any purchase sheet. Variable rewards are cosmetic delight only. All copy frames the app as visualization/mindfulness/wellbeing — no medical claims, no manifestation guarantees.

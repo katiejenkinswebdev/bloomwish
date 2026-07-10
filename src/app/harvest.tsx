@@ -61,7 +61,7 @@ export default function HarvestScreen() {
 
           <Animated.View entering={FadeInUp.delay(500).duration(700)}>
             <ThemedText type="title" style={styles.centered}>
-              Harvested!
+              A {Branding.appName} come true
             </ThemedText>
           </Animated.View>
 
@@ -99,7 +99,8 @@ export default function HarvestScreen() {
               {Branding.affirmation}
             </ThemedText>
             <ThemedText type="small" themeColor="textSecondary" style={styles.centered}>
-              A plaque now rests on your garden path, and a butterfly will fly here forever.
+              A gold charm now hangs in your wishing grove, and a butterfly will fly in your
+              greenhouse forever. That is a {Branding.appName}.
             </ThemedText>
           </Animated.View>
         </View>

@@ -337,6 +337,39 @@ Deno.serve(async (req) => {
     });
   }
 
+  // Server-side daily budget (audit finding #2): every paid AI call counts
+  // against a per-user ceiling, tunable in app_config without a redeploy.
+  const adminClient = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  );
+  const { data: limitsRow } = await adminClient
+    .from('app_config')
+    .select('value')
+    .eq('key', 'ai_daily_limits')
+    .maybeSingle();
+  const coachLimit =
+    typeof (limitsRow?.value as Record<string, unknown> | null)?.coach === 'number'
+      ? ((limitsRow!.value as Record<string, number>).coach)
+      : 50;
+  const { data: callsToday, error: usageError } = await adminClient.rpc('increment_ai_usage', {
+    p_user: user.id,
+    p_kind: 'coach',
+  });
+  if (usageError) {
+    console.error('ai_usage increment failed', usageError);
+    return new Response('Usage tracking unavailable', { status: 500 });
+  }
+  if (typeof callsToday === 'number' && callsToday > coachLimit) {
+    return new Response(
+      JSON.stringify({
+        error: 'daily_limit',
+        message: 'The coach is resting for today — everything continues fresh tomorrow.',
+      }),
+      { status: 429, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+
   const anthropic = new Anthropic({ apiKey: Deno.env.get('ANTHROPIC_API_KEY') });
 
   let prompt: string;

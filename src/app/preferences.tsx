@@ -213,7 +213,7 @@ export default function PreferencesScreen() {
           ))}
         </View>
 
-        <ThemedText type="smallBold">Your garden</ThemedText>
+        <ThemedText type="smallBold">Your wish garden</ThemedText>
         <View style={styles.switchRow}>
           <View style={styles.switchLabel}>
             <ThemedText type="small">Mirror today’s weather</ThemedText>

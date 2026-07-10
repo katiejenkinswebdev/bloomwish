@@ -315,6 +315,38 @@ Deno.serve(async (req) => {
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
   );
 
+  // Server-side daily budget (audit finding #2). Cache hits above never
+  // reach this point, so only real generations count.
+  const { data: limitsRow } = await adminClient
+    .from('app_config')
+    .select('value')
+    .eq('key', 'ai_daily_limits')
+    .maybeSingle();
+  const meditationLimit =
+    typeof (limitsRow?.value as Record<string, unknown> | null)?.meditation === 'number'
+      ? ((limitsRow!.value as Record<string, number>).meditation)
+      : 10;
+  const { data: callsToday, error: usageError } = await adminClient.rpc('increment_ai_usage', {
+    p_user: user.id,
+    p_kind: 'meditation',
+  });
+  if (usageError) {
+    console.error('ai_usage increment failed', usageError);
+    return new Response('Usage tracking unavailable', { status: 500 });
+  }
+  if (typeof callsToday === 'number' && callsToday > meditationLimit) {
+    // The pending row was already created above — fail it so it can't jam
+    // the reuse-cache as a forever-pending meditation.
+    await adminClient.from('meditations').update({ status: 'failed' }).eq('id', pendingRow.id);
+    return new Response(
+      JSON.stringify({
+        error: 'daily_limit',
+        message: 'Meditation crafting is resting for today — it renews tomorrow.',
+      }),
+      { status: 429, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+
   const generate = async () => {
     try {
       // Local-preview fallback: without AI keys (never true in production),

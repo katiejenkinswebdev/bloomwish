@@ -128,7 +128,7 @@ export default function GardenScreen() {
   return (
     <Screen>
       <View style={styles.header}>
-        <ThemedText type="title">Your garden</ThemedText>
+        <ThemedText type="title">Your wish garden</ThemedText>
         <Spark size={20} />
       </View>
 
