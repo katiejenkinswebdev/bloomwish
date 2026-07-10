@@ -70,7 +70,9 @@ export default function ProfileScreen() {
 
   return (
     <Screen>
-      <ThemedText type="title">Profile</ThemedText>
+      <ThemedText type="title" style={styles.header}>
+        Profile
+      </ThemedText>
       <ThemedText themeColor="textSecondary">{user?.email}</ThemedText>
       <View style={styles.planRow}>
         <ThemedText type="smallBold">
@@ -314,6 +316,9 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
+  header: {
+    paddingTop: Spacing.three,
+  },
   planRow: {
     flexDirection: 'row',
     alignItems: 'center',

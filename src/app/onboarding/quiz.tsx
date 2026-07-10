@@ -211,7 +211,7 @@ export default function OnboardingQuizScreen() {
 const styles = StyleSheet.create({
   content: {
     gap: Spacing.three,
-    paddingVertical: Spacing.five,
+    paddingVertical: Spacing.four,
   },
   options: {
     gap: Spacing.two,
