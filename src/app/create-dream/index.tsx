@@ -7,7 +7,6 @@ import { DictationButton } from '@/components/dictation-button';
 import { SeedIcon } from '@/components/icons';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Screen } from '@/components/ui/screen';
 import { TextField } from '@/components/ui/text-field';
 import { Spacing } from '@/constants/theme';
@@ -28,6 +27,7 @@ const SEED_PACKETS = [
 
 export default function DescribeDreamScreen() {
   const theme = useTheme();
+  const [packetsOpen, setPacketsOpen] = useState(false);
   // Deepen mode arrives with the wish already in the store.
   const [deepenDreamId] = useState(() => useDreamDraftStore.getState().deepenDreamId);
   const [dreamText, setDreamText] = useState(() => useDreamDraftStore.getState().dreamText);
@@ -59,18 +59,44 @@ export default function DescribeDreamScreen() {
             Speak it or type it.
           </ThemedText>
 
-          <Card>
-            <ThemedText type="smallBold">New to this? Start small.</ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              Tear open a seed packet:
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ expanded: packetsOpen }}
+            accessibilityLabel="New to this? Start small — open the seed packets"
+            hitSlop={{ top: 6, bottom: 6 }}
+            onPress={() => setPacketsOpen((open) => !open)}
+            style={({ pressed }) => [
+              styles.packetToggle,
+              {
+                backgroundColor: theme.backgroundElement,
+                borderColor: theme.border,
+                opacity: pressed ? 0.85 : 1,
+              },
+            ]}>
+            <SeedIcon size={18} />
+            <ThemedText type="small" style={styles.packetToggleLabel}>
+              New to this? Start small
             </ThemedText>
+            <View
+              style={[
+                styles.chevron,
+                { borderColor: theme.textSecondary },
+                packetsOpen && styles.chevronOpen,
+              ]}
+            />
+          </Pressable>
+
+          {packetsOpen ? (
             <View style={styles.packetRow}>
               {SEED_PACKETS.map((seed) => (
                 <Pressable
                   key={seed}
                   accessibilityRole="button"
                   hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
-                  onPress={() => setDreamText(`I dream of ${seed.charAt(0).toLowerCase()}${seed.slice(1)}.`)}
+                  onPress={() => {
+                    setDreamText(`I dream of ${seed.charAt(0).toLowerCase()}${seed.slice(1)}.`);
+                    setPacketsOpen(false);
+                  }}
                   style={({ pressed }) => [
                     styles.packet,
                     { borderColor: theme.primary, opacity: pressed ? 0.7 : 1 },
@@ -80,7 +106,7 @@ export default function DescribeDreamScreen() {
                 </Pressable>
               ))}
             </View>
-          </Card>
+          ) : null}
 
           <TextField
             value={dictation.isListening && dictation.transcript ? dictation.transcript : dreamText}
@@ -156,11 +182,33 @@ const styles = StyleSheet.create({
   continueButton: {
     marginTop: Spacing.two,
   },
+  packetToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    borderWidth: 1,
+    borderRadius: Spacing.three,
+    paddingVertical: Spacing.two,
+    paddingHorizontal: Spacing.three,
+  },
+  packetToggleLabel: {
+    flex: 1,
+  },
+  chevron: {
+    width: 9,
+    height: 9,
+    borderRightWidth: 2,
+    borderBottomWidth: 2,
+    transform: [{ rotate: '45deg' }],
+    marginRight: Spacing.one,
+  },
+  chevronOpen: {
+    transform: [{ rotate: '225deg' }],
+  },
   packetRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: Spacing.two,
-    marginTop: Spacing.two,
   },
   packet: {
     flexDirection: 'row',
