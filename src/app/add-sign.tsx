@@ -32,7 +32,10 @@ export default function AddSignScreen() {
   if (saved) {
     return (
       <Screen style={styles.centered}>
-        <SunMoment plantState={saved.growth.newState} />
+        <SunMoment
+          plantState={saved.growth.newState}
+          bloomColor={dreamId ? bloomColorFor(dreamId) : undefined}
+        />
         <ThemedText type="title" style={styles.centeredText}>
           A new firefly
         </ThemedText>
