@@ -207,6 +207,14 @@ export function DreamDetailSheet({ dream, effectiveHealth, onClose }: DreamDetai
                 </>
               )}
 
+              <Button
+                label="Release this dream"
+                variant="ghost"
+                onPress={() =>
+                  router.push({ pathname: '/release', params: { dreamId: dream.id } })
+                }
+              />
+
               <ThemedText type="smallBold" style={styles.sectionTitle}>
                 Signs it’s growing
               </ThemedText>

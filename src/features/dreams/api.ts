@@ -228,3 +228,45 @@ export async function updateDreamScene(params: {
     .eq('id', params.dreamId);
   if (error) throw error;
 }
+
+/**
+ * Release a dream with thanks. Its energy feeds the surviving garden (a
+ * small one-time boost per remaining dream), then the dream and everything
+ * under it is gone for good. Only ever user-initiated — the app never
+ * suggests releasing.
+ */
+export async function releaseDream(params: { dreamId: string }): Promise<{ survivors: number }> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error('Not signed in');
+
+  const { data: survivors } = await supabase
+    .from('dreams')
+    .select('id')
+    .neq('id', params.dreamId)
+    .is('harvested_at', null);
+
+  if (survivors?.length) {
+    await supabase.from('sessions').insert(
+      survivors.map((d) => ({
+        user_id: user.id,
+        dream_id: d.id,
+        type: 'feed' as const,
+        activity_id: 'release_gift',
+        health_boost: 5,
+      }))
+    );
+    await supabase
+      .from('dreams')
+      .update({ last_interacted_at: new Date().toISOString() })
+      .in(
+        'id',
+        survivors.map((d) => d.id)
+      );
+  }
+
+  const { error } = await supabase.from('dreams').delete().eq('id', params.dreamId);
+  if (error) throw error;
+  return { survivors: survivors?.length ?? 0 };
+}
