@@ -415,8 +415,8 @@ export default function FeedScreen() {
 
           {activity.key === 'tell_someone' && witnessCount > 0 ? (
             <ThemedText type="small" themeColor="textSecondary">
-              You’ve said this dream out loud {witnessCount} time{witnessCount === 1 ? '' : 's'}{' '}
-              before. Dreams with witnesses grow bolder.
+              You’ve told {witnessCount} {witnessCount === 1 ? 'person' : 'people'} about this
+              dream so far. Dreams with witnesses grow bolder.
             </ThemedText>
           ) : null}
 
@@ -505,6 +505,14 @@ export default function FeedScreen() {
                 {item.description}
               </ThemedText>
             </View>
+            {item.key === 'tell_someone' && witnessCount > 0 ? (
+              <View style={[styles.witnessBadge, { backgroundColor: theme.primarySoft }]}>
+                <ThemedText type="smallBold">{witnessCount}</ThemedText>
+                <ThemedText type="small" themeColor="textSecondary">
+                  told
+                </ThemedText>
+              </View>
+            ) : null}
           </Pressable>
         ))}
 
@@ -535,6 +543,13 @@ const styles = StyleSheet.create({
   activityBody: {
     flex: 1,
     gap: 2,
+  },
+  witnessBadge: {
+    alignItems: 'center',
+    borderRadius: 999,
+    paddingVertical: Spacing.one,
+    paddingHorizontal: Spacing.two,
+    minWidth: 44,
   },
   detail: {
     padding: Spacing.four,
