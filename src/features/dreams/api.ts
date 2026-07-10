@@ -151,3 +151,51 @@ export async function plantDream(params: {
   if (error) throw error;
   return data;
 }
+
+export interface CoachActIdea {
+  actionIdea: string;
+}
+
+/** A concrete act-as-if micro-action for this specific dream, fresh daily. */
+export async function fetchActIdea(dreamText: string, sceneText?: string): Promise<CoachActIdea> {
+  return invokeCoach<CoachActIdea>({
+    action: 'act',
+    dreamText,
+    sceneText,
+    profile: await coachProfileContext(),
+  });
+}
+
+export interface CoachReframe {
+  reframe: string;
+}
+
+/** What a composted doubt breaks down into. */
+export async function fetchDoubtReframe(
+  doubtText: string,
+  dreamText?: string
+): Promise<CoachReframe> {
+  return invokeCoach<CoachReframe>({
+    action: 'reframe',
+    doubtText,
+    dreamText,
+    profile: await coachProfileContext(),
+  });
+}
+
+export interface CoachNudge {
+  nudge: string;
+}
+
+/** Today's tiny noticing-prompt for this dream. */
+export async function fetchDailyNudge(
+  dreamText: string,
+  sceneText?: string
+): Promise<CoachNudge> {
+  return invokeCoach<CoachNudge>({
+    action: 'nudge',
+    dreamText,
+    sceneText,
+    profile: await coachProfileContext(),
+  });
+}

@@ -60,6 +60,7 @@ function meditationPrompt(params: {
   minutes: number;
   displayName?: string | null;
   tonePreference?: string | null;
+  latestSign?: string | null;
 }): string {
   const targetSeconds = params.minutes * 60;
   const speechBudget = Math.round(targetSeconds * 0.45);
@@ -71,6 +72,7 @@ It is built from this person's own dream scene — keep their exact sensory deta
 "${params.sceneText}"
 
 ${params.displayName ? `You may occasionally address them by name: ${params.displayName}.` : 'Do not invent a name for them.'}
+${params.latestSign ? `Recently they noticed this real-world sign of their dream growing: "${params.latestSign}". Weave one brief, natural acknowledgment of it into the opening — evidence that things are already moving — without dwelling on it.` : ''}
 ${params.tonePreference === 'energizing' ? 'Lean bright and energizing while staying calm.' : 'Lean gentle and soothing.'}
 
 Structure:
@@ -285,6 +287,14 @@ Deno.serve(async (req) => {
     .eq('id', user.id)
     .maybeSingle();
 
+  const { data: latestSign } = await callerClient
+    .from('signs')
+    .select('text')
+    .eq('dream_id', dream.id)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
   const { data: pendingRow, error: insertError } = await callerClient
     .from('meditations')
     .insert({
@@ -353,6 +363,7 @@ Deno.serve(async (req) => {
               minutes: durationMinutes,
               displayName: profile?.display_name,
               tonePreference: profile?.tone_preference,
+              latestSign: latestSign?.text,
             }),
           },
         ],

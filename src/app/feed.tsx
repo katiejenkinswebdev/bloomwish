@@ -24,7 +24,14 @@ import { Spacing } from '@/constants/theme';
 import { completeSession, fetchFeedActivities, type CompletedSession } from '@/features/activities/api';
 import { CompostMoment } from '@/features/activities/components/compost-moment';
 import { SessionComplete } from '@/features/activities/components/session-complete';
-import { fetchDreams, fetchFutureLetter } from '@/features/dreams/api';
+import {
+  fetchActIdea,
+  fetchDailyNudge,
+  fetchDoubtReframe,
+  fetchDreams,
+  fetchFutureLetter,
+} from '@/features/dreams/api';
+import { fetchSessions } from '@/features/dreams/signs';
 import { Card } from '@/components/ui/card';
 import { useDictation } from '@/features/dictation/use-dictation';
 import { TextField } from '@/components/ui/text-field';
@@ -84,7 +91,8 @@ export default function FeedScreen() {
   const [reflection, setReflection] = useState('');
   const [result, setResult] = useState<CompletedSession | null>(null);
   const [startedAt] = useState(() => Date.now());
-  const [isComposting, setIsComposting] = useState(false);
+  const [compostPhase, setCompostPhase] = useState<'input' | 'sinking' | 'reveal'>('input');
+  const [dayKey] = useState(() => new Date().toDateString());
   const [rampageSecondsLeft, setRampageSecondsLeft] = useState<number | null>(null);
 
   const dictation = useDictation((finalText) => {
@@ -104,6 +112,37 @@ export default function FeedScreen() {
     queryFn: () => fetchFutureLetter(dream?.title ?? '', dream?.scene_text ?? undefined),
     enabled: activity?.key === 'future_letter' && !!dream,
     staleTime: Infinity,
+  });
+
+  // Today's tiny noticing-prompt for this dream — one per day, cached.
+  const nudgeQuery = useQuery({
+    queryKey: ['nudge', dreamId, dayKey],
+    queryFn: () => fetchDailyNudge(dream?.title ?? '', dream?.scene_text ?? undefined),
+    enabled: !!dream && !activity,
+    staleTime: Infinity,
+  });
+
+  // A concrete act-as-if micro-action for this dream — fresh each day.
+  const actIdeaQuery = useQuery({
+    queryKey: ['act-idea', dreamId, dayKey],
+    queryFn: () => fetchActIdea(dream?.title ?? '', dream?.scene_text ?? undefined),
+    enabled: activity?.key === 'act_as_if' && !!dream,
+    staleTime: Infinity,
+  });
+
+  // Past sessions make the practices remember: witnesses, repetitions.
+  const sessionsQuery = useQuery({
+    queryKey: ['sessions', dreamId],
+    queryFn: () => fetchSessions(dreamId!),
+    enabled: !!dreamId,
+  });
+  const witnessCount = (sessionsQuery.data ?? []).filter(
+    (x) => x.activity_id === 'tell_someone'
+  ).length;
+
+  // The nourishment a composted doubt becomes.
+  const reframeMutation = useMutation({
+    mutationFn: () => fetchDoubtReframe(reflection, dream?.title),
   });
 
   // Rampage countdown.
@@ -154,7 +193,8 @@ export default function FeedScreen() {
   const resetActivity = () => {
     setActivity(null);
     setReflection('');
-    setIsComposting(false);
+    setCompostPhase('input');
+    reframeMutation.reset();
     setRampageSecondsLeft(null);
     if (dictation.isListening) dictation.stop();
   };
@@ -205,18 +245,48 @@ export default function FeedScreen() {
 
   // ── Compost a doubt ────────────────────────────────────────────────────────
   if (activity?.key === 'compost_doubts') {
-    if (isComposting) {
+    if (compostPhase === 'sinking') {
       return (
         <Screen style={styles.centered}>
-          <CompostMoment doubtText={reflection} onDone={() => completeMutation.mutate(undefined)} />
-          {completeMutation.error ? (
-            <>
-              <ThemedText themeColor="danger" style={styles.rampageClock}>
-                Couldn’t save your session.
+          <CompostMoment doubtText={reflection} onDone={() => setCompostPhase('reveal')} />
+        </Screen>
+      );
+    }
+    if (compostPhase === 'reveal') {
+      return (
+        <Screen style={styles.centered}>
+          <ThemedText type="title" style={styles.centeredText}>
+            It broke down into…
+          </ThemedText>
+          {reframeMutation.isPending ? (
+            <ThemedText themeColor="textSecondary" style={styles.centeredText}>
+              composting…
+            </ThemedText>
+          ) : (
+            <Card>
+              <ThemedText type="small" style={styles.letter}>
+                {reframeMutation.data?.reframe ??
+                  'Something lighter. You can feel the difference already.'}
               </ThemedText>
-              <Button label="Try again" onPress={() => completeMutation.mutate(undefined)} />
-            </>
+            </Card>
+          )}
+          {completeMutation.error ? (
+            <ThemedText themeColor="danger" style={styles.centeredText}>
+              Couldn’t save your session. Please try again.
+            </ThemedText>
           ) : null}
+          <Button
+            label="Let it take root"
+            disabled={reframeMutation.isPending}
+            loading={completeMutation.isPending}
+            onPress={() =>
+              completeMutation.mutate({
+                reflectionText: reframeMutation.data
+                  ? `${reflection}\n↳ ${reframeMutation.data.reframe}`
+                  : reflection,
+              })
+            }
+          />
         </Screen>
       );
     }
@@ -240,7 +310,10 @@ export default function FeedScreen() {
           <Button
             label="Compost it"
             disabled={reflection.trim().length < 3 || dictation.isListening}
-            onPress={() => setIsComposting(true)}
+            onPress={() => {
+              reframeMutation.mutate();
+              setCompostPhase('sinking');
+            }}
           />
           <Button label="Back" variant="ghost" onPress={resetActivity} />
         </ScrollView>
@@ -328,6 +401,25 @@ export default function FeedScreen() {
           <ThemedText type="title">{activity.title}</ThemedText>
           <ThemedText themeColor="textSecondary">{activity.description}</ThemedText>
 
+          {activity.key === 'act_as_if' ? (
+            <Card>
+              <ThemedText type="smallBold">Today’s act, for this dream</ThemedText>
+              <ThemedText type="small" themeColor="textSecondary">
+                {actIdeaQuery.isLoading
+                  ? 'The coach is thinking of one…'
+                  : (actIdeaQuery.data?.actionIdea ??
+                    'Do one small thing today the arrived-you would do without thinking.')}
+              </ThemedText>
+            </Card>
+          ) : null}
+
+          {activity.key === 'tell_someone' && witnessCount > 0 ? (
+            <ThemedText type="small" themeColor="textSecondary">
+              You’ve said this dream out loud {witnessCount} time{witnessCount === 1 ? '' : 's'}{' '}
+              before. Dreams with witnesses grow bolder.
+            </ThemedText>
+          ) : null}
+
           {needsReflection ? (
             <>
               <TextField
@@ -383,6 +475,15 @@ export default function FeedScreen() {
         <ThemedText themeColor="textSecondary">
           Deeper nourishment — pick one that calls to you today.
         </ThemedText>
+
+        {nudgeQuery.data ? (
+          <Card>
+            <ThemedText type="smallBold">Today’s nudge</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              {nudgeQuery.data.nudge}
+            </ThemedText>
+          </Card>
+        ) : null}
 
         {(activitiesQuery.data ?? []).map((item) => (
           <Pressable
@@ -450,6 +551,10 @@ const styles = StyleSheet.create({
   },
   centered: {
     justifyContent: 'center',
+    gap: Spacing.four,
+  },
+  centeredText: {
+    textAlign: 'center',
   },
   letter: {
     fontStyle: 'italic',

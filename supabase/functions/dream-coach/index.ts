@@ -62,6 +62,27 @@ interface LetterRequest {
   profile?: UserProfileContext;
 }
 
+interface ActRequest {
+  action: 'act';
+  dreamText: string;
+  sceneText?: string;
+  profile?: UserProfileContext;
+}
+
+interface ReframeRequest {
+  action: 'reframe';
+  doubtText: string;
+  dreamText?: string;
+  profile?: UserProfileContext;
+}
+
+interface NudgeRequest {
+  action: 'nudge';
+  dreamText: string;
+  sceneText?: string;
+  profile?: UserProfileContext;
+}
+
 interface ReviewRequest {
   action: 'review';
   activityTitle: string;
@@ -83,7 +104,10 @@ type CoachRequest =
   | ScoreRequest
   | ReviewRequest
   | AffirmationRequest
-  | LetterRequest;
+  | LetterRequest
+  | ActRequest
+  | ReframeRequest
+  | NudgeRequest;
 
 const QUESTIONS_SCHEMA = {
   type: 'object',
@@ -159,6 +183,45 @@ const LETTER_SCHEMA = {
     },
   },
   required: ['letterText'],
+  additionalProperties: false,
+} as const;
+
+const ACT_SCHEMA = {
+  type: 'object',
+  properties: {
+    actionIdea: {
+      type: 'string',
+      description:
+        'One concrete, doable-today micro-action (under 25 words) that lets this person act as if their specific dream is already real. Physical and specific, never generic self-help.',
+    },
+  },
+  required: ['actionIdea'],
+  additionalProperties: false,
+} as const;
+
+const REFRAME_SCHEMA = {
+  type: 'object',
+  properties: {
+    reframe: {
+      type: 'string',
+      description:
+        'The nourishment the composted doubt breaks down into: one first-person, present-tense line (10-22 words) that gently answers the doubt with something true and growing. Never dismissive of the doubt, never a guarantee.',
+    },
+  },
+  required: ['reframe'],
+  additionalProperties: false,
+} as const;
+
+const NUDGE_SCHEMA = {
+  type: 'object',
+  properties: {
+    nudge: {
+      type: 'string',
+      description:
+        'One tiny noticing-prompt for today (under 20 words), specific to this dream: something the arrived-self would notice, savor, or do. Fresh, warm, concrete.',
+    },
+  },
+  required: ['nudge'],
   additionalProperties: false,
 } as const;
 
@@ -243,6 +306,20 @@ Deno.serve(async (req) => {
                 letterText:
                   'Dear you,\n\nI still remember when we were wishing for this — how big it felt, how far away. I want you to know: it arrived. Not all at once, but in small ordinary mornings that slowly became the life we pictured. Keep tending it the way you are. The watering matters more than you know.\n\n[Demo letter — connect an Anthropic key to receive the real one, written from your own scene.]\n\n— You, a little further down the path',
               }
+            : body.action === 'act'
+              ? {
+                  actionIdea:
+                    'Set the table tonight the way the arrived-you would — unhurried, like this is already your life. [Demo — connect an Anthropic key.]',
+                }
+              : body.action === 'reframe'
+                ? {
+                    reframe:
+                      'I am allowed to grow at the pace of a garden — this doubt is just old weather passing. [Demo]',
+                  }
+                : body.action === 'nudge'
+                  ? {
+                      nudge: 'Today, notice one small thing the arrived-you would savor. [Demo]',
+                    }
             : body.action === 'review'
           ? (() => {
               const words = body.answer.trim().split(/\s+/).length;
@@ -311,6 +388,30 @@ Deno.serve(async (req) => {
       }
       prompt = `Someone is doing the practice "${body.activityTitle}" (${body.activityDescription}).${body.dreamText ? `\n\nTheir dream: "${body.dreamText}"` : ''}\n\nThey wrote this about what they actually did today:\n\n"${body.answer}"\n\nAssess whether this reflects genuine, embodied engagement: something specific they really did, with real feeling in it. It does NOT need to be long — short but detailed and heartfelt passes. What does not pass: vague generalities ("I acted positive today"), going through the motions, keyboard mashing, copy-paste filler, or answers that dodge the practice entirely.\n\nIf it passes, affirm something specific and true from their words. If it doesn't, coach them warmly to try again: invite them to really go there — back into the moment, back into the feeling in their body — and describe what actually happened. Never shame them.`;
       schema = REVIEW_SCHEMA;
+      break;
+    }
+    case 'act': {
+      if (!body.dreamText?.trim()) {
+        return new Response('dreamText is required', { status: 400 });
+      }
+      prompt = `Someone's dream: "${body.dreamText}"${body.sceneText ? `\n\nTheir visualization scene: "${body.sceneText}"` : ''}${profileContext(body.profile)}\n\nSuggest ONE concrete micro-action they can take today to act as if this specific dream is already real. It must be physical and doable within their ordinary day (no purchases required, nothing performative for others), drawn from the texture of THEIR dream. Under 25 words. Examples of the spirit: for a gallery dream, "Carry your camera today the way a working artist would." Never generic.`;
+      schema = ACT_SCHEMA;
+      break;
+    }
+    case 'reframe': {
+      if (!body.doubtText?.trim()) {
+        return new Response('doubtText is required', { status: 400 });
+      }
+      prompt = `Someone just composted this doubt about their dream:\n\n"${body.doubtText}"${body.dreamText ? `\n\nTheir dream: "${body.dreamText}"` : ''}${profileContext(body.profile)}\n\nIn this garden, doubts are never trash — they break down into nourishment. Write the single line of nourishment this doubt becomes: first person, present tense, 10-22 words. It should gently answer the doubt's real fear with something true and alive, without dismissing the feeling and without promising outcomes.`;
+      schema = REFRAME_SCHEMA;
+      break;
+    }
+    case 'nudge': {
+      if (!body.dreamText?.trim()) {
+        return new Response('dreamText is required', { status: 400 });
+      }
+      prompt = `Someone's dream: "${body.dreamText}"${body.sceneText ? `\n\nTheir visualization scene: "${body.sceneText}"` : ''}${profileContext(body.profile)}\n\nWrite today's tiny nudge for them: one noticing-prompt under 20 words, specific to this dream — something the version of them whose dream came true would notice, savor, or quietly do today. Concrete and warm, never a task list, never generic gratitude-speak.`;
+      schema = NUDGE_SCHEMA;
       break;
     }
     case 'score': {

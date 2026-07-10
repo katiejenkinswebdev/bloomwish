@@ -25,6 +25,7 @@ import { BrandPalette } from '@/constants/brand-palette';
 import { Spacing } from '@/constants/theme';
 import { completeSession, type CompletedSession } from '@/features/activities/api';
 import { fetchDreams } from '@/features/dreams/api';
+import { sceneLines } from '@/features/dreams/scene-lines';
 
 /**
  * The immersion ritual — the heart of the app. ~90 seconds that walk you
@@ -47,20 +48,6 @@ const OPENINGS = [
 ];
 
 const BODY_SPOTS = ['My chest', 'My stomach', 'My throat', 'My hands', 'Everywhere'];
-
-/** Split a scene into speakable lines. */
-function sceneLines(sceneText: string | null, title: string): string[] {
-  const text = (sceneText ?? '').trim();
-  if (!text) {
-    return [
-      `It happened: ${title}.`,
-      'Look around — you are inside it now.',
-      'What do you see first?',
-      'What does the air feel like here?',
-    ];
-  }
-  return (text.match(/[^.!?]+[.!?]*/g) ?? [text]).map((l) => l.trim()).filter(Boolean);
-}
 
 /** One slow-drifting aurora orb of the night backdrop. */
 function AuroraOrb({

@@ -21,11 +21,13 @@ import { TextField } from '@/components/ui/text-field';
 import { FreeTierLimits } from '@/config/branding';
 import { Spacing } from '@/constants/theme';
 import { completeSession, type CompletedSession } from '@/features/activities/api';
-import { BREATH_PATTERNS } from '@/features/activities/breath-patterns';
+import { BREATH_PATTERNS, patternByKey } from '@/features/activities/breath-patterns';
 import { BreathingTimer } from '@/features/activities/components/breathing-timer';
 import { SessionComplete } from '@/features/activities/components/session-complete';
 import { AMBIENT_LOOP, GUIDED_TRACKS, type GuidedTrack } from '@/features/activities/tracks';
 import { fetchAffirmation, fetchDreams } from '@/features/dreams/api';
+import { sceneLines } from '@/features/dreams/scene-lines';
+import { fetchSessions } from '@/features/dreams/signs';
 import { useIsFullBloom } from '@/features/purchases/entitlements';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -96,12 +98,29 @@ export default function WaterScreen() {
   const [scriptEntry, setScriptEntry] = useState('');
   const [scriptCount, setScriptCount] = useState(0);
   const [scriptTarget, setScriptTarget] = useState({ count: 3, period: 'morning' });
+  const [lastScriptEntry, setLastScriptEntry] = useState('');
+  const [sceneLineIndex, setSceneLineIndex] = useState(0);
   const [startedAt, setStartedAt] = useState(0);
 
   const dreamsQuery = useQuery({ queryKey: ['dreams'], queryFn: fetchDreams });
   const dream = dreamsQuery.data?.find((d) => d.id === dreamId);
 
   const player = useAudioPlayer(track ? track.source : AMBIENT_LOOP);
+
+  // Session memory: where the immersions felt it, how many 369 rounds so far.
+  const sessionsQuery = useQuery({
+    queryKey: ['sessions', dreamId],
+    queryFn: () => fetchSessions(dreamId!),
+    enabled: !!dreamId,
+  });
+  const feltSpot = (sessionsQuery.data ?? [])
+    .find((x) => x.activity_id === 'immersion' && x.reflection?.startsWith('Felt it in:'))
+    ?.reflection?.replace('Felt it in:', '')
+    .trim();
+  const pastScripting = (sessionsQuery.data ?? []).filter((x) =>
+    x.activity_id?.startsWith('369:')
+  );
+  const lastScriptedLine = pastScripting.find((x) => x.reflection)?.reflection ?? null;
 
   const affirmationQuery = useQuery({
     queryKey: ['affirmation', dreamId],
@@ -111,12 +130,13 @@ export default function WaterScreen() {
   });
 
   const completeMutation = useMutation({
-    mutationFn: (params: { activityId: string; durationSeconds: number }) =>
+    mutationFn: (params: { activityId: string; durationSeconds: number; reflection?: string }) =>
       completeSession({
         dreamId: dreamId!,
         type: 'water',
         activityId: params.activityId,
         durationSeconds: params.durationSeconds,
+        reflection: params.reflection,
       }),
     onSuccess: (session) => {
       setResult(session);
@@ -125,6 +145,16 @@ export default function WaterScreen() {
       setPhase('complete');
     },
   });
+
+  // Breathe the scene: one line of their scene per full breath cycle.
+  const breatheLines = dream && mode === 'breathe' ? sceneLines(dream.scene_text, dream.title) : [];
+  useEffect(() => {
+    if (phase !== 'timer' || mode !== 'breathe' || isPaused || breatheLines.length === 0) return;
+    const cycleMs = patternByKey(patternKey).phases.reduce((total, p) => total + p.ms, 0);
+    const t = setInterval(() => setSceneLineIndex((i) => i + 1), cycleMs);
+    return () => clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, mode, isPaused, patternKey]);
 
   // Countdown for timer-based modes.
   useEffect(() => {
@@ -147,6 +177,7 @@ export default function WaterScreen() {
 
   const startTimer = () => {
     setSecondsLeft(durationSeconds);
+    setSceneLineIndex(0);
     setIsPaused(false);
     // eslint-disable-next-line react-hooks/immutability -- expo-audio's player is configured by property assignment
     player.loop = !track;
@@ -234,6 +265,16 @@ export default function WaterScreen() {
         {dimmed && dream?.scene_text ? (
           <ThemedText type="small" style={[styles.driftScene, styles.driftText]} numberOfLines={6}>
             {dream.scene_text}
+          </ThemedText>
+        ) : null}
+        {!dimmed && mode === 'breathe' && breatheLines.length > 0 ? (
+          <ThemedText
+            key={sceneLineIndex}
+            type="small"
+            themeColor="textSecondary"
+            style={styles.driftScene}
+            numberOfLines={3}>
+            {breatheLines[sceneLineIndex % breatheLines.length]}
           </ThemedText>
         ) : null}
         {!dimmed ? (
@@ -399,7 +440,9 @@ export default function WaterScreen() {
               </ThemedText>
             </Card>
             <ThemedText type="small" themeColor="textSecondary" style={styles.centeredText}>
-              Say it out loud — slowly, like you mean it. Twice if it felt good.
+              {feltSpot
+                ? `Find it in ${feltSpot} first — then say it aloud, slowly, like you mean it.`
+                : 'Say it out loud — slowly, like you mean it. Twice if it felt good.'}
             </ThemedText>
             <Button
               label="I said it — let it be"
@@ -426,6 +469,12 @@ export default function WaterScreen() {
             The 369 practice: this {target.period}, write your dream {target.count} times. Slowly.
             Feel each word.
           </ThemedText>
+          {pastScripting.length > 0 ? (
+            <ThemedText type="small" themeColor="textSecondary">
+              You’ve written this dream into being {pastScripting.length} time
+              {pastScripting.length === 1 ? '' : 's'} already.
+            </ThemedText>
+          ) : null}
           <Card>
             <ThemedText type="smallBold">{dream?.title ?? 'Your dream'}</ThemedText>
           </Card>
@@ -433,7 +482,7 @@ export default function WaterScreen() {
             {Math.min(scriptCount + 1, target.count)} of {target.count}
           </ThemedText>
           <TextField
-            placeholder="Type your dream as one flowing sentence…"
+            placeholder={lastScriptedLine ?? 'Type your dream as one flowing sentence…'}
             value={scriptEntry}
             onChangeText={setScriptEntry}
             multiline
@@ -443,6 +492,7 @@ export default function WaterScreen() {
               label={scriptCount + 1 === target.count ? 'Last one — write it' : 'Written — next'}
               disabled={scriptEntry.trim().length < 5}
               onPress={() => {
+                setLastScriptEntry(scriptEntry.trim());
                 setScriptCount((c) => c + 1);
                 setScriptEntry('');
               }}
@@ -455,6 +505,7 @@ export default function WaterScreen() {
                 completeMutation.mutate({
                   activityId: `369:${target.period}`,
                   durationSeconds: Math.round((Date.now() - startedAt) / 1000),
+                  reflection: lastScriptEntry || undefined,
                 })
               }
             />
