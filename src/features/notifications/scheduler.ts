@@ -18,6 +18,16 @@ const COPY = {
     title: 'Your garden misses you 🌱',
     body: 'A quiet minute of tending is all it takes.',
   },
+  // Content-bearing daily nudges: the notification IS the practice. Rotated
+  // on every sync so tomorrow's line differs from today's.
+  dailyNudges: [
+    'Notice one thing the arrived-you would notice today.',
+    'One slow breath inside the feeling — that’s all it takes.',
+    'Say today’s affirmation out loud, like you mean it.',
+    'What small sign appeared today? Log it tonight.',
+    'Do one tiny thing as if it already came true.',
+    'Picture the very first moment you’ll know it happened.',
+  ],
   wilting: (dreamTitle: string) => ({
     title: `${dreamTitle} could use a little water 🌱`,
     body: 'No rush — your dream will wait for you.',
@@ -63,15 +73,32 @@ async function cancelByPrefix(prefix: string): Promise<void> {
   );
 }
 
-/** Daily reminder at the user's chosen time. Idempotent. */
-async function syncDailyReminder(profile: UserProfileRow | null): Promise<void> {
+/** Daily reminder at the user's chosen time. Idempotent. Carries a real
+ * micro-practice naming their dream, not a generic doorbell. */
+async function syncDailyReminder(
+  profile: UserProfileRow | null,
+  dreams: DreamRow[]
+): Promise<void> {
   await Notifications.cancelScheduledNotificationAsync(DAILY_ID).catch(() => {});
   if (!profile?.reminder_time) return;
   const [hour, minute] = profile.reminder_time.split(':').map(Number);
   if (Number.isNaN(hour) || Number.isNaN(minute)) return;
+
+  const active = dreams.filter((d) => !d.harvested_at);
+  const waiting = [...active].sort(
+    (a, b) => new Date(a.last_interacted_at).getTime() - new Date(b.last_interacted_at).getTime()
+  )[0];
+  const dayIndex = Math.floor(Date.now() / 86400000);
+  const content = waiting
+    ? {
+        title: `${waiting.title} 🌱`,
+        body: COPY.dailyNudges[dayIndex % COPY.dailyNudges.length],
+      }
+    : COPY.daily;
+
   await Notifications.scheduleNotificationAsync({
     identifier: DAILY_ID,
-    content: COPY.daily,
+    content,
     trigger: {
       type: Notifications.SchedulableTriggerInputTypes.DAILY,
       hour,
@@ -158,7 +185,7 @@ export async function syncNotifications(params: {
     const delightOn = params.prefs?.delight_notifications_enabled ?? true;
     await Promise.all([
       dailyOn
-        ? syncDailyReminder(params.profile)
+        ? syncDailyReminder(params.profile, params.dreams)
         : Notifications.cancelScheduledNotificationAsync(DAILY_ID).catch(() => {}),
       wiltingOn
         ? syncWiltingAlerts(params.dreams, params.decayConfig ?? DEFAULT_HEALTH_DECAY)

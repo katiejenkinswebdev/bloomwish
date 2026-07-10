@@ -28,7 +28,9 @@ const SEED_PACKETS = [
 
 export default function DescribeDreamScreen() {
   const theme = useTheme();
-  const [dreamText, setDreamText] = useState('');
+  // Deepen mode arrives with the wish already in the store.
+  const [deepenDreamId] = useState(() => useDreamDraftStore.getState().deepenDreamId);
+  const [dreamText, setDreamText] = useState(() => useDreamDraftStore.getState().dreamText);
 
   const dictation = useDictation((finalText) => {
     setDreamText((current) => (current ? `${current} ${finalText}` : finalText));
@@ -40,6 +42,7 @@ export default function DescribeDreamScreen() {
       const store = useDreamDraftStore.getState();
       store.reset();
       store.setDreamText(dreamText.trim());
+      store.setDeepenDreamId(deepenDreamId);
       store.setQuestions(result.questions);
       router.push('/create-dream/questions');
     },
@@ -101,12 +104,32 @@ export default function DescribeDreamScreen() {
           ) : null}
 
           <Button
-            label={questionsMutation.isPending ? 'Listening to your dream…' : 'Continue'}
+            label={
+              questionsMutation.isPending
+                ? 'Listening to your dream…'
+                : deepenDreamId
+                  ? 'Make it vivid'
+                  : 'Continue'
+            }
             loading={questionsMutation.isPending}
             disabled={dreamText.trim().length < 5 || dictation.isListening}
             onPress={() => questionsMutation.mutate()}
             style={styles.continueButton}
           />
+
+          {!deepenDreamId ? (
+            <Button
+              label="Plant it now — deepen later"
+              variant="secondary"
+              disabled={dreamText.trim().length < 5 || dictation.isListening}
+              onPress={() => {
+                const store = useDreamDraftStore.getState();
+                store.reset();
+                store.setDreamText(dreamText.trim());
+                router.push('/create-dream/planting');
+              }}
+            />
+          ) : null}
 
           <Button label="Not now" variant="ghost" onPress={() => router.back()} />
         </ScrollView>

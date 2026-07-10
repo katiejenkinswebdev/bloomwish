@@ -14,6 +14,7 @@ import { Sheet } from '@/components/ui/sheet';
 import { BrandPalette } from '@/constants/brand-palette';
 import { Spacing } from '@/constants/theme';
 import { fetchSessions, fetchSigns } from '@/features/dreams/signs';
+import { useDreamDraftStore } from '@/store/dream-draft-store';
 import type { DreamHealth, DreamRow } from '@/lib/supabase/database.types';
 
 /** Warm, human status per health level — never raw enum text. */
@@ -115,7 +116,23 @@ export function DreamDetailSheet({ dream, effectiveHealth, onClose }: DreamDetai
                     {dream.scene_text}
                   </ThemedText>
                 </Card>
-              ) : null}
+              ) : (
+                <Card>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    This wish was planted fast — it has no scene yet.
+                  </ThemedText>
+                  <Button
+                    label="Make it vivid ✦"
+                    onPress={() => {
+                      const store = useDreamDraftStore.getState();
+                      store.reset();
+                      store.setDreamText(dream.wish_text ?? dream.title);
+                      store.setDeepenDreamId(dream.id);
+                      router.push('/create-dream');
+                    }}
+                  />
+                </Card>
+              )}
 
               {isDormant ? (
                 <Card>
@@ -169,13 +186,15 @@ export function DreamDetailSheet({ dream, effectiveHealth, onClose }: DreamDetai
                       router.push({ pathname: '/immerse', params: { dreamId: dream.id } })
                     }
                   />
-                  <Button
-                    label="Personalized meditation ✦"
-                    variant="secondary"
-                    onPress={() =>
-                      router.push({ pathname: '/meditation', params: { dreamId: dream.id } })
-                    }
-                  />
+                  {dream.scene_text ? (
+                    <Button
+                      label="Personalized meditation ✦"
+                      variant="secondary"
+                      onPress={() =>
+                        router.push({ pathname: '/meditation', params: { dreamId: dream.id } })
+                      }
+                    />
+                  ) : null}
                   <Button
                     label="It came true — harvest"
                     variant="ghost"

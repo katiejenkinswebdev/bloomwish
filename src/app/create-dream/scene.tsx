@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation , useQueryClient } from '@tanstack/react-query';
 
 import { ThemedText } from '@/components/themed-text';
 import { VividnessSeed } from '@/components/vividness-seed';
@@ -10,12 +10,15 @@ import { Card } from '@/components/ui/card';
 import { Screen } from '@/components/ui/screen';
 import { TextField } from '@/components/ui/text-field';
 import { Spacing } from '@/constants/theme';
-import { generateScene, scoreScene, type CoachScore } from '@/features/dreams/api';
+
+import { generateScene, scoreScene, updateDreamScene, type CoachScore } from '@/features/dreams/api';
 import { useDreamDraftStore } from '@/store/dream-draft-store';
 
 const VIVID_ENOUGH = 70;
 
 export default function SceneScreen() {
+  const queryClient = useQueryClient();
+  const deepenDreamId = useDreamDraftStore((s) => s.deepenDreamId);
   const sceneText = useDreamDraftStore((s) => s.sceneText);
   const score = useDreamDraftStore((s) => s.vividnessScore) ?? 0;
   const [tweakInstruction, setTweakInstruction] = useState('');
@@ -37,6 +40,23 @@ export default function SceneScreen() {
       store.setScore(newScore.score);
       setScoreDetails(newScore);
       setTweakInstruction('');
+    },
+  });
+
+  const deepenMutation = useMutation({
+    mutationFn: () => {
+      const { vividnessScore } = useDreamDraftStore.getState();
+      return updateDreamScene({
+        dreamId: deepenDreamId!,
+        sceneText,
+        vividnessScore: vividnessScore ?? 0,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dreams'] });
+      useDreamDraftStore.getState().reset();
+      router.dismissAll();
+      router.navigate('/');
     },
   });
 
@@ -102,9 +122,13 @@ export default function SceneScreen() {
         />
 
         <Button
-          label="It feels right — plant it"
+          label={deepenDreamId ? 'It feels right — let it be' : 'It feels right — plant it'}
+          loading={deepenMutation.isPending}
           disabled={regenerateMutation.isPending}
-          onPress={() => router.push('/create-dream/planting')}
+          onPress={() => {
+            if (deepenDreamId) deepenMutation.mutate();
+            else router.push('/create-dream/planting');
+          }}
         />
 
         <Button

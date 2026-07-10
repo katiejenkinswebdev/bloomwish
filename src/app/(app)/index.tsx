@@ -31,6 +31,7 @@ import { useIsFullBloom } from '@/features/purchases/entitlements';
 import { PlusIcon } from '@/components/icons';
 import { BrandPalette } from '@/constants/brand-palette';
 import { fetchLocalWeather } from '@/features/weather/weather-mirror';
+import { useDreamDraftStore } from '@/store/dream-draft-store';
 import { RainOverlay } from '@/components/rain-overlay';
 import { computeGardenWidgetState, syncWidgets } from '@/features/widget/widget-state';
 import type { DreamRow } from '@/lib/supabase/database.types';
@@ -122,6 +123,23 @@ export default function GardenScreen() {
   const trophies = trophiesQuery.data ?? [];
   const healthFor = (dream: DreamRow) => deriveHealth(dream, configQuery.data);
   const selectedDream = dreams.find((d) => d.id === selectedDreamId) ?? null;
+
+  // Re-entry pulse: something happened while you were away. Anchored to the
+  // most recently tended dream; time captured once per mount.
+  const [openedAt] = useState(() => Date.now());
+  const pulseDream = [...dreams].sort(
+    (a, b) => new Date(b.last_interacted_at).getTime() - new Date(a.last_interacted_at).getTime()
+  )[0];
+  const hoursAway = pulseDream
+    ? (openedAt - new Date(pulseDream.last_interacted_at).getTime()) / 3600000
+    : 0;
+  const pulseLine = pulseDream
+    ? hoursAway < 20
+      ? `${pulseDream.title} is still glowing from your last visit.`
+      : hoursAway < 48
+        ? `${pulseDream.title} held its warmth overnight.`
+        : `${pulseDream.title} has been waiting for you.`
+    : null;
   // The daily ritual returns to the dream that's waited longest for you.
   const returnDream = [...dreams].sort(
     (a, b) => new Date(a.last_interacted_at).getTime() - new Date(b.last_interacted_at).getTime()
@@ -133,6 +151,11 @@ export default function GardenScreen() {
         <ThemedText type="title">Your wish garden</ThemedText>
         <Spark size={20} />
       </View>
+      {pulseLine ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          {pulseLine}
+        </ThemedText>
+      ) : null}
 
       {returnDream ? (
         <Pressable
@@ -209,6 +232,7 @@ export default function GardenScreen() {
           if (!isFullBloom && !isFounder && dreams.length >= FreeTierLimits.activeDreamSlots) {
             router.push('/paywall');
           } else {
+            useDreamDraftStore.getState().reset();
             router.push('/create-dream');
           }
         }}

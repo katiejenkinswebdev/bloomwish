@@ -140,7 +140,7 @@ export async function plantDream(params: {
     .insert({
       user_id: user.id,
       title: params.title,
-      scene_text: params.sceneText,
+      scene_text: params.sceneText || null,
       wish_text: params.wishText,
       vividness_score: params.vividnessScore,
       capsule_text: params.capsuleText ?? null,
@@ -210,4 +210,21 @@ export interface CoachShortTitle {
 /** A 2-5 word name for the wish — labels the plant in the garden. */
 export async function fetchShortTitle(dreamText: string): Promise<CoachShortTitle> {
   return invokeCoach<CoachShortTitle>({ action: 'title', dreamText });
+}
+
+/** Deepen-later: attach a freshly imagined scene to an already-planted dream. */
+export async function updateDreamScene(params: {
+  dreamId: string;
+  sceneText: string;
+  vividnessScore: number;
+}): Promise<void> {
+  const { error } = await supabase
+    .from('dreams')
+    .update({
+      scene_text: params.sceneText,
+      vividness_score: params.vividnessScore,
+      last_interacted_at: new Date().toISOString(),
+    })
+    .eq('id', params.dreamId);
+  if (error) throw error;
 }

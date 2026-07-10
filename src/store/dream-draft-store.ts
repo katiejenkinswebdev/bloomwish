@@ -8,6 +8,8 @@ import type { QAPair } from '@/features/dreams/api';
  * or is abandoned.
  */
 interface DreamDraftState {
+  /** Set when deepening an existing fast-planted dream instead of creating. */
+  deepenDreamId: string | null;
   dreamText: string;
   questions: string[];
   answers: QAPair[];
@@ -24,10 +26,12 @@ interface DreamDraftState {
   consumeEditingAnswerText: () => string;
   setScene: (sceneText: string) => void;
   setScore: (score: number) => void;
+  setDeepenDreamId: (dreamId: string | null) => void;
   reset: () => void;
 }
 
 const initialState = {
+  deepenDreamId: null as string | null,
   dreamText: '',
   questions: [] as string[],
   answers: [] as QAPair[],
@@ -39,6 +43,7 @@ const initialState = {
 export const useDreamDraftStore = create<DreamDraftState>((set, get) => ({
   ...initialState,
   setDreamText: (dreamText) => set({ dreamText }),
+  setDeepenDreamId: (deepenDreamId: string | null) => set({ deepenDreamId }),
   setQuestions: (questions) => set({ questions, answers: [] }),
   addAnswer: (pair) => set((s) => ({ answers: [...s.answers, pair] })),
   popAnswerForEditing: () =>
