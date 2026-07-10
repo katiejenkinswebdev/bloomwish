@@ -24,9 +24,12 @@ export interface HarvestShareCardProps {
 export const HarvestShareCard = forwardRef<View, HarvestShareCardProps>(
   function HarvestShareCard({ trophy, plantedAt }, ref) {
     const harvested = new Date(trophy.harvested_at);
-    const daysTended = plantedAt
-      ? Math.max(1, Math.round((harvested.getTime() - new Date(plantedAt).getTime()) / 86400000))
+    const planted = plantedAt ? new Date(plantedAt) : null;
+    const daysTended = planted
+      ? Math.max(1, Math.round((harvested.getTime() - planted.getTime()) / 86400000))
       : null;
+    const shortDate = (d: Date) =>
+      d.toLocaleDateString(undefined, { month: 'long', day: 'numeric' });
 
     return (
       <View ref={ref} collapsable={false}>
@@ -53,7 +56,9 @@ export const HarvestShareCard = forwardRef<View, HarvestShareCardProps>(
               : `Tended ${trophy.total_sessions} time${trophy.total_sessions === 1 ? '' : 's'}`}
           </ThemedText>
           <ThemedText type="small" style={styles.meta}>
-            Harvested {harvested.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}
+            {planted
+              ? `Planted ${shortDate(planted)} · Harvested ${shortDate(harvested)}, ${harvested.getFullYear()}`
+              : `Harvested ${shortDate(harvested)}, ${harvested.getFullYear()}`}
           </ThemedText>
 
           <View style={styles.wordmark}>

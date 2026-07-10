@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router, useLocalSearchParams } from 'expo-router';
 
@@ -72,6 +72,32 @@ export default function HarvestScreen() {
 
   const shareBloom = async () => {
     try {
+      if (Platform.OS === 'web') {
+        // Web: capture to a data URI, then the native share sheet where the
+        // browser supports files (mobile Safari/Chrome), else download the
+        // image so it can be posted anywhere.
+        const dataUri = await captureRef(shareCardRef, {
+          format: 'png',
+          quality: 1,
+          result: 'data-uri',
+        });
+        const blob = await (await fetch(dataUri)).blob();
+        const file = new File([blob], 'bloomwish-it-came-true.png', { type: 'image/png' });
+        const nav = navigator as Navigator & {
+          canShare?: (data: { files: File[] }) => boolean;
+          share?: (data: { files: File[] }) => Promise<void>;
+        };
+        if (nav.canShare?.({ files: [file] }) && nav.share) {
+          await nav.share({ files: [file] });
+        } else {
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = 'bloomwish-it-came-true.png';
+          link.click();
+          URL.revokeObjectURL(link.href);
+        }
+        return;
+      }
       const uri = await captureRef(shareCardRef, { format: 'png', quality: 1 });
       await Sharing.shareAsync(uri.startsWith('file') ? uri : `file://${uri}`, {
         mimeType: 'image/png',
@@ -146,14 +172,16 @@ export default function HarvestScreen() {
         <Animated.View
           entering={FadeInUp.delay(capsuleText ? 3000 : 2300).duration(700)}
           style={styles.shareSection}>
-          <HarvestShareCard ref={shareCardRef} trophy={trophy} plantedAt={plantedAt} />
-          {Platform.OS !== 'web' ? (
-            <Button label="Share this bloom" variant="secondary" onPress={shareBloom} />
-          ) : (
-            <ThemedText type="small" themeColor="textSecondary" style={styles.centered}>
-              Screenshot the card to share your bloom.
-            </ThemedText>
-          )}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Share this bloom"
+            onPress={shareBloom}
+            style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}>
+            <HarvestShareCard ref={shareCardRef} trophy={trophy} plantedAt={plantedAt} />
+          </Pressable>
+          <ThemedText type="small" themeColor="textSecondary" style={styles.centered}>
+            Tap the card to share it.
+          </ThemedText>
         </Animated.View>
 
         <Button
