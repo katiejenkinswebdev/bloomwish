@@ -27,7 +27,7 @@ Working checklist for App Store and Google Play submission (spec section 16).
 
 ## Legal
 
-- [ ] Publish real privacy policy and terms at the URLs in `src/config/branding.ts` (placeholders today)
+- [ ] Publish privacy policy, terms, and support pages at the URLs in `src/config/branding.ts` (complete drafts in site/ — legal review, then deploy)
 - [x] Terms + privacy linked from the paywall and the profile screen
 
 ## App Tracking Transparency (iOS)

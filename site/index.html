@@ -3,355 +3,443 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Bloomwish — plant a wish, feel it real</title>
-<meta name="description" content="A gentle visualization garden. Plant your dreams as living plants, step inside the feeling for 90 quiet seconds a day, and harvest them when they come true." />
-<meta property="og:title" content="Bloomwish — plant a wish, feel it real" />
-<meta property="og:description" content="A gentle visualization garden. 90 quiet seconds a day inside the feeling of your dream." />
+<!-- App name pending trademark: mirror of src/config/branding.ts — change it in
+     the BRAND constant at the bottom and in this title/meta block. -->
+<title>Bloomwish — plant a wish, grow a dream</title>
+<meta name="description" content="Capture what you long for as a seed, tend it with small daily rituals, log the real-world signs — and harvest it when it comes true." />
+<meta property="og:title" content="Bloomwish — plant a wish, grow a dream" />
+<meta property="og:description" content="Capture what you long for as a seed, tend it with small daily rituals, log the real-world signs — and harvest it when it comes true." />
+<meta property="og:image" content="og.png" />
+<meta property="og:type" content="website" />
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@500;600;700&display=swap" rel="stylesheet" />
 <style>
   :root {
-    --green: #3E7C59; --sage: #8FBC94; --gold: #E9B44C; --bronze: #83641A;
-    --pink: #E4A7B0; --cream: #FBF3E7; --card: #F3E9DA; --plum: #46344E;
-    --brown: #B98A5E; --night: #1F1830; --night-soft: #241C36;
-    --ink-soft: #685A6D; --night-ink: #EDE6F2; --night-ink-soft: #B9A8C6;
-    --lilac: #C3A6D9;
+    --ink: #46344E; --bg: #FBF3E7; --card: #F3E9DA; --selected: #EADCC6;
+    --secondary: #685A6D; --primary: #3E7C59; --sage: #8FBC94; --gold: #E9B44C;
+    --gold-text: #83641A; --pink: #E4A7B0; --night: #241C29; --night-card: #302840;
+    --night-secondary: #C7B9CC; --hairline: #E6D8C4; --brown: #B98A5E;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   body {
-    background: var(--cream); color: var(--plum);
-    font-family: Georgia, 'Times New Roman', serif; line-height: 1.65;
+    background: var(--bg); color: var(--ink);
+    font-family: 'Spline Sans', Inter, ui-sans-serif, system-ui, sans-serif;
+    font-weight: 500;
   }
-  .wrap { max-width: 860px; margin: 0 auto; padding: 0 24px; }
-  h1, h2, h3 { font-weight: 500; letter-spacing: 0.01em; }
-  section { padding: 64px 0; }
-
-  /* ── Hero: the immersion night ─────────────────────────────── */
-  .hero {
-    background: var(--night); color: var(--night-ink);
-    text-align: center; padding: 72px 24px 92px;
-    position: relative; overflow: hidden;
+  a { color: var(--primary); text-decoration: none; }
+  a:hover { color: var(--gold-text); }
+  .micro {
+    font-size: 11px; font-weight: 700; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--secondary);
   }
-  .orb { position: absolute; border-radius: 50%; filter: blur(2px); }
-  .orb-a { width: 380px; height: 380px; background: var(--green); opacity: 0.26; top: -120px; left: -120px; animation: drift 11s ease-in-out infinite alternate; }
-  .orb-b { width: 320px; height: 320px; background: var(--pink); opacity: 0.14; bottom: -100px; right: -80px; animation: drift 14s ease-in-out infinite alternate-reverse; }
-  .orb-c { width: 240px; height: 240px; background: var(--gold); opacity: 0.10; top: 40%; right: 12%; animation: drift 12.5s ease-in-out infinite alternate; }
-  .glow {
-    position: absolute; width: 340px; height: 340px; border-radius: 50%;
-    background: var(--sage); opacity: 0.12; left: 50%; top: 46%;
-    transform: translate(-50%, -50%); animation: breathe 5.6s ease-in-out infinite alternate;
-  }
-  @keyframes drift { to { transform: translate(-28px, 44px); } }
-  @keyframes breathe { from { transform: translate(-50%, -50%) scale(0.92); opacity: 0.09; } to { transform: translate(-50%, -50%) scale(1.08); opacity: 0.16; } }
-  .hero-inner { position: relative; max-width: 620px; margin: 0 auto; }
-  .mark { width: 116px; height: 116px; margin: 0 auto 6px; display: block; }
-  .hero h1 { font-size: clamp(2.2rem, 6vw, 3.1rem); margin: 6px 0 8px; }
-  .hero .tag { font-style: italic; color: var(--night-ink-soft); font-size: 1.3rem; }
-  .hero p.lede { margin: 22px auto 0; max-width: 480px; color: var(--night-ink-soft); font-size: 1.08rem; }
-  .hero .cta {
-    display: inline-block; margin-top: 30px; background: var(--gold); color: var(--night);
-    padding: 14px 30px; border-radius: 999px; text-decoration: none; font-weight: bold;
-    font-size: 1.05rem;
-  }
-  .hero .cta:hover { filter: brightness(1.06); }
-  .hero .sub-cta { display: block; margin-top: 14px; color: var(--night-ink-soft); font-size: 0.92rem; }
+  .h2 { font-size: 38px; line-height: 46px; font-weight: 600; text-wrap: pretty; }
 
-  /* ── The garden row: growth stages in pure CSS ─────────────── */
-  .garden-row {
-    display: flex; justify-content: center; align-items: flex-end; gap: clamp(14px, 5vw, 44px);
-    padding: 56px 24px 8px; flex-wrap: wrap;
-  }
-  .plant { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-  .plant .art { position: relative; width: 72px; height: 84px; display: flex; align-items: flex-end; justify-content: center; }
-  .soil { width: 58px; height: 16px; border-radius: 999px; background: var(--brown); }
-  .seed { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); width: 16px; height: 20px; background: var(--brown); border-radius: 40% 60% 60% 60%; }
-  .stem { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); width: 4px; background: var(--green); border-radius: 2px; }
-  .leaf { position: absolute; width: 18px; height: 9px; background: var(--sage); border-radius: 6px; }
-  .bud { position: absolute; left: 50%; transform: translateX(-50%); width: 12px; height: 16px; background: var(--pink); border-radius: 999px; }
-  .flower { position: absolute; left: 50%; width: 30px; height: 30px; }
-  .petal { position: absolute; left: 50%; top: 50%; width: 10px; height: 17px; border-radius: 999px; }
-  .flower .c { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 9px; height: 9px; border-radius: 50%; background: var(--gold); z-index: 1; }
-  .plant .label { font-size: 0.85rem; color: var(--ink-soft); }
-  .garden-note { text-align: center; color: var(--ink-soft); font-size: 0.95rem; padding: 18px 24px 0; }
+  /* ── Glyphs ── */
+  .spark { display:inline-block; background: var(--gold); clip-path: polygon(50% 0%,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0% 50%,38% 38%); }
+  .glow { box-shadow: 0 0 18px 4px rgba(233,180,76,.35); }
 
-  /* ── Sections ──────────────────────────────────────────────── */
-  .section-title { text-align: center; font-size: 1.7rem; margin-bottom: 8px; }
-  .section-sub { text-align: center; color: var(--ink-soft); margin-bottom: 40px; }
-  .steps { display: grid; gap: 18px; counter-reset: step; }
-  @media (min-width: 700px) { .steps { grid-template-columns: 1fr 1fr; } }
-  .step { background: var(--card); border-radius: 16px; padding: 26px 24px; position: relative; }
-  .step::before {
-    counter-increment: step; content: counter(step);
-    position: absolute; top: -12px; left: 20px; width: 28px; height: 28px;
-    background: var(--green); color: var(--cream); border-radius: 50%;
-    display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: bold;
-  }
-  .step h3 { color: var(--green); margin-bottom: 6px; font-size: 1.1rem; }
-  .step p { font-size: 0.96rem; }
-
-  .ritual { background: var(--night-soft); color: var(--night-ink); border-radius: 24px; padding: 52px 32px; text-align: center; position: relative; overflow: hidden; }
-  .ritual h2 { font-size: 1.6rem; }
-  .ritual .kicker { color: var(--gold); letter-spacing: 2px; font-size: 0.8rem; text-transform: uppercase; }
-  .ritual p { color: var(--night-ink-soft); max-width: 520px; margin: 14px auto 0; }
-  .ritual .lines { margin-top: 26px; font-style: italic; font-size: 1.15rem; line-height: 2.1; color: var(--night-ink); }
-
-  .practices { display: grid; gap: 16px; }
-  @media (min-width: 640px) { .practices { grid-template-columns: 1fr 1fr; } }
-  @media (min-width: 900px) { .practices { grid-template-columns: 1fr 1fr 1fr; } }
-  .practice { background: var(--card); border-radius: 16px; padding: 20px; }
-  .practice h3 { font-size: 1rem; color: var(--green); margin-bottom: 4px; }
-  .practice p { font-size: 0.92rem; color: var(--ink-soft); }
-
-  .gentle { border-top: 1px solid #E6D8C4; border-bottom: 1px solid #E6D8C4; }
-  .gentle ul { list-style: none; max-width: 560px; margin: 0 auto; display: grid; gap: 14px; }
-  .gentle li { padding-left: 34px; position: relative; font-size: 1.02rem; }
-  .gentle li::before {
-    content: ""; position: absolute; left: 4px; top: 8px; width: 14px; height: 7px;
-    background: var(--sage); border-radius: 6px; transform: rotate(-25deg);
-  }
-  .disclaimer { text-align: center; color: var(--ink-soft); font-size: 0.88rem; max-width: 560px; margin: 32px auto 0; }
-
-  .tiers { display: grid; gap: 18px; max-width: 640px; margin: 0 auto; }
-  @media (min-width: 640px) { .tiers { grid-template-columns: 1fr 1fr; } }
-  .tier { border: 2px solid #E6D8C4; border-radius: 20px; padding: 28px 24px; background: var(--cream); }
-  .tier.bloom { border-color: var(--green); background: var(--card); }
-  .tier h3 { color: var(--green); font-size: 1.2rem; }
-  .tier .price { font-size: 0.9rem; color: var(--bronze); margin-bottom: 12px; }
-  .tier ul { list-style: none; font-size: 0.95rem; display: grid; gap: 6px; }
-  .tier li::before { content: "— "; color: var(--sage); }
-  .founding { text-align: center; margin-top: 22px; font-size: 0.95rem; color: var(--bronze); }
-
-  .waitlist { background: var(--green); color: var(--cream); border-radius: 24px; padding: 48px 28px; text-align: center; }
-  .waitlist h2 { margin-bottom: 8px; }
-  .waitlist p { opacity: 0.92; margin-bottom: 22px; font-size: 0.98rem; }
-  form { display: flex; gap: 10px; max-width: 440px; margin: 0 auto; flex-wrap: wrap; justify-content: center; }
-  input[type=email] { flex: 1; min-width: 220px; padding: 14px 16px; border-radius: 12px; border: none; font-size: 1rem; font-family: inherit; }
-  button { background: var(--gold); color: var(--plum); border: none; border-radius: 12px; padding: 14px 24px; font-size: 1rem; font-family: inherit; font-weight: bold; cursor: pointer; }
-  button:hover { filter: brightness(1.05); }
-  .stores { text-align: center; padding: 40px 0 8px; color: var(--ink-soft); font-size: 0.95rem; }
-
-  footer { border-top: 1px solid #E6D8C4; margin-top: 56px; padding: 30px 0 52px; text-align: center; font-size: 0.9rem; color: var(--ink-soft); }
-  footer a { color: var(--green); text-decoration: none; margin: 0 10px; }
-  footer a:hover { text-decoration: underline; }
-  footer .legal { margin-top: 10px; font-size: 0.82rem; }
-
+  /* ── Motion (all freeze under reduced motion) ── */
+  @keyframes fireflyA { 0%,100% { transform:translate(0,0); opacity:.9; } 50% { transform:translate(8px,-14px); opacity:.35; } }
+  @keyframes fireflyB { 0%,100% { transform:translate(0,0); opacity:.4; } 50% { transform:translate(-10px,-8px); opacity:.95; } }
+  @keyframes glowPulse { 0%,100% { box-shadow:0 0 18px 4px rgba(233,180,76,.35); } 50% { box-shadow:0 0 26px 8px rgba(233,180,76,.6); } }
+  @keyframes swayL { 0%,100% { transform:rotate(-28deg); } 50% { transform:rotate(-34deg); } }
+  @keyframes swayR { 0%,100% { transform:rotate(28deg); } 50% { transform:rotate(34deg); } }
+  @keyframes mote { 0% { transform:translate(0,0); opacity:0; } 20% { opacity:.7; } 80% { opacity:.5; } 100% { transform:translate(14px,-60px); opacity:0; } }
+  @keyframes twinkle { 0%,100% { opacity:.9; } 50% { opacity:.25; } }
   @media (prefers-reduced-motion: reduce) {
-    .orb-a, .orb-b, .orb-c, .glow { animation: none; }
+    *, *::before, *::after { animation: none !important; }
     html { scroll-behavior: auto; }
+  }
+
+  /* ── Nav ── */
+  header {
+    position: sticky; top: 0; z-index: 10;
+    background: var(--bg); border-bottom: 1px solid var(--hairline);
+  }
+  nav {
+    max-width: 1080px; margin: 0 auto; padding: 18px 32px;
+    display: flex; justify-content: space-between; align-items: center; gap: 16px;
+  }
+  .wordmark { display: flex; align-items: center; gap: 10px; color: var(--ink); }
+  .wordmark .spark { width: 18px; height: 18px; }
+  .wordmark strong { font-size: 19px; font-weight: 700; letter-spacing: -.01em; }
+  .nav-links { display: flex; align-items: center; gap: 28px; }
+  .nav-links a { font-size: 14px; font-weight: 600; }
+  .btn {
+    display: inline-block; background: var(--primary); color: var(--bg) !important;
+    border-radius: 16px; padding: 11px 20px; font-size: 14px; font-weight: 700;
+  }
+  .btn:hover { background: #356B4D; }
+  .menu { display: none; position: relative; }
+  .menu summary { list-style: none; cursor: pointer; font-size: 14px; font-weight: 700; padding: 8px 4px; }
+  .menu summary::-webkit-details-marker { display: none; }
+  .menu-sheet {
+    position: absolute; right: 0; top: 40px; background: var(--bg);
+    border: 1px solid var(--hairline); border-radius: 16px; padding: 16px 20px;
+    display: flex; flex-direction: column; gap: 12px; min-width: 160px;
+  }
+  .menu-sheet a { font-size: 15px; font-weight: 600; }
+  @media (max-width: 640px) {
+    .nav-links { display: none; }
+    .menu { display: block; }
+  }
+
+  /* ── Hero ── */
+  .hero {
+    padding: 56px 32px 72px; display: flex; gap: 64px; align-items: center;
+    flex-wrap: wrap; position: relative; max-width: 1080px; margin: 0 auto;
+  }
+  .mote { position: absolute; border-radius: 3px; background: var(--gold); }
+  .hero-copy { flex: 1; min-width: 300px; display: flex; flex-direction: column; gap: 20px; }
+  .hero h1 {
+    font-size: 54px; line-height: 58px; font-weight: 600;
+    letter-spacing: -.015em; text-wrap: pretty;
+  }
+  .hero-sub { font-size: 17px; line-height: 26px; color: var(--secondary); max-width: 420px; text-wrap: pretty; }
+  .badges { display: flex; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
+  /* Placeholder store pills — swap for official Apple/Google badge assets + real URLs at launch. */
+  .badge {
+    display: flex; align-items: center; gap: 10px; background: var(--ink);
+    color: var(--bg) !important; border-radius: 16px; padding: 13px 22px;
+  }
+  .badge span { display: flex; flex-direction: column; }
+  .badge small { font-size: 10px; font-weight: 600; opacity: .8; }
+  .badge b { font-size: 15px; font-weight: 700; }
+  .badge-mark { font-size: 17px; line-height: 1; }
+  .tagline { font-size: 13px; color: var(--secondary); font-style: italic; }
+  .hero-card {
+    width: 340px; max-width: 100%; background: var(--card); border-radius: 24px;
+    padding: 36px 28px 32px; display: flex; flex-direction: column;
+    align-items: center; gap: 18px;
+  }
+  .hero-cta {
+    align-self: stretch; background: var(--primary); color: var(--bg);
+    border-radius: 16px; padding: 14px 0; text-align: center;
+    font-size: 15px; font-weight: 700;
+  }
+  .dream-name { font-size: 20px; font-weight: 600; }
+  .dream-chip { font-size: 13px; font-weight: 700; color: var(--gold-text); letter-spacing: .06em; text-transform: uppercase; }
+
+  /* ── Plant (CSS geometry from the design reference) ── */
+  .plant-circle { position: relative; width: 150px; height: 150px; }
+  .plant-circle::before { content: ''; position: absolute; inset: 0; border-radius: 75px; background: var(--selected); }
+  .bloom { position: absolute; top: 14px; left: 56px; width: 38px; height: 38px; }
+  .petal { position: absolute; left: 12px; top: 6px; width: 15px; height: 26px; border-radius: 8px; background: var(--pink); }
+  .bloom-core {
+    position: absolute; left: 12px; top: 12px; width: 14px; height: 14px;
+    border-radius: 7px; background: var(--gold);
+    animation: glowPulse 3.5s ease-in-out infinite;
+  }
+  .stem { position: absolute; bottom: 18px; left: 72px; width: 6px; height: 78px; border-radius: 3px; background: var(--primary); }
+  .leaf-l {
+    position: absolute; bottom: 56px; left: 38px; width: 30px; height: 17px;
+    border-radius: 15px 2px 15px 2px; background: var(--sage);
+    animation: swayL 4.5s ease-in-out infinite; transform-origin: 100% 100%;
+  }
+  .leaf-r {
+    position: absolute; bottom: 56px; right: 38px; width: 30px; height: 17px;
+    border-radius: 2px 15px 2px 15px; background: var(--sage);
+    animation: swayR 4.5s ease-in-out infinite; transform-origin: 0% 100%;
+  }
+  .soil { position: absolute; bottom: 10px; left: 46px; width: 58px; height: 10px; border-radius: 5px; background: #B98A5E55; }
+
+  /* ── Day & night ── */
+  .daynight { background: var(--night); color: #FBF3E7; position: relative; overflow: hidden; }
+  .daynight .inner { max-width: 1080px; margin: 0 auto; padding: 88px 32px; display: flex; flex-direction: column; gap: 40px; }
+  .daynight .micro { color: var(--gold); }
+  .daynight-lede { font-size: 16px; line-height: 25px; color: var(--night-secondary); text-wrap: pretty; }
+  .section-head { display: flex; flex-direction: column; gap: 12px; max-width: 560px; }
+  .firefly { position: absolute; border-radius: 3px; background: var(--gold); }
+  .moon-disc { position: absolute; top: 64px; right: 8%; width: 44px; height: 44px; border-radius: 22px; background: #FBF3E7; opacity: .9; }
+  .moon-shade { position: absolute; top: 58px; right: calc(8% + 8px); width: 44px; height: 44px; border-radius: 22px; background: var(--night); }
+  .card-row { display: flex; gap: 24px; flex-wrap: wrap; }
+  .night-card {
+    flex: 1; min-width: 280px; background: var(--night-card); border-radius: 16px;
+    padding: 24px; display: flex; flex-direction: column; gap: 8px;
+  }
+  .night-card h3 { font-size: 15px; font-weight: 700; }
+  .night-card p { font-size: 14px; line-height: 21px; color: var(--night-secondary); }
+
+  /* ── Rituals ── */
+  .rituals { max-width: 1080px; margin: 0 auto; padding: 88px 32px; display: flex; flex-direction: column; gap: 40px; }
+  .mode-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
+  .mode-card { background: var(--card); border-radius: 16px; padding: 22px 20px; display: flex; flex-direction: column; gap: 10px; }
+  .mode-card h3 { font-size: 16px; font-weight: 700; }
+  .mode-card p { font-size: 13px; line-height: 19px; color: var(--secondary); }
+  .mode-card.plum { background: var(--ink); }
+  .mode-card.plum h3 { color: var(--bg); }
+  .mode-card.plum p { color: var(--night-secondary); }
+  .wide-cards { display: flex; gap: 24px; flex-wrap: wrap; }
+  .wide-card {
+    flex: 1; min-width: 300px; background: var(--card); border-radius: 16px;
+    padding: 28px 24px; display: flex; gap: 16px; align-items: flex-start;
+  }
+  .wide-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .wide-card p { font-size: 14px; line-height: 21px; color: var(--secondary); }
+
+  /* ── Pricing ── */
+  .pricing { background: var(--card); }
+  .pricing .inner { max-width: 1080px; margin: 0 auto; padding: 88px 32px; display: flex; flex-direction: column; gap: 40px; }
+  .plans { display: flex; gap: 24px; flex-wrap: wrap; align-items: stretch; }
+  .plan { flex: 1; min-width: 300px; border-radius: 16px; padding: 32px 28px; display: flex; flex-direction: column; gap: 16px; }
+  .plan.free { background: var(--bg); }
+  .plan.bloom { background: var(--ink); color: var(--bg); position: relative; overflow: hidden; }
+  .plan-label { font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--secondary); }
+  .plan.bloom .plan-label { color: var(--gold); }
+  .price { font-size: 34px; font-weight: 600; }
+  .price small { font-size: 16px; font-weight: 600; color: var(--night-secondary); }
+  .plan ul { list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 14px; line-height: 20px; }
+  .plan li { display: flex; gap: 10px; align-items: center; }
+  .dot { width: 7px; height: 7px; border-radius: 4px; background: var(--primary); flex-shrink: 0; }
+  .plan.bloom .dot { background: var(--sage); }
+  .plan-note { font-size: 13px; color: var(--secondary); margin-top: auto; }
+  .plan.free .plan-note { font-style: italic; }
+  .plan.bloom .plan-note { color: var(--night-secondary); }
+
+  /* ── Ethics ── */
+  .ethics {
+    max-width: 1080px; margin: 0 auto; padding: 72px 32px;
+    display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center;
+  }
+  .ethics h2 { font-size: 26px; line-height: 34px; font-weight: 600; max-width: 560px; text-wrap: pretty; }
+  .ethics p { font-size: 15px; line-height: 23px; color: var(--secondary); max-width: 520px; text-wrap: pretty; }
+
+  /* ── Footer ── */
+  footer { border-top: 1px solid var(--hairline); }
+  .footer-inner {
+    max-width: 1080px; margin: 0 auto; padding: 32px;
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;
+  }
+  .footer-links { display: flex; gap: 24px; font-size: 13px; font-weight: 600; flex-wrap: wrap; }
+  .footer-tag { font-size: 13px; color: var(--secondary); }
+
+  @media (max-width: 900px) {
+    .hero { padding-top: 40px; }
+    .hero h1 { font-size: 42px; line-height: 46px; }
+    .h2 { font-size: 30px; line-height: 38px; }
   }
 </style>
 </head>
 <body>
 
-<!-- ── Hero ── -->
-<header class="hero">
-  <div class="orb orb-a" aria-hidden="true"></div>
-  <div class="orb orb-b" aria-hidden="true"></div>
-  <div class="orb orb-c" aria-hidden="true"></div>
-  <div class="glow" aria-hidden="true"></div>
-  <div class="hero-inner">
-    <svg class="mark" viewBox="0 0 1024 1024" role="img" aria-label="The Wishing Seed">
-      <ellipse cx="500" cy="742" rx="58" ry="44" fill="#B98A5E" transform="rotate(8 500 742)"/>
-      <path d="M 500 724 C 492 640 488 560 506 480 C 516 436 532 408 552 386"
-            stroke="#3E7C59" stroke-width="42" stroke-linecap="round" fill="none"/>
-      <ellipse cx="415" cy="512" rx="95" ry="42" fill="#8FBC94" transform="rotate(32 415 512)"/>
-      <ellipse cx="600" cy="446" rx="85" ry="38" fill="#3E7C59" transform="rotate(-28 600 446)"/>
-      <path fill="#E9B44C" d="M 672 190 Q 692 262 764 282 Q 692 302 672 374 Q 652 302 580 282 Q 652 262 672 190 Z"/>
-      <path fill="#E9B44C" d="M 756 138 Q 765 169 796 178 Q 765 187 756 218 Q 747 169 756 138 Z"/>
-    </svg>
-    <h1>Bloomwish</h1>
-    <p class="tag">Plant a wish. Feel it real.</p>
-    <p class="lede">
-      A gentle visualization garden. Your dreams grow as living plants —
-      and once a day, for ninety quiet seconds, you step back inside the
-      feeling of the life you're growing toward.
-    </p>
-    <a class="cta" href="#waitlist">Join the waitlist</a>
-    <span class="sub-cta">Coming to the App Store &amp; Google Play</span>
-  </div>
+<header>
+  <nav aria-label="Main">
+    <a class="wordmark" href="#top" aria-label="Bloomwish home">
+      <span class="spark" aria-hidden="true"></span>
+      <strong class="brand">Bloomwish</strong>
+    </a>
+    <div class="nav-links">
+      <a href="#rituals">Rituals</a>
+      <a href="#daynight">Day &amp; night</a>
+      <a href="#pricing">Pricing</a>
+      <a class="btn" href="#get">Get the app</a>
+    </div>
+    <details class="menu">
+      <summary aria-label="Menu">Menu</summary>
+      <div class="menu-sheet">
+        <a href="#rituals">Rituals</a>
+        <a href="#daynight">Day &amp; night</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#get">Get the app</a>
+      </div>
+    </details>
+  </nav>
 </header>
 
-<!-- ── The garden: five stages ── -->
-<div class="garden-row" aria-label="A wish growing from seed to bloom">
-  <div class="plant">
-    <div class="art"><div class="seed"></div><div class="soil"></div></div>
-    <span class="label">seed</span>
-  </div>
-  <div class="plant">
-    <div class="art">
-      <div class="stem" style="height:26px"></div>
-      <div class="leaf" style="bottom:26px; left:8px; transform:rotate(-30deg)"></div>
-      <div class="leaf" style="bottom:32px; right:8px; transform:rotate(30deg); background:var(--green)"></div>
-      <div class="soil"></div>
-    </div>
-    <span class="label">sprout</span>
-  </div>
-  <div class="plant">
-    <div class="art">
-      <div class="stem" style="height:42px"></div>
-      <div class="leaf" style="bottom:30px; left:6px; transform:rotate(-32deg)"></div>
-      <div class="leaf" style="bottom:40px; right:6px; transform:rotate(30deg); background:var(--green)"></div>
-      <div class="leaf" style="bottom:50px; left:10px; transform:rotate(-36deg); background:var(--green)"></div>
-      <div class="soil"></div>
-    </div>
-    <span class="label">growing</span>
-  </div>
-  <div class="plant">
-    <div class="art">
-      <div class="stem" style="height:50px"></div>
-      <div class="leaf" style="bottom:32px; left:6px; transform:rotate(-32deg)"></div>
-      <div class="leaf" style="bottom:44px; right:6px; transform:rotate(30deg); background:var(--green)"></div>
-      <div class="bud" style="bottom:60px"></div>
-      <div class="soil"></div>
-    </div>
-    <span class="label">budding</span>
-  </div>
-  <div class="plant">
-    <div class="art">
-      <div class="stem" style="height:52px"></div>
-      <div class="leaf" style="bottom:30px; left:6px; transform:rotate(-32deg)"></div>
-      <div class="leaf" style="bottom:42px; right:6px; transform:rotate(30deg); background:var(--green)"></div>
-      <div class="flower" style="bottom:52px; transform:translateX(-50%)">
-        <span class="petal" style="background:var(--lilac); transform:translate(-50%,-50%) rotate(0deg) translateY(-9px)"></span>
-        <span class="petal" style="background:var(--lilac); transform:translate(-50%,-50%) rotate(60deg) translateY(-9px)"></span>
-        <span class="petal" style="background:var(--lilac); transform:translate(-50%,-50%) rotate(120deg) translateY(-9px)"></span>
-        <span class="petal" style="background:var(--lilac); transform:translate(-50%,-50%) rotate(180deg) translateY(-9px)"></span>
-        <span class="petal" style="background:var(--lilac); transform:translate(-50%,-50%) rotate(240deg) translateY(-9px)"></span>
-        <span class="petal" style="background:var(--lilac); transform:translate(-50%,-50%) rotate(300deg) translateY(-9px)"></span>
-        <span class="c"></span>
+<main id="top">
+  <!-- Hero -->
+  <section class="hero" aria-label="Introduction">
+    <span class="mote" style="top:60px; left:44%; width:5px; height:5px; animation:mote 10s linear infinite;" aria-hidden="true"></span>
+    <span class="mote" style="top:200px; left:38%; width:4px; height:4px; animation:mote 13s linear 4s infinite;" aria-hidden="true"></span>
+    <div class="hero-copy">
+      <p class="micro">A manifestation garden for iPhone &amp; Android</p>
+      <h1>Plant a wish.<br />Grow a dream.</h1>
+      <p class="hero-sub">Capture what you long for as a seed, tend it with small daily rituals, log the real-world signs — and harvest it when it comes true.</p>
+      <div class="badges" id="get">
+        <a class="badge" href="#get" aria-label="Download on the App Store (coming soon)">
+          <span class="badge-mark" aria-hidden="true"></span>
+          <span><small>Download on the</small><b>App Store</b></span>
+        </a>
+        <a class="badge" href="#get" aria-label="Get it on Google Play (coming soon)">
+          <span class="badge-mark" aria-hidden="true">▷</span>
+          <span><small>Get it on</small><b>Google Play</b></span>
+        </a>
       </div>
-      <div class="soil"></div>
+      <p class="tagline">"Let it be! And so it is."</p>
     </div>
-    <span class="label">blooming</span>
-  </div>
-</div>
-<p class="garden-note">Every wish blooms in its own color — discovered, never chosen.</p>
 
-<!-- ── How it works ── -->
-<section class="wrap">
-  <h2 class="section-title">How your garden grows</h2>
-  <p class="section-sub">Four movements, repeated gently.</p>
-  <div class="steps">
-    <div class="step">
-      <h3>Plant it</h3>
-      <p>Speak or type your wish. A warm coach asks a few deepening questions and writes it into a vivid scene — your dream, already real, in the second person. Tuck a note inside for harvest day.</p>
+    <div class="hero-card" role="img" aria-label="A blooming dream plant named The Seaside Studio, day 34, with a button reading Begin today's ritual">
+      <div class="plant-circle" aria-hidden="true">
+        <div class="bloom">
+          <div class="petal" style="transform:rotate(0deg) translateY(-11px);"></div>
+          <div class="petal" style="transform:rotate(60deg) translateY(-11px);"></div>
+          <div class="petal" style="transform:rotate(120deg) translateY(-11px);"></div>
+          <div class="petal" style="transform:rotate(180deg) translateY(-11px);"></div>
+          <div class="petal" style="transform:rotate(240deg) translateY(-11px);"></div>
+          <div class="petal" style="transform:rotate(300deg) translateY(-11px);"></div>
+          <div class="bloom-core"></div>
+        </div>
+        <div class="stem"></div>
+        <div class="leaf-l"></div>
+        <div class="leaf-r"></div>
+        <div class="soil"></div>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
+        <div class="dream-name">The Seaside Studio</div>
+        <div class="dream-chip">Day 34 · Blooming</div>
+      </div>
+      <div class="hero-cta">Begin today's ritual</div>
     </div>
-    <div class="step">
-      <h3>Step inside</h3>
-      <p>The heart of Bloomwish: a ninety-second ritual that walks you through your own scene, line by line, and asks one question — <em>where do you feel it in your body?</em></p>
-    </div>
-    <div class="step">
-      <h3>Tend it</h3>
-      <p>Water with breathwork, affirmations, and bedtime drifting. Feed with deeper practices. Log real-world signs — every one becomes a firefly on your plant.</p>
-    </div>
-    <div class="step">
-      <h3>Harvest it</h3>
-      <p>When a wish comes true out in the world, harvest it. It lives on forever — a keepsake in your greenhouse, a gold charm on the wishing tree, a butterfly that never leaves.</p>
-    </div>
-  </div>
-</section>
+  </section>
 
-<!-- ── The ritual ── -->
-<section class="wrap">
-  <div class="ritual">
-    <div class="kicker">The daily return</div>
-    <h2>Ninety seconds inside the feeling</h2>
-    <p>Manifestation isn't wanting harder — it's returning, again and again, to how it feels when it's already yours. Bloomwish makes that return a single tap.</p>
-    <div class="lines">
-      Half-close your eyes. One slow breath.<br />
-      You are standing inside it now.<br />
-      Where do you feel it — your chest, your hands?<br />
-      Let it warm there.<br />
-      <strong>Let it be! And so it is.</strong>
+  <!-- Day & night -->
+  <section class="daynight" id="daynight" aria-label="Day and night themes">
+    <span class="firefly glow" style="top:80px; left:10%; width:5px; height:5px; animation:fireflyA 6s ease-in-out infinite;" aria-hidden="true"></span>
+    <span class="firefly glow" style="top:180px; right:14%; width:4px; height:4px; animation:fireflyB 7.5s ease-in-out infinite;" aria-hidden="true"></span>
+    <span class="firefly" style="bottom:100px; left:22%; width:4px; height:4px; opacity:.6; animation:fireflyA 9s ease-in-out 2s infinite reverse;" aria-hidden="true"></span>
+    <span class="moon-disc" aria-hidden="true"></span>
+    <span class="moon-shade" aria-hidden="true"></span>
+    <div class="inner">
+      <div class="section-head">
+        <p class="micro">Day &amp; night</p>
+        <h2 class="h2">The garden lives on your time.</h2>
+        <p class="daynight-lede">By day it's warm cream, swaying leaves, and drifting pollen. After sunset the fireflies come out, blooms glow, and the whole app slows its breath. It swaps automatically with your local sky.</p>
+      </div>
+      <div class="card-row">
+        <div class="night-card">
+          <h3>Morning ritual</h3>
+          <p>A greeting, one hero dream, and a whisper to act on — like opening a well-made journal.</p>
+        </div>
+        <div class="night-card">
+          <h3>Firefly hour</h3>
+          <p>Evening tending, Drift sessions that fade as you fall asleep, and gifts that appear in the grove.</p>
+        </div>
+        <div class="night-card">
+          <h3>Never a guilt trip</h3>
+          <p>Plants rest, they never die. No streak shaming, no fake urgency — dormancy is always reversible.</p>
+        </div>
+      </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ── Practices ── -->
-<section class="wrap">
-  <h2 class="section-title">Practices that know your dream</h2>
-  <p class="section-sub">Not generic exercises — every one is written around <em>your</em> wish.</p>
-  <div class="practices">
-    <div class="practice"><h3>Breathe the scene</h3><p>A breathing circle that reveals one line of your own scene with every breath cycle.</p></div>
-    <div class="practice"><h3>The 369 method</h3><p>Write your dream into being — three times in the morning, six midday, nine at night. The garden keeps count.</p></div>
-    <div class="practice"><h3>Compost a doubt</h3><p>Write the worry exactly as it sounds. Watch it sink into the soil — and receive the nourishment it breaks down into.</p></div>
-    <div class="practice"><h3>A letter from your future self</h3><p>Written from the version of you whose wish already came true, in the details of your own scene.</p></div>
-    <div class="practice"><h3>Rampage of appreciation</h3><p>Sixty seconds. Everything you appreciate. Don't stop, don't edit.</p></div>
-    <div class="practice"><h3>Tell someone</h3><p>Dreams with witnesses grow bolder. The garden remembers every person who's heard yours.</p></div>
-  </div>
-</section>
-
-<!-- ── Grown gently ── -->
-<section class="gentle">
-  <div class="wrap">
-    <h2 class="section-title">Grown gently, on purpose</h2>
-    <p class="section-sub">The rules this garden is built on.</p>
-    <ul>
-      <li><strong>No streaks, ever.</strong> Miss a week and your garden greets you warmly — nothing here shames you back.</li>
-      <li><strong>Dreams never die.</strong> A neglected plant rests; a two-minute ritual wakes it whenever you're ready.</li>
-      <li><strong>Release with thanks.</strong> Outgrow a wish? Thank it, let it return to the soil, and it feeds the rest of your garden.</li>
-      <li><strong>Quiet notifications.</strong> Each one carries a real micro-practice — never a guilt trip.</li>
-      <li><strong>Your data is yours.</strong> Export everything or delete your account, in one tap, anytime.</li>
-    </ul>
-    <p class="disclaimer">
-      Bloomwish is a mindfulness and visualization practice. It isn't medical or
-      mental-health care, and no outcome is ever promised — what we promise is a
-      beautiful place to return to the feeling of your dreams, daily.
-    </p>
-  </div>
-</section>
-
-<!-- ── Tiers ── -->
-<section class="wrap">
-  <h2 class="section-title">Two ways to grow</h2>
-  <p class="section-sub">The free garden is genuinely useful — forever.</p>
-  <div class="tiers">
-    <div class="tier">
-      <h3>Seedling</h3>
-      <div class="price">Free, forever</div>
-      <ul>
-        <li>The full daily ritual</li>
-        <li>One dream, fully tended</li>
-        <li>All watering &amp; feeding practices</li>
-        <li>Signs, harvests, and the grove</li>
-      </ul>
+  <!-- Rituals -->
+  <section class="rituals" id="rituals" aria-label="The five tending rituals">
+    <div class="section-head">
+      <p class="micro">Tending, five ways</p>
+      <h2 class="h2">Small rituals, watered daily.</h2>
     </div>
-    <div class="tier bloom">
-      <h3>Full Bloom</h3>
-      <div class="price">Subscription — cancel anytime</div>
-      <ul>
-        <li>Unlimited dreams</li>
-        <li>Personalized voice meditations, written from your own scene</li>
-        <li>Long timers &amp; premium tracks</li>
-        <li>Rare golden delights</li>
-      </ul>
+    <div class="mode-grid">
+      <div class="mode-card">
+        <div style="width:14px; height:14px; border-radius:7px; border:3px solid var(--primary);" aria-hidden="true"></div>
+        <h3>Breathe</h3>
+        <p>Guided visualization, 3–10 minutes.</p>
+      </div>
+      <div class="mode-card">
+        <div style="display:flex; gap:3px; align-items:flex-end; height:14px;" aria-hidden="true"><span style="width:3px; height:8px; border-radius:2px; background:var(--primary);"></span><span style="width:3px; height:14px; border-radius:2px; background:var(--primary);"></span><span style="width:3px; height:10px; border-radius:2px; background:var(--primary);"></span></div>
+        <h3>Listen</h3>
+        <p>A meditation composed for your dream — the plant itself is the player.</p>
+      </div>
+      <div class="mode-card">
+        <div style="width:7px; height:14px; border-radius:4px; background:var(--primary);" aria-hidden="true"></div>
+        <h3>Speak</h3>
+        <p>Affirm it aloud, in your own voice.</p>
+      </div>
+      <div class="mode-card">
+        <div style="width:14px; height:2px; background:var(--primary); border-radius:1px; box-shadow:0 5px 0 var(--primary), 0 -5px 0 var(--primary); margin-top:5px;" aria-hidden="true"></div>
+        <h3>Write</h3>
+        <p>The 3·6·9 method, morning to night.</p>
+      </div>
+      <div class="mode-card plum">
+        <div style="position:relative; width:14px; height:14px;" aria-hidden="true"><span style="position:absolute; inset:0; border-radius:7px; background:var(--bg);"></span><span style="position:absolute; top:0; left:4px; width:12px; height:12px; border-radius:6px; background:var(--ink);"></span></div>
+        <h3>Drift</h3>
+        <p>Fall asleep inside your dream. Night only.</p>
+      </div>
     </div>
-  </div>
-  <p class="founding">A limited Founding Member lifetime offer will be available at launch — honest and time-limited, like everything we do.</p>
-</section>
+    <div class="wide-cards">
+      <div class="wide-card">
+        <span class="spark" style="width:18px; height:18px; flex-shrink:0; animation:twinkle 3.5s ease-in-out infinite;" aria-hidden="true"></span>
+        <div>
+          <h3>Log the signs</h3>
+          <p>Real-world progress feeds the garden. Three signs in a week earns a sun moment — and your plant visibly grows.</p>
+        </div>
+      </div>
+      <div class="wide-card">
+        <span style="width:18px; height:18px; flex-shrink:0; border-radius:9px; background:var(--pink);" aria-hidden="true"></span>
+        <div>
+          <h3>Harvest &amp; share</h3>
+          <p>When a dream comes true, harvest it — and share a story-ready bloom card with the journey, not the wish.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<!-- ── Waitlist ── -->
-<section class="wrap" id="waitlist">
-  <div class="waitlist">
-    <h2>Be there when the garden opens</h2>
-    <p>Founding Members get lifetime access at a price that will never return.</p>
-    <!-- TODO: create a free form at formspree.io and replace YOUR_FORM_ID,
-         or point this at your email tool of choice. -->
-    <form action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
-      <input type="email" name="email" placeholder="you@example.com" required aria-label="Email address" />
-      <button type="submit">Plant me on the list</button>
-    </form>
-  </div>
-  <p class="stores">Launching on the App Store and Google Play.</p>
-</section>
+  <!-- Pricing -->
+  <section class="pricing" id="pricing" aria-label="Pricing">
+    <div class="inner">
+      <div class="section-head">
+        <p class="micro">Pricing</p>
+        <h2 class="h2">Honest, like the rest of it.</h2>
+      </div>
+      <div class="plans">
+        <div class="plan free">
+          <p class="plan-label">Seedling</p>
+          <p class="price">Free</p>
+          <ul>
+            <li><span class="dot" aria-hidden="true"></span>One dream slot, fully tended</li>
+            <li><span class="dot" aria-hidden="true"></span>Breathe, Speak &amp; Write sessions</li>
+            <li><span class="dot" aria-hidden="true"></span>Signs, harvest &amp; share</li>
+          </ul>
+          <p class="plan-note">Genuinely useful, forever.</p>
+        </div>
+        <div class="plan bloom">
+          <span class="firefly" style="top:16px; right:52px; width:4px; height:4px; animation:fireflyB 6s ease-in-out infinite;" aria-hidden="true"></span>
+          <p class="plan-label" style="display:flex; align-items:center; gap:8px;"><span class="spark" style="width:12px; height:12px;" aria-hidden="true"></span>Full Bloom</p>
+          <p class="price">$6.99<small>/month</small></p>
+          <ul>
+            <li><span class="dot" aria-hidden="true"></span>Unlimited dream slots</li>
+            <li><span class="dot" aria-hidden="true"></span>Meditations composed per dream, in Wren's voice</li>
+            <li><span class="dot" aria-hidden="true"></span>A coach who remembers your garden's story</li>
+            <li><span class="dot" aria-hidden="true"></span>Every session mode, day and night</li>
+          </ul>
+          <p class="plan-note">Cancel anytime in two taps. No trial tricks.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Ethics -->
+  <section class="ethics" aria-label="Our promises">
+    <span class="spark" style="width:20px; height:20px; animation:twinkle 4s ease-in-out infinite;" aria-hidden="true"></span>
+    <h2>No fake urgency. No shame. Nothing in the grove is for sale.</h2>
+    <p><span class="brand">Bloomwish</span> is a visualization and mindfulness practice — a kind place to keep your dreams. It makes no promises about the universe. That part is yours.</p>
+  </section>
+</main>
 
 <footer>
-  <div class="wrap">
-    <a href="privacy.html">Privacy</a> ·
-    <a href="terms.html">Terms</a> ·
-    <a href="mailto:support@bloomwish.app">Support</a>
-    <p class="legal">© 2026 Bloomwish. Bloomwish™ — trademark pending. Visualization &amp; mindfulness — never medical advice, never guarantees.</p>
+  <div class="footer-inner">
+    <div class="wordmark">
+      <span class="spark" style="width:13px; height:13px;" aria-hidden="true"></span>
+      <strong class="brand" style="font-size:14px;">Bloomwish</strong>
+      <span class="footer-tag">· plant a wish, grow a dream</span>
+    </div>
+    <div class="footer-links">
+      <a href="#get">Get the app</a>
+      <a href="#pricing">Pricing</a>
+      <a href="support.html">Support</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+    </div>
   </div>
 </footer>
 
+<script>
+  // Single source for the (trademark-pending) name — mirrors src/config/branding.ts.
+  const BRAND = 'Bloomwish';
+  document.querySelectorAll('.brand').forEach((el) => { el.textContent = BRAND; });
+</script>
 </body>
 </html>

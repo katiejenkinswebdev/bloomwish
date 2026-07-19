@@ -2,6 +2,8 @@
 
 A manifestation and visualization app: plant a wish, grow a dream. Users capture personal dreams as seeds in an animated garden, nurture them through visualization sessions, log real-world Signs of progress, and harvest dreams that come true.
 
+The app implements the **"Day & Night Garden" redesign**: every screen has a day theme (warm cream) and a night theme (deep plum with fireflies) that swap automatically with local time (06:00–19:00, overridable in Preferences). Navigation is four tabs — Garden · Water · Feed · Signs — with Profile behind the header icon and the wishing grove as a room pushed from the Garden. Full spec and approved design decisions: [docs/redesign/HANDOFF.md](docs/redesign/HANDOFF.md).
+
 > **Naming:** the app name is pending final trademark clearance. All naming, tier names, and the tagline live in [src/config/branding.ts](src/config/branding.ts) — a rename is a one-line change. Never hardcode the name in copy.
 
 ## Stack
@@ -47,12 +49,12 @@ A manifestation and visualization app: plant a wish, grow a dream. Users capture
 
 1. Onboarding: sign up → intro → the taste (aurora, tap-paced, skippable) → quiz → notifications → starter dream
 2. Dream creation, both paths: full (dictate + type, edit answers backwards, tweak scene, capsule, ceremony, coach-named title) and fast ("Plant it now" → later "Make it vivid ✦" deepens the same dream)
-3. Garden: re-entry pulse line, hero card → immersion ritual end-to-end (arrive/scene/body/warm/seal; body memory saved), plants per state/health with per-dream bloom colors, FAB gates dream #2 to paywall (founder emails bypass)
+3. Garden home: date + greeting + pulse line, hero card → immersion ritual end-to-end (arrive/scene/body/warm/seal; body memory saved), greenhouse shelf plants per state/health with per-dream bloom colors, "Plant a wish" slot gates dream #2 to paywall (founder emails bypass), day/night swap at 19:00 + Garden clock override
 4. Water, all five modes: Breathe (pattern picker + breathe-the-scene lines), Listen, Speak (affirmation + body-memory line), Write (369 count follows clock, remembers your line), Drift (dimmed, silent ending)
 5. Feed: Today's nudge, act-as-if suggested action, compost → reframe reveal → "let it take root", witnesses counter, rampage countdown + dictation, future-self letter
 6. Signs: from sheet + post-session nudge; sun moment in the dream's bloom color; fireflies; collapsible sections on the plant card
 7. Endings: wilting → revive ritual; release ritual (thank → sink → survivors boosted → nourish wave on return); harvest (capsule reveal, share card tap-to-share, rating prompt fires exactly once)
-8. Greenhouse: shelves + pots, wishing grove (charms tappable, stars, moon, one random delight per visit)
+8. Wishing grove (pushed from Garden): keepsake shelves + pots, charms tappable, day mood (sun, pollen, sunbeams) and night mood (stars, moon, fireflies), one random delight per visit
 9. Gates: >3-minute timers, premium tracks, meditation gift-then-gate → paywall; sandbox purchase + restore
 10. Auth: sign out/in, password reset deep link, export data, account deletion
 11. Ambient: widgets both platforms, daily reminder carries the nudge + dream name, wilting alert, delight notifications, 11:11 moment, weather mirror opt-in (location prompt, rain overlay)
@@ -121,13 +123,15 @@ The model is set in one place per function (`const MODEL = 'claude-opus-4-8'`) i
 4. For readable stack traces in production builds: Sentry → Settings → Auth Tokens → create one with `project:releases` + `org:read`, then `eas env:create --name SENTRY_AUTH_TOKEN --value <token>` (the Expo plugin uploads source maps during EAS builds automatically).
 5. **Slack alerts into your feedback channel**: Sentry → Settings → Integrations → **Slack** → connect your workspace. Then Alerts → Create Alert → "Issues" → condition "a new issue is created" → action "Send a Slack notification" → pick **#bloomwish-feedback**. Every new crash lands next to your user feedback.
 
-## Landing page (site/)
+## Landing page & legal pages (site/)
 
-A self-contained static site lives in [site/](site/): `index.html` (hero, features, waitlist form), plus `privacy.html` and `terms.html` placeholders that satisfy the URLs in `branding.ts` once deployed to your domain.
+A self-contained static site lives in [site/](site/), built to the marketing design in [docs/redesign/LANDING-BUILD.md](docs/redesign/LANDING-BUILD.md):
 
-- **Deploy** (pick one, all free): drag the `site` folder into [netlify.com/drop](https://app.netlify.com/drop); or `npx vercel site`; or Cloudflare Pages pointed at this repo with `site` as the output dir. Then attach your domain.
-- **Waitlist form**: create a free form at [formspree.io](https://formspree.io) and replace `YOUR_FORM_ID` in index.html (submissions arrive by email).
-- **Before launch**: fill the bracketed placeholders in privacy.html/terms.html (they're skeletons, not legal advice) and set the real support email.
+- `index.html` — the marketing page (hero, day & night, rituals, pricing, ethics strip), responsive, reduced-motion-safe, with OG image (`og.png`), `favicon.svg`, and `apple-touch-icon.png`.
+- `privacy.html` / `terms.html` — complete drafts written from the app's real data practices ([docs/store-readiness.md](docs/store-readiness.md)). **Get a legal review before store submission** — drafted, not lawyered.
+- `support.html` — the App Store / Play support URL (contact + the questions reviewers check: cancel, restore, delete, export).
+
+Deploy (pick one, all free): drag the `site` folder into [netlify.com/drop](https://app.netlify.com/drop); or `npx vercel site`; or Cloudflare Pages with `site` as the output dir. Then attach the domain and confirm `/privacy`, `/terms`, and `/support` resolve. Before launch: swap the placeholder store pills in index.html for official Apple/Google badges with real store URLs.
 
 ## Cost levers (when the AI bill matters)
 
@@ -227,7 +231,8 @@ Full product logic reference: [docs/product-guide.md](docs/product-guide.md).
 
 ### Launch blockers (the preflight warnings ARE this checklist)
 
-- [ ] Privacy + terms pages live at the real domain (site/ is ready to deploy)
+- [ ] Privacy + terms + support pages live at the real domain (drafted in site/,
+      ready to deploy — legal review of privacy/terms first)
 - [ ] Apple Team ID in app.json; submit config in eas.json
 - [ ] Founding Member end date in branding.ts — it's load-bearing copy now:
       the paywall's limited-time claim must be true
