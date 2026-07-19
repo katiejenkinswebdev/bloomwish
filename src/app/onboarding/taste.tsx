@@ -107,11 +107,16 @@ const styles = StyleSheet.create({
   bigLine: {
     color: '#EDE6F2',
     textAlign: 'center',
-    lineHeight: 34,
+    fontSize: 26,
+    lineHeight: 36,
   },
   whisper: {
-    color: '#8E7F99',
+    color: '#C7B9CC',
     textAlign: 'center',
+    fontSize: 12,
+    fontWeight: 600,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
   },
   footer: {
     paddingBottom: Spacing.five,

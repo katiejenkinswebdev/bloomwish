@@ -22,7 +22,7 @@ import { Screen } from '@/components/ui/screen';
 import { TextField } from '@/components/ui/text-field';
 import { Branding } from '@/config/branding';
 import { BrandPalette } from '@/constants/brand-palette';
-import { Spacing } from '@/constants/theme';
+import { Spacing, glowGold } from '@/constants/theme';
 import { track } from '@/features/analytics/analytics';
 import { fetchShortTitle, plantDream } from '@/features/dreams/api';
 import { useDreamDraftStore } from '@/store/dream-draft-store';
@@ -32,7 +32,7 @@ const SEED_DROP_DISTANCE = 260;
 export default function PlantingCeremonyScreen() {
   const reducedMotion = useReducedMotion();
   const queryClient = useQueryClient();
-  const [phase, setPhase] = useState<'capsule' | 'ceremony'>('capsule');
+  const [phase, setPhase] = useState<'capsule' | 'ready' | 'ceremony'>('capsule');
   const [capsuleText, setCapsuleText] = useState('');
   const [ceremonyDone, setCeremonyDone] = useState(false);
 
@@ -127,15 +127,45 @@ export default function PlantingCeremonyScreen() {
             multiline
           />
         </Card>
-        <Button label="Plant my dream" onPress={() => setPhase('ceremony')} />
+        <Button label="Seal it in" onPress={() => setPhase('ready')} />
         <Button
           label="Plant without a note"
           variant="ghost"
           onPress={() => {
             setCapsuleText('');
-            setPhase('ceremony');
+            setPhase('ready');
           }}
         />
+      </Screen>
+    );
+  }
+
+  // ── Ready (3e): the breath before the ceremony ────────────────────────────
+  if (phase === 'ready') {
+    const wish = useDreamDraftStore.getState().dreamText;
+    return (
+      <Screen style={styles.container}>
+        <View style={styles.readyBlock}>
+          <ThemedText type="micro" themeColor="textSecondary" style={styles.affirmation}>
+            {wish.length > 40 ? `${wish.slice(0, 37)}…` : wish}
+          </ThemedText>
+          <ThemedText type="heading" style={styles.affirmation}>
+            Ready to plant{'\n'}your seed?
+          </ThemedText>
+        </View>
+
+        <View style={styles.readyScene}>
+          <View style={[styles.readySeed, glowGold(18, 0.5)]} />
+          <View style={styles.mound} />
+          <View style={styles.saucer} />
+        </View>
+
+        <ThemedText themeColor="textSecondary" style={[styles.affirmation, styles.quote]}>
+          “{Branding.affirmation}”
+        </ThemedText>
+
+        <Button label="Plant the seed" onPress={() => setPhase('ceremony')} />
+        <Button label="Not yet" variant="ghost" onPress={() => router.back()} />
       </Screen>
     );
   }
@@ -197,9 +227,43 @@ const styles = StyleSheet.create({
   soil: {
     width: 160,
     height: 44,
-    borderRadius: 22,
-    backgroundColor: BrandPalette.deepGreen,
-    opacity: 0.9,
+    borderTopLeftRadius: 60,
+    borderTopRightRadius: 60,
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
+    backgroundColor: BrandPalette.warmBrown,
+  },
+  readyBlock: {
+    gap: Spacing.two,
+  },
+  readyScene: {
+    alignItems: 'center',
+    gap: Spacing.four,
+  },
+  readySeed: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: BrandPalette.warmBrown,
+  },
+  mound: {
+    width: 120,
+    height: 44,
+    borderTopLeftRadius: 60,
+    borderTopRightRadius: 60,
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
+    backgroundColor: BrandPalette.warmBrown,
+  },
+  saucer: {
+    width: 160,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: 'rgba(185, 138, 94, 0.35)',
+    marginTop: -Spacing.four + 4,
+  },
+  quote: {
+    fontStyle: 'italic',
   },
   spark: {
     position: 'absolute',

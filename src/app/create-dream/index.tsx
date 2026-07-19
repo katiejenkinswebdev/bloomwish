@@ -5,6 +5,9 @@ import { useMutation } from '@tanstack/react-query';
 
 import { DictationButton } from '@/components/dictation-button';
 import { SeedIcon } from '@/components/icons';
+import { Spark } from '@/components/spark';
+import { ModeRow } from '@/components/ui/mode-row';
+import { ScreenKicker } from '@/components/ui/screen-kicker';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
@@ -54,10 +57,7 @@ export default function DescribeDreamScreen() {
         style={styles.fill}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <ThemedText type="title">What do you dream of?</ThemedText>
-          <ThemedText themeColor="textSecondary">
-            Speak it or type it.
-          </ThemedText>
+          <ScreenKicker kicker="New seed" title={'What do you\nwish for?'} />
 
           <Pressable
             accessibilityRole="button"
@@ -114,7 +114,7 @@ export default function DescribeDreamScreen() {
             multiline
             numberOfLines={5}
             style={styles.dreamInput}
-            placeholder="I dream of…"
+            placeholder="I wish for…"
             editable={!dictation.isListening}
             errorText={dictation.error ?? undefined}
           />
@@ -130,24 +130,29 @@ export default function DescribeDreamScreen() {
             </ThemedText>
           ) : null}
 
-          <Button
-            label={
+          <ThemedText type="micro" themeColor="textSecondary" style={styles.plantingLabel}>
+            Choose your planting
+          </ThemedText>
+
+          <ModeRow
+            tone="plum"
+            title={deepenDreamId ? 'Make it vivid' : 'The full ritual'}
+            subtitle={
               questionsMutation.isPending
                 ? 'Listening to your dream…'
-                : deepenDreamId
-                  ? 'Make it vivid'
-                  : 'Continue'
+                : 'Speak your dream aloud, shape the scene, seal a capsule, and plant with ceremony. Your coach names it with you. ~7 min'
             }
-            loading={questionsMutation.isPending}
-            disabled={dreamText.trim().length < 5 || dictation.isListening}
+            accessory={<Spark size={13} />}
+            disabled={
+              dreamText.trim().length < 5 || dictation.isListening || questionsMutation.isPending
+            }
             onPress={() => questionsMutation.mutate()}
-            style={styles.continueButton}
           />
 
           {!deepenDreamId ? (
-            <Button
-              label="Plant it now — deepen later"
-              variant="secondary"
+            <ModeRow
+              title="Plant it now"
+              subtitle="One line, one tap. You can hold the ritual any time later. ~30 sec"
               disabled={dreamText.trim().length < 5 || dictation.isListening}
               onPress={() => {
                 const store = useDreamDraftStore.getState();
@@ -159,6 +164,9 @@ export default function DescribeDreamScreen() {
           ) : null}
 
           <Button label="Not now" variant="ghost" onPress={() => router.back()} />
+          <ThemedText type="small" themeColor="textSecondary" style={styles.footerLine}>
+            Every seed starts the same. Ceremony is for you, not the plant.
+          </ThemedText>
         </ScrollView>
       </KeyboardAvoidingView>
     </Screen>
@@ -179,8 +187,12 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
     paddingTop: Spacing.three,
   },
-  continueButton: {
+  plantingLabel: {
     marginTop: Spacing.two,
+  },
+  footerLine: {
+    fontStyle: 'italic',
+    textAlign: 'center',
   },
   packetToggle: {
     flexDirection: 'row',

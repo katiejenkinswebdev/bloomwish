@@ -20,7 +20,9 @@ import { BrandPalette } from '@/constants/brand-palette';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
-import { Spacing } from '@/constants/theme';
+import { ScreenPadding, Spacing } from '@/constants/theme';
+import { AmbientLayer } from '@/components/ambient-layer';
+import { ScreenKicker } from '@/components/ui/screen-kicker';
 import { completeSession, fetchFeedActivities, type CompletedSession } from '@/features/activities/api';
 import { CompostMoment } from '@/features/activities/components/compost-moment';
 import { SessionComplete } from '@/features/activities/components/session-complete';
@@ -471,59 +473,76 @@ export default function FeedScreen() {
     );
   }
 
+  // ── Hub (3i) ──────────────────────────────────────────────────────────────
   return (
     <Screen padded={false}>
+      <AmbientLayer />
       <ScrollView contentContainerStyle={styles.list}>
-        <ThemedText type="title">Feed your dream</ThemedText>
-        <ThemedText themeColor="textSecondary">
-          Pick what calls to you today.
-        </ThemedText>
+        <ScreenKicker kicker="Feed" title={'Small acts,\nwatered daily'} />
 
         {nudgeQuery.data ? (
           <Card>
-            <ThemedText type="smallBold">Today’s nudge</ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              {nudgeQuery.data.nudge}
+            <ThemedText type="micro" themeColor="accent">
+              Today&apos;s nudge
             </ThemedText>
+            <ThemedText type="small">{nudgeQuery.data.nudge}</ThemedText>
           </Card>
         ) : null}
 
-        {(activitiesQuery.data ?? []).map((item) => (
-          <Pressable
-            key={item.id}
-            accessibilityRole="button"
-            onPress={() => setActivity(item)}
-            style={({ pressed }) => [
-              styles.activityCard,
-              {
-                backgroundColor: theme.backgroundElement,
-                borderColor: theme.border,
-                opacity: pressed ? 0.85 : 1,
-              },
-            ]}>
-            {activityIcon(item.key, theme.backgroundElement)}
-            <View style={styles.activityBody}>
-              <ThemedText type="smallBold">{item.title}</ThemedText>
-              <ThemedText type="small" themeColor="textSecondary">
-                {item.description}
-              </ThemedText>
-            </View>
-            {item.key === 'tell_someone' && witnessCount > 0 ? (
-              <View style={[styles.witnessBadge, { backgroundColor: theme.primarySoft }]}>
-                <ThemedText type="smallBold">{witnessCount}</ThemedText>
-                <ThemedText type="small" themeColor="textSecondary">
-                  told
+        {(activitiesQuery.data ?? []).map((item) => {
+          const plum = item.key === 'rampage';
+          return (
+            <Pressable
+              key={item.id}
+              accessibilityRole="button"
+              onPress={() => setActivity(item)}
+              style={({ pressed }) => [
+                styles.activityCard,
+                {
+                  backgroundColor: plum ? BrandPalette.plum : theme.backgroundElement,
+                  opacity: pressed ? 0.85 : 1,
+                },
+              ]}>
+              {activityIcon(item.key, plum ? BrandPalette.plum : theme.backgroundElement)}
+              <View style={styles.activityBody}>
+                <ThemedText
+                  type="micro"
+                  style={{
+                    color: plum
+                      ? '#C7B9CC'
+                      : item.key === 'act_as_if'
+                        ? theme.accent
+                        : item.key === 'compost_doubts'
+                          ? theme.primary
+                          : theme.textSecondary,
+                  }}>
+                  {item.title}
+                </ThemedText>
+                <ThemedText type="small" style={plum ? styles.plumText : undefined}>
+                  {item.description}
                 </ThemedText>
               </View>
-            ) : null}
-          </Pressable>
-        ))}
+              {item.key === 'tell_someone' && witnessCount > 0 ? (
+                <View style={[styles.witnessBadge, { backgroundColor: theme.primarySoft }]}>
+                  <ThemedText type="smallBold">{witnessCount}</ThemedText>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    told
+                  </ThemedText>
+                </View>
+              ) : (
+                <ThemedText
+                  type="emphasis"
+                  style={{ color: plum ? '#C7B9CC' : theme.textSecondary }}>
+                  ›
+                </ThemedText>
+              )}
+            </Pressable>
+          );
+        })}
 
         {activitiesQuery.isLoading ? (
           <ThemedText themeColor="textSecondary">Gathering nourishment…</ThemedText>
         ) : null}
-
-        <Button label="Not now" variant="ghost" onPress={() => goBackOrHome()} />
       </ScrollView>
     </Screen>
   );
@@ -531,17 +550,20 @@ export default function FeedScreen() {
 
 const styles = StyleSheet.create({
   list: {
-    padding: Spacing.four,
-    gap: Spacing.three,
+    paddingHorizontal: ScreenPadding,
+    gap: Spacing.three - 4,
     paddingBottom: Spacing.six,
   },
   activityCard: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.three,
-    borderWidth: 1,
     borderRadius: Spacing.three,
-    padding: Spacing.three,
+    paddingVertical: Spacing.three + 2,
+    paddingHorizontal: Spacing.three + 4,
+  },
+  plumText: {
+    color: BrandPalette.cream,
   },
   activityBody: {
     flex: 1,

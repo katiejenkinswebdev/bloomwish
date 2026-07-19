@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { Platform, StyleSheet } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import { Link } from 'expo-router';
+
+import { WishingSeedMark } from '@/components/wishing-seed-mark';
 import { useMutation } from '@tanstack/react-query';
 import * as AppleAuthentication from 'expo-apple-authentication';
 
@@ -33,10 +35,15 @@ export default function SignInScreen() {
 
   return (
     <Screen style={styles.container}>
-      <ThemedText type="title">{Branding.appName}</ThemedText>
-      <ThemedText themeColor="textSecondary" style={styles.tagline}>
-        {Branding.tagline}
-      </ThemedText>
+      <View style={styles.identity}>
+        <WishingSeedMark size={88} />
+        <ThemedText type="title" style={styles.wordmark}>
+          {Branding.appName}
+        </ThemedText>
+        <ThemedText themeColor="textSecondary" style={styles.tagline}>
+          {Branding.tagline}
+        </ThemedText>
+      </View>
 
       <TextField
         label="Email"
@@ -113,8 +120,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: Spacing.three,
   },
+  identity: {
+    alignItems: 'center',
+    gap: Spacing.two,
+    marginBottom: Spacing.three,
+  },
+  wordmark: {
+    fontSize: 40,
+    lineHeight: 44,
+  },
   tagline: {
-    marginBottom: Spacing.four,
+    fontStyle: 'italic',
   },
   error: {
     marginTop: -Spacing.one,

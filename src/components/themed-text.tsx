@@ -4,7 +4,21 @@ import { Fonts, ThemeColor } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 export type ThemedTextProps = TextProps & {
-  type?: 'default' | 'title' | 'small' | 'smallBold' | 'subtitle' | 'link' | 'linkPrimary' | 'code';
+  type?:
+    | 'default'
+    | 'title'
+    | 'small'
+    | 'smallBold'
+    | 'subtitle'
+    | 'link'
+    | 'linkPrimary'
+    | 'code'
+    | 'display'
+    | 'heading'
+    | 'cardTitle'
+    | 'emphasis'
+    | 'chip'
+    | 'micro';
   themeColor?: ThemeColor;
 };
 
@@ -23,6 +37,12 @@ export function ThemedText({ style, type = 'default', themeColor, ...rest }: The
         type === 'link' && styles.link,
         type === 'linkPrimary' && styles.linkPrimary,
         type === 'code' && styles.code,
+        type === 'display' && styles.display,
+        type === 'heading' && styles.heading,
+        type === 'cardTitle' && styles.cardTitle,
+        type === 'emphasis' && styles.emphasis,
+        type === 'chip' && styles.chip,
+        type === 'micro' && styles.micro,
         style,
       ]}
       {...rest}
@@ -68,5 +88,40 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.mono,
     fontWeight: Platform.select({ android: 700 }) ?? 500,
     fontSize: 12,
+  },
+  // Day & Night Garden steps — approved additions between title 48 and small 14.
+  display: {
+    fontSize: 34,
+    lineHeight: 40,
+    fontWeight: 600,
+  },
+  heading: {
+    fontSize: 28,
+    lineHeight: 36,
+    fontWeight: 600,
+  },
+  cardTitle: {
+    fontSize: 22,
+    lineHeight: 28,
+    fontWeight: 600,
+  },
+  emphasis: {
+    fontSize: 17,
+    lineHeight: 24,
+    fontWeight: 600,
+  },
+  chip: {
+    fontSize: 13,
+    lineHeight: 20,
+    fontWeight: 700,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+  },
+  micro: {
+    fontSize: 11,
+    lineHeight: 16,
+    fontWeight: 700,
+    textTransform: 'uppercase',
+    letterSpacing: 1.2,
   },
 });

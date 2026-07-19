@@ -11,6 +11,8 @@ import { captureRef } from 'react-native-view-shot';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 
+import { AnimatedPlant } from '@/components/animated-plant';
+import { bloomColorFor } from '@/features/dreams/bloom-color';
 import { Butterfly } from '@/components/butterfly';
 import { Spark } from '@/components/spark';
 import { EnvelopeIcon } from '@/components/icons';
@@ -29,6 +31,8 @@ export default function HarvestScreen() {
   const { dreamId } = useLocalSearchParams<{ dreamId: string }>();
   const queryClient = useQueryClient();
   const [trophy, setTrophy] = useState<TrophyRow | null>(null);
+  // Captured once per mount; the day counter doesn't need to tick live.
+  const [openedAt] = useState(() => Date.now());
   const [capsuleText, setCapsuleText] = useState<string | null>(null);
   const [plantedAt, setPlantedAt] = useState<string | null>(null);
   const shareCardRef = useRef<View>(null);
@@ -188,7 +192,7 @@ export default function HarvestScreen() {
           label="Visit the greenhouse"
           onPress={() => {
             goBackOrHome();
-            router.navigate('/(app)/greenhouse');
+            router.navigate('/greenhouse');
           }}
         />
         <Button label="Back to the garden" variant="ghost" onPress={() => goBackOrHome()} />
@@ -197,31 +201,53 @@ export default function HarvestScreen() {
     );
   }
 
+  const dayCount = dream?.planted_at
+    ? Math.max(1, Math.round((openedAt - new Date(dream.planted_at).getTime()) / 86400000))
+    : null;
+  const plantedLine = dream?.planted_at
+    ? `Planted ${new Date(dream.planted_at).toLocaleDateString(undefined, { month: 'long', day: 'numeric' })}`
+    : null;
+
   return (
     <Screen style={styles.container}>
-      <ThemedText type="title" style={styles.centered}>
-        Did this dream come true?
+      <ThemedText type="micro" themeColor="accent" style={styles.centered}>
+        {dayCount ? `Day ${dayCount} · Harvest` : 'Harvest'}
       </ThemedText>
-      <ThemedText themeColor="textSecondary" style={styles.centered}>
-        {dream?.title ?? 'This dream'}
+      <ThemedText type="display" style={styles.centered}>
+        It came true.
       </ThemedText>
-      <ThemedText type="small" themeColor="textSecondary" style={styles.centered}>
-        Harvesting celebrates a dream that has bloomed in your real life. It moves to your
-        greenhouse as a keepsake, engraved with today’s date.
-      </ThemedText>
+
+      <View style={styles.confirmPlant}>
+        <AnimatedPlant
+          state="blooming"
+          health="thriving"
+          bloomColor={dreamId ? bloomColorFor(dreamId) : undefined}
+          size={140}
+        />
+      </View>
+
+      <View style={styles.confirmCard}>
+        <ThemedText type="emphasis" style={styles.centered}>
+          {dream?.title ?? 'This dream'}
+        </ThemedText>
+        <ThemedText type="small" themeColor="textSecondary" style={styles.centered}>
+          {plantedLine ? `${plantedLine} · ` : ''}Harvesting moves it to your greenhouse as a
+          keepsake, engraved with today&apos;s date.
+        </ThemedText>
+      </View>
 
       {harvestMutation.error ? (
         <ThemedText themeColor="danger" style={styles.centered}>
-          Couldn’t harvest just now. Please try again.
+          Couldn&apos;t harvest just now. Please try again.
         </ThemedText>
       ) : null}
 
       <Button
-        label="Yes — harvest it"
+        label="Harvest this dream"
         loading={harvestMutation.isPending}
         onPress={() => harvestMutation.mutate()}
       />
-      <Button label="Not yet" variant="ghost" onPress={() => goBackOrHome()} />
+      <Button label="Keep growing it a little longer" variant="ghost" onPress={() => goBackOrHome()} />
     </Screen>
   );
 }
@@ -288,5 +314,11 @@ const styles = StyleSheet.create({
   // theme text color goes light in dark mode and vanishes here.
   capsuleInk: {
     color: '#4A4036',
+  },
+  confirmPlant: {
+    alignSelf: 'center',
+  },
+  confirmCard: {
+    gap: Spacing.two - 2,
   },
 });

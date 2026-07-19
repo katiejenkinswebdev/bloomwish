@@ -1,14 +1,15 @@
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
-import { useColorScheme } from 'react-native';
 
-import { Colors } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 
 /**
+ * Day & Night Garden navigation: Garden · Water · Feed · Signs. Profile lives
+ * behind the gardener icon on the Garden header; the wishing grove
+ * (greenhouse keepsakes) is a room pushed from the Garden.
  * TODO(phase 8): swap `sf`/`md` system icons for custom Wishing Seed iconography.
  */
 export default function AppTabs() {
-  const scheme = useColorScheme();
-  const colors = Colors[scheme === 'unspecified' || !scheme ? 'light' : scheme];
+  const colors = useTheme();
 
   return (
     <NativeTabs
@@ -20,20 +21,19 @@ export default function AppTabs() {
         <NativeTabs.Trigger.Icon sf={{ default: 'leaf', selected: 'leaf.fill' }} md="eco" />
       </NativeTabs.Trigger>
 
-      <NativeTabs.Trigger name="greenhouse">
-        <NativeTabs.Trigger.Label>Greenhouse</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          sf={{ default: 'trophy', selected: 'trophy.fill' }}
-          md="emoji_events"
-        />
+      <NativeTabs.Trigger name="water">
+        <NativeTabs.Trigger.Label>Water</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf={{ default: 'drop', selected: 'drop.fill' }} md="water_drop" />
       </NativeTabs.Trigger>
 
-      <NativeTabs.Trigger name="profile">
-        <NativeTabs.Trigger.Label>Profile</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          sf={{ default: 'person.crop.circle', selected: 'person.crop.circle.fill' }}
-          md="person"
-        />
+      <NativeTabs.Trigger name="feed">
+        <NativeTabs.Trigger.Label>Feed</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf="sparkles" md="auto_awesome" />
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="signs">
+        <NativeTabs.Trigger.Label>Signs</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf={{ default: 'sun.max', selected: 'sun.max.fill' }} md="wb_sunny" />
       </NativeTabs.Trigger>
     </NativeTabs>
   );

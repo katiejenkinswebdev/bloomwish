@@ -77,3 +77,40 @@ export const Spacing = {
 export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
 /** Content column cap: phone-sized on tablets/desktop web, no-op on phones. */
 export const MaxContentWidth = 480;
+
+/** Horizontal screen padding in the Day & Night Garden shell. */
+export const ScreenPadding = 28;
+
+/**
+ * Ambient motion periods (ms) from the redesign. Night runs ~1.5× slower than
+ * day. All ambient loops must respect Reduce Motion (freeze the loop, keep
+ * functional transitions).
+ */
+export const Motion = {
+  swayDay: 4500,
+  swayNight: 6500,
+  glowPulse: 3000,
+  fireflyMin: 5000,
+  fireflyMax: 9000,
+  breathe: 8000,
+  themeCrossfade: 1200,
+} as const;
+
+/**
+ * The single sanctioned shadow in the design system: the gold glow of the
+ * spark motif (bloom centers, fireflies, sun moments, the drift orb).
+ * Gold-only, motif-only — never use shadows for elevation.
+ */
+export function glowGold(radius = 22, opacity = 0.45) {
+  return Platform.select({
+    web: {
+      boxShadow: `0 0 ${radius}px ${Math.round(radius / 4)}px rgba(233, 180, 76, ${opacity})`,
+    },
+    default: {
+      shadowColor: BrandPalette.gold,
+      shadowOpacity: opacity,
+      shadowRadius: radius / 2,
+      shadowOffset: { width: 0, height: 0 },
+    },
+  }) as object;
+}

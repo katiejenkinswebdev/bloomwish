@@ -16,10 +16,12 @@ import { MoonIcon } from '@/components/icons';
 import { PlantGlyph } from '@/components/plant-glyph';
 import { Spark } from '@/components/spark';
 import { ThemedText } from '@/components/themed-text';
+import { AmbientLayer } from '@/components/ambient-layer';
 import { Screen } from '@/components/ui/screen';
-import { ScreenHeader } from '@/components/ui/screen-header';
+import { ScreenKicker } from '@/components/ui/screen-kicker';
 import { BrandPalette } from '@/constants/brand-palette';
 import { Spacing } from '@/constants/theme';
+import { useResolvedScheme } from '@/hooks/use-theme';
 import { bloomColorFor } from '@/features/dreams/bloom-color';
 import { fetchHarvestedDreams, type HarvestedDream } from '@/features/harvest/api';
 
@@ -71,6 +73,16 @@ function ShootingStar() {
   );
 }
 
+/** The grove's daytime sun: a warm disc with a soft glow, top-right like the moon. */
+function GroveSun() {
+  return (
+    <View pointerEvents="none" style={styles.groveSun}>
+      <View style={styles.sunGlow} />
+      <View style={styles.sunDisc} />
+    </View>
+  );
+}
+
 /** Keepsakes live on shelves, two per shelf — like pots in a real glasshouse. */
 function chunkPairs<T>(items: T[]): T[][] {
   const rows: T[][] = [];
@@ -79,6 +91,7 @@ function chunkPairs<T>(items: T[]): T[][] {
 }
 
 export default function GreenhouseScreen() {
+  const isNight = useResolvedScheme() === 'night';
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [charmTrophyId, setCharmTrophyId] = useState<string | null>(null);
   // One small surprise per visit: a shooting star, a butterfly, or extra
@@ -133,26 +146,56 @@ export default function GreenhouseScreen() {
 
   return (
     <Screen padded={false}>
+      <AmbientLayer />
       <ScrollView contentContainerStyle={styles.content}>
-        <ScreenHeader title="Greenhouse" subtitle="In bloom forever." />
+        <ScreenKicker
+          kicker="Greenhouse · back room"
+          title={'The wishing\ngrove'}
+          subtitle={
+            isNight
+              ? 'The charms glow. Something may have appeared.'
+              : 'Sun through the glass. The charms are warm.'
+          }
+        />
 
         {trophies.length > 0 ? (
           <Pressable
             accessibilityLabel={`The wishing grove: ${trophies.length} dream${trophies.length === 1 ? '' : 's'} came true`}
             onPress={() => setCharmTrophyId(null)}
-            style={styles.grove}>
-            <MoonIcon size={26} holeColor="#2E2438" style={styles.groveMoon} />
-            {STAR_SPOTS.slice(0, trophies.length).map((spot, i) => (
-              <Spark
-                key={i}
-                size={spot.size}
-                style={[styles.groveStar, { top: spot.top, left: spot.left }]}
-              />
-            ))}
-            {delightRoll < 0.3 ? <ShootingStar /> : null}
-            {delightRoll >= 0.3 && delightRoll < 0.55 ? (
+            style={[styles.grove, isNight ? styles.groveNight : styles.groveDay]}>
+            {isNight ? (
+              <MoonIcon size={26} holeColor="#2E2438" style={styles.groveMoon} />
+            ) : (
+              <GroveSun />
+            )}
+            {isNight
+              ? STAR_SPOTS.slice(0, trophies.length).map((spot, i) => (
+                  <Spark
+                    key={i}
+                    size={spot.size}
+                    style={[styles.groveStar, { top: spot.top, left: spot.left }]}
+                  />
+                ))
+              : STAR_SPOTS.slice(0, trophies.length).map((spot, i) => (
+                  // Daytime pollen motes drifting in the same spots the stars use.
+                  <View
+                    key={i}
+                    style={[
+                      styles.pollen,
+                      { top: spot.top, left: spot.left, width: spot.size * 0.6, height: spot.size * 0.6 },
+                    ]}
+                  />
+                ))}
+            {!isNight ? (
+              <View pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+                <View style={[styles.sunbeam, styles.sunbeamA]} />
+                <View style={[styles.sunbeam, styles.sunbeamB]} />
+              </View>
+            ) : null}
+            {isNight && delightRoll < 0.3 ? <ShootingStar /> : null}
+            {(isNight ? delightRoll >= 0.3 && delightRoll < 0.55 : delightRoll < 0.55) ? (
               <View style={styles.groveVisitor} pointerEvents="none">
-                <Butterfly size={18} color={BrandPalette.gold} />
+                <Butterfly size={18} color={isNight ? BrandPalette.gold : BrandPalette.dustyPink} />
               </View>
             ) : null}
 
@@ -206,13 +249,16 @@ export default function GreenhouseScreen() {
               ))}
             </View>
 
-            <View
-              style={styles.groveFireflies}
-              pointerEvents="none"
-              accessibilityElementsHidden
-              importantForAccessibility="no-hide-descendants">
-              <Fireflies count={Math.min(trophies.length + 2, 7)} areaSize={110} />
-            </View>
+            {isNight ? (
+              // Fireflies are the night shift; sunbeams and pollen are the day's.
+              <View
+                style={styles.groveFireflies}
+                pointerEvents="none"
+                accessibilityElementsHidden
+                importantForAccessibility="no-hide-descendants">
+                <Fireflies count={Math.min(trophies.length + 2, 7)} areaSize={110} />
+              </View>
+            ) : null}
 
             {charm ? (
               <View style={styles.charmCard}>
@@ -246,6 +292,12 @@ export default function GreenhouseScreen() {
             </View>
           ))
         )}
+
+        <ThemedText type="small" themeColor="textSecondary" style={styles.groveFooter}>
+          {isNight
+            ? 'Charms are little thank-yous. They never expire, and nothing here is for sale.'
+            : "Same room, two moods. Fireflies are the night shift; sunbeams and pollen are the day's."}
+        </ThemedText>
       </ScrollView>
     </Screen>
   );
@@ -256,9 +308,59 @@ const styles = StyleSheet.create({
     width: '100%',
     minHeight: 190,
     borderRadius: Spacing.three,
-    backgroundColor: '#2E2438',
     overflow: 'hidden',
     paddingBottom: Spacing.three,
+  },
+  groveNight: {
+    backgroundColor: '#2E2438',
+  },
+  groveDay: {
+    // Day theme's backgroundElement: sun through the glass, charms warm.
+    backgroundColor: '#F3E9DA',
+  },
+  groveSun: {
+    position: 'absolute',
+    top: 4,
+    right: 8,
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sunGlow: {
+    position: 'absolute',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(233, 180, 76, 0.28)',
+  },
+  sunDisc: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: BrandPalette.gold,
+  },
+  sunbeam: {
+    position: 'absolute',
+    top: -30,
+    width: 26,
+    height: 150,
+    backgroundColor: 'rgba(233, 180, 76, 0.12)',
+    transform: [{ rotate: '18deg' }],
+  },
+  sunbeamA: {
+    right: 46,
+  },
+  sunbeamB: {
+    right: 96,
+    width: 16,
+    backgroundColor: 'rgba(233, 180, 76, 0.09)',
+  },
+  pollen: {
+    position: 'absolute',
+    borderRadius: 999,
+    backgroundColor: BrandPalette.gold,
+    opacity: 0.4,
   },
   groveMoon: {
     position: 'absolute',
@@ -459,5 +561,10 @@ const styles = StyleSheet.create({
     backgroundColor: BrandPalette.warmBrown,
     borderBottomWidth: 2,
     borderBottomColor: '#8A6844',
+  },
+  groveFooter: {
+    fontStyle: 'italic',
+    textAlign: 'center',
+    paddingTop: Spacing.two,
   },
 });

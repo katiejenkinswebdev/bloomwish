@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
@@ -10,7 +10,11 @@ export interface OptionButtonProps {
   onPress: () => void;
 }
 
-/** A selectable option row — quiz answers, preference choices. */
+/**
+ * A selectable option row — quiz answers, preference choices. Redesign (3c):
+ * no borders, tone is the signal — backgroundElement → backgroundSelected
+ * with a 10px primary dot when chosen.
+ */
 export function OptionButton({ label, selected, onPress }: OptionButtonProps) {
   const theme = useTheme();
   return (
@@ -21,21 +25,37 @@ export function OptionButton({ label, selected, onPress }: OptionButtonProps) {
       style={({ pressed }) => [
         styles.option,
         {
-          backgroundColor: selected ? theme.primarySoft : theme.backgroundElement,
-          borderColor: selected ? theme.primary : theme.border,
+          backgroundColor: selected ? theme.backgroundSelected : theme.backgroundElement,
           opacity: pressed ? 0.85 : 1,
         },
       ]}>
-      <ThemedText type="small">{label}</ThemedText>
+      <ThemedText type="small" style={styles.label}>
+        {label}
+      </ThemedText>
+      {selected ? <View style={[styles.dot, { backgroundColor: theme.primary }]} /> : null}
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   option: {
-    borderWidth: 1,
     borderRadius: Spacing.three,
-    paddingVertical: Spacing.three,
-    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.three + 2,
+    paddingHorizontal: Spacing.three + 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: Spacing.two,
+  },
+  label: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: 600,
+    lineHeight: 21,
+  },
+  dot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
   },
 });
