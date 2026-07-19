@@ -9,6 +9,7 @@ import { OptionButton } from '@/components/ui/option-button';
 import { Screen } from '@/components/ui/screen';
 import { TextField } from '@/components/ui/text-field';
 import { Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import { upsertProfile, profileQueryKey } from '@/features/profile/api';
 import type { ExperienceLevel, TonePreference } from '@/lib/supabase/database.types';
 
@@ -52,6 +53,7 @@ export const REMINDER_OPTIONS = [
 ];
 
 export default function OnboardingQuizScreen() {
+  const theme = useTheme();
   const queryClient = useQueryClient();
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<QuizAnswers>({
@@ -181,10 +183,21 @@ export default function OnboardingQuizScreen() {
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <ThemedText type="small" themeColor="textSecondary">
-          {step + 1} of {steps.length}
+        <View style={styles.progressRow}>
+          {steps.map((_, index) => (
+            <View
+              key={index}
+              style={[
+                styles.progressSegment,
+                { backgroundColor: index <= step ? theme.primary : theme.backgroundSelected },
+              ]}
+            />
+          ))}
+        </View>
+        <ThemedText type="micro" themeColor="textSecondary">
+          Getting to know you
         </ThemedText>
-        <ThemedText type="subtitle">{currentStep.title}</ThemedText>
+        <ThemedText type="heading">{currentStep.title}</ThemedText>
         {currentStep.content}
 
         {saveMutation.error ? (
@@ -212,6 +225,16 @@ const styles = StyleSheet.create({
   content: {
     gap: Spacing.three,
     paddingVertical: Spacing.four,
+  },
+  progressRow: {
+    flexDirection: 'row',
+    gap: 6,
+    paddingBottom: Spacing.two,
+  },
+  progressSegment: {
+    flex: 1,
+    height: 4,
+    borderRadius: 2,
   },
   options: {
     gap: Spacing.two,

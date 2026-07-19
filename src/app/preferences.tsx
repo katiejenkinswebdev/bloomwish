@@ -22,6 +22,7 @@ import {
 import { goBackOrHome } from '@/lib/navigation';
 import type { ExperienceLevel, TonePreference } from '@/lib/supabase/database.types';
 import { useTheme } from '@/hooks/use-theme';
+import { useThemeStore, type ThemeMode } from '@/store/theme-store';
 import {
   CATEGORIES,
   EXPERIENCE_OPTIONS,
@@ -36,9 +37,17 @@ import {
  * reminder time, and every personalized surface use the new answers
  * immediately.
  */
+const THEME_MODE_OPTIONS: { value: ThemeMode; label: string }[] = [
+  { value: 'auto', label: 'Auto — follow the sun' },
+  { value: 'day', label: 'Always day' },
+  { value: 'night', label: 'Always night' },
+];
+
 export default function PreferencesScreen() {
   const theme = useTheme();
   const queryClient = useQueryClient();
+  const themeMode = useThemeStore((s) => s.mode);
+  const setThemeMode = useThemeStore((s) => s.setMode);
 
   const profileQuery = useQuery({ queryKey: profileQueryKey, queryFn: fetchProfile });
   const prefsQuery = useQuery({
@@ -209,6 +218,22 @@ export default function PreferencesScreen() {
               label={option.label}
               selected={value.reminderTime === option.value}
               onPress={() => setEdits((e) => ({ ...e, reminderTime: option.value }))}
+            />
+          ))}
+        </View>
+
+        <ThemedText type="smallBold">Garden clock</ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">
+          The garden follows your local sun — day from 6:00, night from 19:00. Pin it if you
+          prefer one mood.
+        </ThemedText>
+        <View style={styles.options}>
+          {THEME_MODE_OPTIONS.map((option) => (
+            <OptionButton
+              key={option.value}
+              label={option.label}
+              selected={themeMode === option.value}
+              onPress={() => setThemeMode(option.value)}
             />
           ))}
         </View>

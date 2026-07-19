@@ -25,12 +25,10 @@ import {
 import { useTheme } from '@/hooks/use-theme';
 
 const FULL_BLOOM_FEATURES = [
-  'Unlimited dreams in your garden',
-  'All visualization timer lengths',
-  'Every guided meditation track',
-  'The full feed activity library',
-  'Unlimited personalized voice meditations',
-  'All variable-reward rarities',
+  'Unlimited dream slots in your greenhouse',
+  `Meditations composed for each dream, in ${Branding.voiceName}’s voice`,
+  'A coach who remembers your garden’s story',
+  'Every session mode, day and night',
 ];
 
 /**
@@ -85,10 +83,10 @@ export default function PaywallScreen() {
     <Screen padded={false}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
-          <Spark size={32} />
-          <ThemedText type="title">{fullBloom.name}</ThemedText>
+          <Spark size={36} />
+          <ThemedText type="subtitle">{fullBloom.name}</ThemedText>
           <ThemedText themeColor="textSecondary" style={styles.centered}>
-            Grow a whole garden of dreams.
+            For gardens with more than one dream growing.
           </ThemedText>
         </View>
 
@@ -108,13 +106,16 @@ export default function PaywallScreen() {
           </Card>
         ) : (
           <>
-            <Card>
+            <View style={styles.benefits}>
               {FULL_BLOOM_FEATURES.map((feature) => (
-                <ThemedText key={feature} type="small">
-                  ✦ {feature}
-                </ThemedText>
+                <View key={feature} style={styles.benefitRow}>
+                  <View style={[styles.benefitDot, { backgroundColor: theme.primary }]} />
+                  <ThemedText style={styles.benefitText}>{feature}</ThemedText>
+                </View>
               ))}
-            </Card>
+            </View>
+            {/* TODO(voice sample): once the 15s founder-voice sample asset ships,
+                add the "Hear a sample" play row here (see mock 3n). */}
 
             {Offerings.map((offering) => {
               const plan = planByOffering.get(offering.id);
@@ -140,7 +141,7 @@ export default function PaywallScreen() {
                   </ThemedText>
                   {plan ? (
                     <Button
-                      label={`Choose ${offering.label}`}
+                      label={`${fullBloom.name} · ${plan.priceString}`}
                       variant={offering.isDefaultHighlighted ? 'primary' : 'secondary'}
                       loading={
                         purchaseMutation.isPending &&
@@ -197,11 +198,18 @@ export default function PaywallScreen() {
           </ThemedText>
         </View>
 
-        <Button
-          label={isFullBloom ? 'Back to the garden' : 'Maybe later'}
-          variant="ghost"
-          onPress={() => goBackOrHome()}
-        />
+        {!isFullBloom ? (
+          <ThemedText type="small" themeColor="textSecondary" style={styles.centered}>
+            Cancel anytime in two taps. No trial tricks.
+          </ThemedText>
+        ) : null}
+        <ThemedText
+          type="smallBold"
+          themeColor="primary"
+          style={styles.stayFree}
+          onPress={() => goBackOrHome()}>
+          {isFullBloom ? 'Back to the garden' : `Stay ${seedling.name} — it’s genuinely free`}
+        </ThemedText>
       </ScrollView>
     </Screen>
   );
@@ -232,5 +240,28 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     gap: Spacing.four,
+  },
+  benefits: {
+    gap: Spacing.three - 2,
+    paddingHorizontal: Spacing.one,
+  },
+  benefitRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three - 2,
+  },
+  benefitDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  benefitText: {
+    flex: 1,
+    fontSize: 15,
+    lineHeight: 21,
+  },
+  stayFree: {
+    textAlign: 'center',
+    paddingVertical: Spacing.two,
   },
 });

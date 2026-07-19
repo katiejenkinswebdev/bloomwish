@@ -12,7 +12,12 @@ import {
   PenIcon,
   SunIcon,
 } from '@/components/icons';
+import { AmbientLayer } from '@/components/ambient-layer';
+import { HoldToWater } from '@/components/hold-to-water';
+import { ModeRow } from '@/components/ui/mode-row';
+import { ScreenKicker } from '@/components/ui/screen-kicker';
 import { Spark } from '@/components/spark';
+import { bloomColorFor } from '@/features/dreams/bloom-color';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -51,11 +56,11 @@ type Mode = 'breathe' | 'listen' | 'speak' | 'write' | 'drift';
 type Phase = 'mode' | 'setup' | 'timer' | 'complete';
 
 const MODES: { key: Mode; title: string; blurb: string }[] = [
-  { key: 'breathe', title: 'Breathe', blurb: 'A quiet timer with a breathing pattern.' },
-  { key: 'listen', title: 'Listen', blurb: 'A guided meditation track.' },
-  { key: 'speak', title: 'Speak', blurb: 'Today’s affirmation, said aloud.' },
-  { key: 'write', title: 'Write', blurb: 'The 369 practice — write it into being.' },
-  { key: 'drift', title: 'Drift', blurb: 'Fall asleep inside your dream.' },
+  { key: 'breathe', title: 'Breathe', blurb: 'Guided visualization · 3–10 min' },
+  { key: 'listen', title: 'Listen', blurb: 'A meditation made for your dream' },
+  { key: 'speak', title: 'Speak', blurb: 'Affirm it aloud, in your own voice' },
+  { key: 'write', title: 'Write', blurb: 'The 3·6·9 method, morning to night' },
+  { key: 'drift', title: 'Drift', blurb: 'Fall asleep inside your dream' },
 ];
 
 function modeIcon(key: Mode, holeColor: string) {
@@ -101,6 +106,8 @@ export default function WaterScreen() {
   const [lastScriptEntry, setLastScriptEntry] = useState('');
   const [sceneLineIndex, setSceneLineIndex] = useState(0);
   const [startedAt, setStartedAt] = useState(0);
+  // The watering moment (4c) gates the celebration after every session.
+  const [watered, setWatered] = useState(false);
 
   const dreamsQuery = useQuery({ queryKey: ['dreams'], queryFn: fetchDreams });
   const dream = dreamsQuery.data?.find((d) => d.id === dreamId);
@@ -188,6 +195,11 @@ export default function WaterScreen() {
   };
 
   const chooseMode = (next: Mode) => {
+    // Listen is the personalized meditation: builder (4d) then player (4e).
+    if (next === 'listen') {
+      router.push(dreamId ? { pathname: '/meditation', params: { dreamId } } : '/meditation');
+      return;
+    }
     setMode(next);
     if (next === 'drift') {
       setPatternKey('sleep');
@@ -226,6 +238,19 @@ export default function WaterScreen() {
             Your dream will keep growing while you rest.
           </ThemedText>
           <Button label="Close" variant="ghost" onPress={() => goBackOrHome()} />
+        </Screen>
+      );
+    }
+    if (!watered) {
+      return (
+        <Screen style={styles.centered}>
+          <HoldToWater
+            dreamTitle={dream?.title ?? 'your dream'}
+            plantState={result.newState}
+            health="thriving"
+            bloomColor={dreamId ? bloomColorFor(dreamId) : undefined}
+            onComplete={() => setWatered(true)}
+          />
         </Screen>
       );
     }
@@ -306,7 +331,7 @@ export default function WaterScreen() {
     return (
       <Screen padded={false}>
         <ScrollView contentContainerStyle={styles.setup}>
-          <ThemedText type="title">Breathe</ThemedText>
+          <ScreenKicker kicker="Water · Breathe" title="Guided visualization" />
           <ThemedText type="smallBold">How long?</ThemedText>
           <View style={styles.chipRow}>
             {DURATIONS.map((option) => {
@@ -466,7 +491,7 @@ export default function WaterScreen() {
     return (
       <Screen padded={false}>
         <ScrollView contentContainerStyle={styles.setup} keyboardShouldPersistTaps="handled">
-          <ThemedText type="title">Write it into being</ThemedText>
+          <ScreenKicker kicker="Water · Write" title="Write it into being" />
           <ThemedText themeColor="textSecondary">
             The 369 practice: this {target.period}, write your dream {target.count} times. Slowly.
             Feel each word.
@@ -559,37 +584,34 @@ export default function WaterScreen() {
     );
   }
 
-  // ── Mode picker ───────────────────────────────────────────────────────────
+  // ── Mode picker (3f) ──────────────────────────────────────────────────────
   return (
     <Screen padded={false}>
+      <AmbientLayer />
       <ScrollView contentContainerStyle={styles.setup}>
-        <ThemedText type="title">Water your dream</ThemedText>
-        <ThemedText themeColor="textSecondary">
-          {dream?.title ?? 'A few quiet moments of seeing it, feeling it, living it.'}
-        </ThemedText>
+        <ScreenKicker kicker="Water" title={'How will you\ntend today?'} />
         {MODES.map((candidate) => (
-          <Pressable
+          <ModeRow
             key={candidate.key}
-            accessibilityRole="button"
+            title={candidate.title}
+            subtitle={candidate.blurb}
+            tone={candidate.key === 'drift' ? 'plum' : 'default'}
+            icon={modeIcon(candidate.key, theme.backgroundElement)}
+            accessory={
+              candidate.key === 'listen' ? (
+                <Spark size={11} />
+              ) : candidate.key === 'drift' ? (
+                <ThemedText type="micro" style={styles.nightTag}>
+                  Night
+                </ThemedText>
+              ) : undefined
+            }
             onPress={() => chooseMode(candidate.key)}
-            style={({ pressed }) => [
-              styles.modeCard,
-              {
-                backgroundColor: theme.backgroundElement,
-                borderColor: theme.border,
-                opacity: pressed ? 0.85 : 1,
-              },
-            ]}>
-            {modeIcon(candidate.key, theme.backgroundElement)}
-            <View style={styles.modeBody}>
-              <ThemedText type="smallBold">{candidate.title}</ThemedText>
-              <ThemedText type="small" themeColor="textSecondary">
-                {candidate.blurb}
-              </ThemedText>
-            </View>
-          </Pressable>
+          />
         ))}
-        <Button label="Not now" variant="ghost" onPress={() => goBackOrHome()} />
+        <ThemedText type="small" themeColor="textSecondary" style={styles.hubFooter}>
+          Watering feeds whichever dream you hold in mind.
+        </ThemedText>
       </ScrollView>
     </Screen>
   );
@@ -663,5 +685,13 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     textAlign: 'center',
     paddingHorizontal: Spacing.four,
+  },
+  nightTag: {
+    color: '#C7B9CC',
+  },
+  hubFooter: {
+    fontStyle: 'italic',
+    textAlign: 'center',
+    marginTop: Spacing.two,
   },
 });

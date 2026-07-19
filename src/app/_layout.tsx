@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { useColorScheme } from 'react-native';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { QueryClientProvider, useQuery } from '@tanstack/react-query';
@@ -11,7 +10,9 @@ import { identifyUser, posthog, resetAnalytics } from '@/features/analytics/anal
 import { identifyCrashUser, initSentry, wrapRoot } from '@/features/analytics/sentry';
 import { fetchProfile, profileQueryKey } from '@/features/profile/api';
 import { endPurchasesSession, initializePurchases } from '@/features/purchases/purchases';
+import { useResolvedScheme } from '@/hooks/use-theme';
 import { queryClient } from '@/lib/query-client';
+import { useThemeStore } from '@/store/theme-store';
 import {
   useAuthStore,
   useIsAuthInitializing,
@@ -65,8 +66,8 @@ function RootNavigator() {
           <Stack.Screen name="revive" options={{ presentation: 'modal' }} />
           <Stack.Screen name="release" options={{ presentation: 'modal' }} />
           <Stack.Screen name="immerse" options={{ presentation: 'fullScreenModal' }} />
-          <Stack.Screen name="water" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="feed" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="greenhouse" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="profile" options={{ presentation: 'modal' }} />
           <Stack.Screen name="meditation" options={{ presentation: 'modal' }} />
           <Stack.Screen name="harvest" options={{ presentation: 'modal' }} />
           <Stack.Screen name="feedback" options={{ presentation: 'modal' }} />
@@ -85,15 +86,18 @@ function RootNavigator() {
 }
 
 function RootLayout() {
-  const colorScheme = useColorScheme();
+  // The garden follows the sun (with a Preferences override), not the OS
+  // appearance setting — see docs/redesign/HANDOFF.md.
+  const scheme = useResolvedScheme();
 
   useEffect(() => {
     useAuthStore.getState().initialize();
+    useThemeStore.getState().hydrate();
   }, []);
 
   const app = (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <ThemeProvider value={scheme === 'night' ? DarkTheme : DefaultTheme}>
         <RootNavigator />
       </ThemeProvider>
     </QueryClientProvider>

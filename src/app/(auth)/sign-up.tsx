@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Link, router } from 'expo-router';
+
+import { WishingSeedMark } from '@/components/wishing-seed-mark';
 import { useMutation } from '@tanstack/react-query';
 
 import { ThemedText } from '@/components/themed-text';
@@ -27,10 +29,13 @@ export default function SignUpScreen() {
 
   return (
     <Screen style={styles.container}>
-      <ThemedText type="title">Create your account</ThemedText>
-      <ThemedText themeColor="textSecondary" style={styles.subtitle}>
-        A free garden of your own — no card required.
-      </ThemedText>
+      <View style={styles.identity}>
+        <WishingSeedMark size={72} />
+        <ThemedText type="heading">Plant your first wish</ThemedText>
+        <ThemedText themeColor="textSecondary" style={styles.subtitle}>
+          A free garden of your own — no card required.
+        </ThemedText>
+      </View>
 
       <TextField
         label="Email"
@@ -88,8 +93,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: Spacing.three,
   },
+  identity: {
+    alignItems: 'center',
+    gap: Spacing.two,
+    marginBottom: Spacing.two,
+  },
   subtitle: {
-    marginBottom: Spacing.four,
+    textAlign: 'center',
   },
   primaryButton: {
     marginTop: Spacing.two,

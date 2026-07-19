@@ -24,6 +24,13 @@ export const Branding = {
     description:
       'A young sprout with two leaves growing upward toward a golden four-point spark, with a smaller secondary spark nearby.',
   },
+
+  /**
+   * Display name of the meditation guide voice (the founder's ElevenLabs
+   * clone). Placeholder from the design mocks until the real voice is
+   * recorded and named — one-line change here, never hardcode it in copy.
+   */
+  voiceName: 'Wren',
 } as const;
 
 export type TierId = 'seedling' | 'full_bloom';

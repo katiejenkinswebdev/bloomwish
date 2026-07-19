@@ -13,16 +13,20 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router, useFocusEffect } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 
+import { AmbientLayer } from '@/components/ambient-layer';
+import { AnimatedPlant } from '@/components/animated-plant';
 import { Butterfly } from '@/components/butterfly';
+import { DropletIcon } from '@/components/droplet-icon';
 import { Fireflies } from '@/components/fireflies';
-import { PlantGlyph } from '@/components/plant-glyph';
+import { GardenerIcon, HeadphonesIcon, MoonIcon, PlusIcon } from '@/components/icons';
 import { Spark } from '@/components/spark';
 import { ThemedText } from '@/components/themed-text';
+import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
-import { ScreenHeader } from '@/components/ui/screen-header';
 import { FreeTierLimits } from '@/config/branding';
-import { Spacing } from '@/constants/theme';
-import { fetchDreams } from '@/features/dreams/api';
+import { BrandPalette } from '@/constants/brand-palette';
+import { ScreenPadding, Spacing } from '@/constants/theme';
+import { fetchDailyNudge, fetchDreams } from '@/features/dreams/api';
 import { DreamDetailSheet } from '@/features/dreams/components/dream-detail-sheet';
 import { bloomColorFor } from '@/features/dreams/bloom-color';
 import { consumeGardenNourished } from '@/features/dreams/nourish-signal';
@@ -40,15 +44,15 @@ import { useIsFounder } from '@/features/profile/founder';
 import { grantElevenEleven, maybeGrantReward, type GrantedReward } from '@/features/rewards/api';
 import { DelightMoment } from '@/features/rewards/components/delight-moment';
 import { useIsFullBloom } from '@/features/purchases/entitlements';
-import { PlusIcon } from '@/components/icons';
-import { BrandPalette } from '@/constants/brand-palette';
 import { fetchLocalWeather } from '@/features/weather/weather-mirror';
 import { useDreamDraftStore } from '@/store/dream-draft-store';
 import { RainOverlay } from '@/components/rain-overlay';
 import { computeGardenWidgetState, syncWidgets } from '@/features/widget/widget-state';
+import { useResolvedScheme, useTheme } from '@/hooks/use-theme';
 import type { DreamRow } from '@/lib/supabase/database.types';
 
-const PLANT_AREA = 132;
+const HERO_CIRCLE = 120;
+const SHELF_COLUMNS = 3;
 
 /**
  * Wraps a plant so the whole garden can respond in a staggered wave when a
@@ -104,7 +108,15 @@ function NourishablePlant({
 // One app-open delight roll per launch, not per navigation.
 let hasRolledThisLaunch = false;
 
+function daysGrowing(dream: DreamRow): number {
+  return Math.max(1, Math.floor((Date.now() - new Date(dream.created_at).getTime()) / 86400000) + 1);
+}
+
 export default function GardenScreen() {
+  const theme = useTheme();
+  const scheme = useResolvedScheme();
+  const isNight = scheme === 'night';
+
   // Track the selected dream by id so the sheet always shows fresh data —
   // including growth that happened while a Water/Feed/Sign flow was on top.
   const [selectedDreamId, setSelectedDreamId] = useState<string | null>(null);
@@ -211,106 +223,270 @@ export default function GardenScreen() {
     (a, b) => new Date(a.last_interacted_at).getTime() - new Date(b.last_interacted_at).getTime()
   )[0];
 
-  return (
-    <Screen>
-      <ScreenHeader title="Your wish garden" subtitle={pulseLine} />
+  // Today's whisper: one coach nudge per dream per session, cached hard —
+  // this is a paid AI call.
+  const nudgeQuery = useQuery({
+    queryKey: ['daily-nudge', returnDream?.id],
+    enabled: !!returnDream,
+    staleTime: Infinity,
+    queryFn: () =>
+      fetchDailyNudge(
+        returnDream!.wish_text ?? returnDream!.title,
+        returnDream!.scene_text ?? undefined
+      ),
+  });
 
-      {returnDream ? (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={`Step inside ${returnDream.title} - a ninety-second immersion`}
-          onPress={() =>
-            router.push({ pathname: '/immerse', params: { dreamId: returnDream.id } })
-          }
-          style={({ pressed }) => [styles.hero, { opacity: pressed ? 0.9 : 1 }]}>
-          <View style={styles.heroGlowA} pointerEvents="none" />
-          <View style={styles.heroGlowB} pointerEvents="none" />
-          <View style={styles.heroBody}>
-            <ThemedText type="small" style={styles.heroKicker}>
-              Return to the feeling
-            </ThemedText>
-            <ThemedText type="subtitle" numberOfLines={2} style={styles.heroTitle}>
+  const firstName = profileQuery.data?.display_name?.trim().split(/\s+/)[0] || 'gardener';
+  const hour = new Date().getHours();
+  const greeting = isNight ? 'Good evening' : hour < 12 ? 'Good morning' : 'Good afternoon';
+  const dateLine = new Date().toLocaleDateString(undefined, {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  });
+  const affirmation =
+    pulseLine ?? (isNight ? 'The garden glows tonight.' : 'Your garden waited for you.');
+
+  const plantWish = () => {
+    // Free tier: one active dream slot; founders and Full Bloom are open.
+    if (!isFullBloom && !isFounder && dreams.length >= FreeTierLimits.activeDreamSlots) {
+      router.push('/paywall');
+    } else {
+      useDreamDraftStore.getState().reset();
+      router.push('/create-dream');
+    }
+  };
+
+  // Shelf rows of three, with the plant-a-wish slot on the last row.
+  const shelfItems: (DreamRow | 'plant-slot')[] = [...dreams, 'plant-slot'];
+  const shelfRows: (DreamRow | 'plant-slot')[][] = [];
+  for (let i = 0; i < shelfItems.length; i += SHELF_COLUMNS) {
+    shelfRows.push(shelfItems.slice(i, i + SHELF_COLUMNS));
+  }
+
+  return (
+    <Screen padded={false}>
+      <AmbientLayer />
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        <View style={styles.topRow}>
+          <ThemedText type="micro" themeColor="textSecondary">
+            {dateLine}
+          </ThemedText>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Profile and settings"
+            hitSlop={8}
+            onPress={() => router.push('/profile')}
+            style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}>
+            <GardenerIcon size={26} color={theme.textSecondary} />
+          </Pressable>
+        </View>
+
+        <ThemedText type="display">
+          {greeting},{'\n'}
+          {firstName}
+        </ThemedText>
+        <ThemedText themeColor="textSecondary" style={styles.affirmation}>
+          {affirmation}
+        </ThemedText>
+
+        {trophies.length > 0 ? (
+          <View
+            style={styles.trophyButterflies}
+            pointerEvents="none"
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants">
+            {trophies.slice(0, 6).map((trophy, index) => (
+              <Butterfly key={trophy.id} size={18} index={index} />
+            ))}
+          </View>
+        ) : null}
+
+        {returnDream ? (
+          <View style={[styles.heroCard, { backgroundColor: theme.backgroundElement }]}>
+            <View style={[styles.heroCircle, { backgroundColor: theme.backgroundSelected }]}>
+              <AnimatedPlant
+                state={returnDream.state}
+                health={healthFor(returnDream)}
+                bloomColor={bloomColorFor(returnDream.id)}
+                size={96}
+              />
+              <Fireflies count={signCounts[returnDream.id] ?? 0} areaSize={HERO_CIRCLE} />
+            </View>
+            <ThemedText type="cardTitle" numberOfLines={2} style={styles.heroTitle}>
               {returnDream.title}
             </ThemedText>
-            <ThemedText type="small" style={styles.heroHint}>
-              90 seconds inside the feeling.
+            <ThemedText type="chip" themeColor="accent">
+              Day {daysGrowing(returnDream)} · {returnDream.state}
+            </ThemedText>
+            <Button
+              label={isNight ? "Begin tonight's ritual" : "Begin today's ritual"}
+              style={styles.heroButton}
+              onPress={() =>
+                router.push({ pathname: '/immerse', params: { dreamId: returnDream.id } })
+              }
+            />
+          </View>
+        ) : (
+          <View style={[styles.heroCard, { backgroundColor: theme.backgroundElement }]}>
+            <ThemedText themeColor="textSecondary" style={styles.emptyText}>
+              {dreamsQuery.isLoading
+                ? 'Tending the soil…'
+                : 'Plant your first wish and watch it grow.'}
+            </ThemedText>
+            {!dreamsQuery.isLoading ? (
+              <Button label="Plant a wish" style={styles.heroButton} onPress={plantWish} />
+            ) : null}
+          </View>
+        )}
+
+        <View style={styles.tilesRow}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Water a dream"
+            onPress={() => router.push('/water')}
+            style={({ pressed }) => [
+              styles.tile,
+              { backgroundColor: theme.backgroundElement, opacity: pressed ? 0.85 : 1 },
+            ]}>
+            <DropletIcon size={16} color={theme.primary} />
+            <ThemedText type="smallBold">Water</ThemedText>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Log a sign"
+            onPress={() => router.push('/add-sign')}
+            style={({ pressed }) => [
+              styles.tile,
+              { backgroundColor: theme.backgroundElement, opacity: pressed ? 0.85 : 1 },
+            ]}>
+            <Spark size={15} />
+            <ThemedText type="smallBold">Log a sign</ThemedText>
+          </Pressable>
+          {isNight ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Drift to sleep inside your dream"
+              onPress={() => router.push('/water')}
+              style={({ pressed }) => [
+                styles.tile,
+                { backgroundColor: theme.backgroundElement, opacity: pressed ? 0.85 : 1 },
+              ]}>
+              <MoonIcon size={16} color={theme.textSecondary} />
+              <ThemedText type="smallBold">Drift</ThemedText>
+            </Pressable>
+          ) : (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Listen to a meditation"
+              onPress={() =>
+                returnDream
+                  ? router.push({ pathname: '/meditation', params: { dreamId: returnDream.id } })
+                  : router.push('/water')
+              }
+              style={({ pressed }) => [
+                styles.tile,
+                { backgroundColor: theme.backgroundElement, opacity: pressed ? 0.85 : 1 },
+              ]}>
+              <HeadphonesIcon size={16} color={theme.text} />
+              <ThemedText type="smallBold">Listen</ThemedText>
+            </Pressable>
+          )}
+        </View>
+
+        <ThemedText type="micro" themeColor="textSecondary" style={styles.sectionLabel}>
+          The greenhouse
+        </ThemedText>
+        {shelfRows.map((row, rowIndex) => (
+          <View key={rowIndex}>
+            <View style={styles.shelfRow}>
+              {row.map((item, colIndex) =>
+                item === 'plant-slot' ? (
+                  <Pressable
+                    key="plant-slot"
+                    accessibilityRole="button"
+                    accessibilityLabel="Plant a wish"
+                    onPress={plantWish}
+                    style={({ pressed }) => [styles.shelfSpot, { opacity: pressed ? 0.8 : 1 }]}>
+                    <View
+                      style={[
+                        styles.plantSlot,
+                        { backgroundColor: theme.backgroundElement, borderColor: BrandPalette.warmBrown },
+                      ]}>
+                      <PlusIcon size={22} color={BrandPalette.warmBrown} />
+                    </View>
+                    <ThemedText type="smallBold" themeColor="textSecondary" style={styles.potLabel}>
+                      Plant a wish
+                    </ThemedText>
+                  </Pressable>
+                ) : (
+                  <Pressable
+                    key={item.id}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${item.title}, ${item.state}, ${healthFor(item)}${(signCounts[item.id] ?? 0) > 0 ? `, ${signCounts[item.id]} sign${signCounts[item.id] === 1 ? '' : 's'} noticed` : ''}`}
+                    onPress={() => setSelectedDreamId(item.id)}
+                    style={({ pressed }) => [styles.shelfSpot, { opacity: pressed ? 0.8 : 1 }]}>
+                    <NourishablePlant index={rowIndex * SHELF_COLUMNS + colIndex} signal={nourishSignal}>
+                      <AnimatedPlant
+                        state={item.state}
+                        health={healthFor(item)}
+                        bloomColor={bloomColorFor(item.id)}
+                        size={64}
+                      />
+                    </NourishablePlant>
+                    <View style={styles.pot} />
+                    <ThemedText type="smallBold" numberOfLines={1} style={styles.potLabel}>
+                      {item.title}
+                    </ThemedText>
+                  </Pressable>
+                )
+              )}
+            </View>
+            <View style={[styles.shelfBar, { opacity: isNight ? 0.6 : 0.85 }]} />
+          </View>
+        ))}
+
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Visit the wishing grove"
+          onPress={() => router.push('/greenhouse')}
+          style={({ pressed }) => [
+            styles.groveCard,
+            { backgroundColor: isNight ? theme.backgroundElement : BrandPalette.plum },
+            { opacity: pressed ? 0.9 : 1 },
+          ]}>
+          <Spark size={15} />
+          <View style={styles.cardBody}>
+            <ThemedText type="emphasis" style={{ color: BrandPalette.cream }}>
+              The wishing grove
+            </ThemedText>
+            <ThemedText type="small" style={{ color: '#C7B9CC' }}>
+              {isNight
+                ? 'Something small is waiting for you tonight.'
+                : 'Charms catch the light. New ones appear at night.'}
             </ThemedText>
           </View>
-          <Spark size={26} />
         </Pressable>
-      ) : null}
 
-      {trophies.length > 0 ? (
-        <View
-          style={styles.trophyButterflies}
-          pointerEvents="none"
-          accessibilityElementsHidden
-          importantForAccessibility="no-hide-descendants">
-          {trophies.slice(0, 6).map((trophy, index) => (
-            <Butterfly key={trophy.id} size={18} index={index} />
-          ))}
-        </View>
-      ) : null}
-
-      {dreams.length === 0 ? (
-        <View style={styles.empty}>
-          <ThemedText themeColor="textSecondary" style={styles.emptyText}>
-            {dreamsQuery.isLoading
-              ? 'Tending the soil…'
-              : 'Tap + to plant your first dream.'}
-          </ThemedText>
-        </View>
-      ) : (
-        <ScrollView contentContainerStyle={styles.garden}>
-          {dreams.map((dream, index) => (
-            <Pressable
-              key={dream.id}
-              accessibilityRole="button"
-              accessibilityLabel={`${dream.title}, ${dream.state}, ${healthFor(dream)}${(signCounts[dream.id] ?? 0) > 0 ? `, ${signCounts[dream.id]} sign${signCounts[dream.id] === 1 ? '' : 's'} noticed` : ''}`}
-              onPress={() => setSelectedDreamId(dream.id)}
-              style={({ pressed }) => [
-                styles.plot,
-                index % 2 === 1 && styles.plotOffset,
-                { opacity: pressed ? 0.8 : 1 },
-              ]}>
-              <View style={styles.plantWrapper}>
-                <NourishablePlant index={index} signal={nourishSignal}>
-                  <PlantGlyph
-                    state={dream.state}
-                    health={healthFor(dream)}
-                    bloomColor={bloomColorFor(dream.id)}
-                    size={96}
-                  />
-                </NourishablePlant>
-                <Fireflies count={signCounts[dream.id] ?? 0} areaSize={PLANT_AREA} />
-              </View>
-              <ThemedText type="small" numberOfLines={1} style={styles.plantTitle}>
-                {dream.title}
+        {nudgeQuery.data?.nudge ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`${isNight ? "Tonight's" : "Today's"} whisper: ${nudgeQuery.data.nudge}`}
+            onPress={() => router.push('/feed')}
+            style={({ pressed }) => [
+              styles.whisperCard,
+              { backgroundColor: theme.backgroundElement, opacity: pressed ? 0.9 : 1 },
+            ]}>
+            <Spark size={15} />
+            <View style={styles.cardBody}>
+              <ThemedText type="micro" themeColor="accent">
+                {isNight ? "Tonight's whisper" : "Today's whisper"}
               </ThemedText>
-            </Pressable>
-          ))}
-
-        </ScrollView>
-      )}
-
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Plant a dream"
-        onPress={() => {
-          // Free tier: one active dream slot; founders and Full Bloom are open.
-          if (!isFullBloom && !isFounder && dreams.length >= FreeTierLimits.activeDreamSlots) {
-            router.push('/paywall');
-          } else {
-            useDreamDraftStore.getState().reset();
-            router.push('/create-dream');
-          }
-        }}
-        style={({ pressed }) => [
-          styles.fab,
-          { transform: [{ scale: pressed ? 0.94 : 1 }], opacity: pressed ? 0.9 : 1 },
-        ]}>
-        <PlusIcon size={26} />
-      </Pressable>
+              <ThemedText type="small">{nudgeQuery.data.nudge}</ThemedText>
+            </View>
+          </Pressable>
+        ) : null}
+      </ScrollView>
 
       {weather?.isRaining || weather?.isSnowing ? (
         <RainOverlay snow={!!weather.isSnowing} />
@@ -328,108 +504,126 @@ export default function GardenScreen() {
 }
 
 const styles = StyleSheet.create({
-  hero: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  scroll: {
+    paddingHorizontal: ScreenPadding,
+    paddingBottom: Spacing.six,
     gap: Spacing.three,
-    marginTop: Spacing.three,
-    padding: Spacing.four,
-    borderRadius: Spacing.three,
-    backgroundColor: '#241C36',
-    overflow: 'hidden',
   },
-  heroGlowA: {
-    position: 'absolute',
-    width: 190,
-    height: 190,
-    borderRadius: 95,
-    backgroundColor: BrandPalette.deepGreen,
-    opacity: 0.3,
-    top: -70,
-    left: -50,
-  },
-  heroGlowB: {
-    position: 'absolute',
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    backgroundColor: BrandPalette.dustyPink,
-    opacity: 0.16,
-    bottom: -60,
-    right: -30,
-  },
-  heroBody: {
-    flex: 1,
-    gap: 2,
-  },
-  heroKicker: {
-    color: '#B9A8C6',
-    textTransform: 'uppercase',
-    letterSpacing: 1.2,
-    fontSize: 11,
-  },
-  heroTitle: {
-    color: '#F2ECF7',
-  },
-  heroHint: {
-    color: '#9E8FAB',
-  },
-  empty: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  emptyText: {
-    textAlign: 'center',
-  },
-  garden: {
+  topRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-around',
-    paddingVertical: Spacing.four,
-    rowGap: Spacing.five,
-  },
-  plot: {
-    width: PLANT_AREA,
+    justifyContent: 'space-between',
     alignItems: 'center',
-    gap: Spacing.one,
+    paddingTop: Spacing.three,
   },
-  plotOffset: {
-    marginTop: Spacing.four,
-  },
-  nourishSpark: {
-    position: 'absolute',
-    top: -4,
-    alignSelf: 'center',
-  },
-  plantWrapper: {
-    width: PLANT_AREA,
-    height: PLANT_AREA,
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-  },
-  plantTitle: {
-    maxWidth: PLANT_AREA,
-  },
-  fab: {
-    position: 'absolute',
-    right: Spacing.four,
-    bottom: Spacing.four,
-    width: 56,
-    height: 56,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: BrandPalette.deepGreen,
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
+  affirmation: {
+    fontStyle: 'italic',
+    marginTop: -Spacing.two,
   },
   trophyButterflies: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
     gap: Spacing.three,
-    paddingVertical: Spacing.two,
+  },
+  heroCard: {
+    borderRadius: Spacing.three,
+    padding: Spacing.four,
+    alignItems: 'center',
+    gap: Spacing.two,
+  },
+  heroCircle: {
+    width: HERO_CIRCLE,
+    height: HERO_CIRCLE,
+    borderRadius: HERO_CIRCLE / 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  heroTitle: {
+    textAlign: 'center',
+    marginTop: Spacing.one,
+  },
+  heroButton: {
+    alignSelf: 'stretch',
+    marginTop: Spacing.two,
+  },
+  emptyText: {
+    textAlign: 'center',
+    paddingVertical: Spacing.three,
+  },
+  tilesRow: {
+    flexDirection: 'row',
+    gap: Spacing.three - 4,
+  },
+  tile: {
+    flex: 1,
+    borderRadius: Spacing.three,
+    paddingVertical: Spacing.three,
+    alignItems: 'center',
+    gap: Spacing.two,
+  },
+  sectionLabel: {
+    marginTop: Spacing.two,
+  },
+  shelfRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'flex-end',
+    paddingBottom: Spacing.two,
+  },
+  shelfSpot: {
+    width: 96,
+    alignItems: 'center',
+    gap: Spacing.one,
+  },
+  pot: {
+    width: 40,
+    height: 24,
+    borderTopLeftRadius: 4,
+    borderTopRightRadius: 4,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
+    backgroundColor: BrandPalette.warmBrown,
+    marginTop: -6,
+  },
+  plantSlot: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  potLabel: {
+    maxWidth: 96,
+    fontSize: 12,
+  },
+  shelfBar: {
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: BrandPalette.warmBrown,
+    marginBottom: Spacing.two,
+  },
+  groveCard: {
+    borderRadius: Spacing.three,
+    padding: Spacing.three + 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
+  },
+  whisperCard: {
+    borderRadius: Spacing.three,
+    padding: Spacing.three + 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
+  },
+  cardBody: {
+    flex: 1,
+    gap: 2,
+  },
+  nourishSpark: {
+    position: 'absolute',
+    top: -4,
+    alignSelf: 'center',
   },
 });

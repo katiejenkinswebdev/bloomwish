@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
 
 import { goBackOrHome } from '@/lib/navigation';
 import * as Haptics from 'expo-haptics';
@@ -14,6 +14,8 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { AnimatedPlant } from '@/components/animated-plant';
+import { bloomColorFor } from '@/features/dreams/bloom-color';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -35,8 +37,10 @@ export default function ReviveScreen() {
   const queryClient = useQueryClient();
   const reducedMotion = useReducedMotion();
 
+  // The no-shame doorway (3k) comes before the two quiet minutes.
+  const [phase, setPhase] = useState<'intro' | 'ritual'>('intro');
   const [secondsLeft, setSecondsLeft] = useState(REVIVE_SECONDS);
-  const isComplete = secondsLeft <= 0;
+  const isComplete = phase === 'ritual' && secondsLeft <= 0;
 
   const dreamsQuery = useQuery({ queryKey: ['dreams'], queryFn: fetchDreams });
   const dream = dreamsQuery.data?.find((d) => d.id === dreamId);
@@ -51,10 +55,10 @@ export default function ReviveScreen() {
   });
 
   useEffect(() => {
-    if (isComplete) return;
+    if (phase !== 'ritual' || isComplete) return;
     const interval = setInterval(() => setSecondsLeft((s) => s - 1), 1000);
     return () => clearInterval(interval);
-  }, [isComplete]);
+  }, [phase, isComplete]);
 
   useEffect(() => {
     if (isComplete && dreamId && !reviveMutation.isPending && reviveMutation.isIdle) {
@@ -111,6 +115,52 @@ export default function ReviveScreen() {
     );
   }
 
+  // ── Intro (3k): resting, not gone — never shame ──────────────────────────
+  if (phase === 'intro') {
+    return (
+      <Screen style={[styles.container, styles.nightScreen]}>
+        <View style={styles.wiltedPlant}>
+          <AnimatedPlant
+            state={dream?.state ?? 'growing'}
+            health="wilting"
+            bloomColor={dream ? bloomColorFor(dream.id) : undefined}
+            size={130}
+          />
+        </View>
+        <ThemedText type="heading" style={[styles.centered, styles.nightText]}>
+          {dream?.title ?? 'Your dream'} is resting,{'\n'}not gone.
+        </ThemedText>
+        <ThemedText style={[styles.centered, styles.nightSubtle, styles.italic]}>
+          Dreams go quiet sometimes. A little water brings the color back — whenever you&apos;re
+          ready.
+        </ThemedText>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => setPhase('ritual')}
+          style={({ pressed }) => [styles.sageButton, { opacity: pressed ? 0.85 : 1 }]}>
+          <ThemedText type="smallBold" style={styles.sageButtonLabel}>
+            Begin the revive ritual
+          </ThemedText>
+        </Pressable>
+        <View style={styles.introLinks}>
+          <ThemedText
+            type="smallBold"
+            style={styles.nightSubtle}
+            onPress={() =>
+              dreamId
+                ? router.replace({ pathname: '/release', params: { dreamId } })
+                : goBackOrHome()
+            }>
+            Release with gratitude
+          </ThemedText>
+          <ThemedText type="smallBold" style={styles.nightSubtle} onPress={() => goBackOrHome()}>
+            Let it rest
+          </ThemedText>
+        </View>
+      </Screen>
+    );
+  }
+
   return (
     <Screen style={styles.container}>
       <ThemedText type="subtitle" style={styles.centered}>
@@ -161,5 +211,38 @@ const styles = StyleSheet.create({
   },
   scene: {
     fontStyle: 'italic',
+  },
+  nightScreen: {
+    backgroundColor: '#241C29',
+  },
+  nightText: {
+    color: '#FBF3E7',
+  },
+  nightSubtle: {
+    color: '#C7B9CC',
+    textAlign: 'center',
+  },
+  italic: {
+    fontStyle: 'italic',
+  },
+  wiltedPlant: {
+    alignSelf: 'center',
+    opacity: 0.75,
+  },
+  sageButton: {
+    minHeight: 52,
+    borderRadius: Spacing.three,
+    backgroundColor: BrandPalette.sage,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.four,
+  },
+  sageButtonLabel: {
+    color: '#241C29',
+  },
+  introLinks: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: Spacing.four,
   },
 });

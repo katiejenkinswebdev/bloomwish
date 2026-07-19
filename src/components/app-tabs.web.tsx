@@ -1,7 +1,8 @@
 import type { ColorValue } from 'react-native';
 import { Tabs } from 'expo-router';
 
-import { GardenerIcon, GreenhouseIcon, SproutIcon } from '@/components/icons';
+import { DropletIcon } from '@/components/droplet-icon';
+import { BoltIcon, SproutIcon, SunIcon } from '@/components/icons';
 import { useTheme } from '@/hooks/use-theme';
 
 /**
@@ -12,11 +13,14 @@ import { useTheme } from '@/hooks/use-theme';
 const GardenGlyph = ({ color }: { color: ColorValue }) => (
   <SproutIcon size={24} color={color as string} />
 );
-const GreenhouseGlyph = ({ color }: { color: ColorValue }) => (
-  <GreenhouseIcon size={24} color={color as string} />
+const WaterGlyph = ({ color }: { color: ColorValue }) => (
+  <DropletIcon size={22} color={color as string} />
 );
-const ProfileGlyph = ({ color }: { color: ColorValue }) => (
-  <GardenerIcon size={24} color={color as string} />
+const FeedGlyph = ({ color }: { color: ColorValue }) => (
+  <BoltIcon size={24} color={color as string} />
+);
+const SignsGlyph = ({ color }: { color: ColorValue }) => (
+  <SunIcon size={24} color={color as string} />
 );
 
 export default function AppTabs() {
@@ -34,11 +38,9 @@ export default function AppTabs() {
         },
       }}>
       <Tabs.Screen name="index" options={{ title: 'Garden', tabBarIcon: GardenGlyph }} />
-      <Tabs.Screen
-        name="greenhouse"
-        options={{ title: 'Greenhouse', tabBarIcon: GreenhouseGlyph }}
-      />
-      <Tabs.Screen name="profile" options={{ title: 'Profile', tabBarIcon: ProfileGlyph }} />
+      <Tabs.Screen name="water" options={{ title: 'Water', tabBarIcon: WaterGlyph }} />
+      <Tabs.Screen name="feed" options={{ title: 'Feed', tabBarIcon: FeedGlyph }} />
+      <Tabs.Screen name="signs" options={{ title: 'Signs', tabBarIcon: SignsGlyph }} />
     </Tabs>
   );
 }
